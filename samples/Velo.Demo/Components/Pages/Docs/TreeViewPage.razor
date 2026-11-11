@@ -1,0 +1,75 @@
+@page "/components/treeview"
+@inject VeloToastService Toasts
+
+<DemoPage Title="TreeView" Description="Une hiérarchie, en liste (explorateur) ou en diagramme (organigramme). Mêmes données, mêmes options : dépliage, sélection, modèle de nœud. Au clavier : ↑ ↓ pour se déplacer, → pour déplier ou entrer, ← pour replier ou remonter, Entrée pour sélectionner.">
+    <Example Title="Liste (explorateur)" Code="@ListCode">
+        <div class="grid-2">
+            <VeloCard Padding="8px">
+                <VeloTreeView TItem="Node" Items="Sites" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemIcon="n => n.Icon"
+                              ItemKey="n => n.Name" @bind-SelectedItem="_selected" ExpandDepth="2" />
+            </VeloCard>
+            <VeloCard Title="@(_selected?.Name ?? "Aucune sélection")" Subtitle="@_selected?.Role">
+                <p class="muted" style="margin:0">@(_selected is null ? "Choisissez un élément dans l'arborescence." : $"{_selected.Children?.Count ?? 0} élément(s) en dessous.")</p>
+            </VeloCard>
+        </div>
+    </Example>
+
+    <Example Title="Diagramme (organigramme)" Description="Cliquez sur le badge sous un nœud pour le déplier ou le replier." Code="@DiagramCode">
+        <VeloTreeView TItem="Node" Items="Org" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemDescription="n => n.Role"
+                      ItemKey="n => n.Name" Layout="VeloTreeLayout.Diagram" ExpandDepth="2"
+                      SelectedItemChanged="n => Toasts.Info(n?.Role ?? string.Empty, n?.Name)" AriaLabel="Organigramme">
+        </VeloTreeView>
+    </Example>
+
+    <ApiTable Title="VeloTreeView" Rows="Api" />
+</DemoPage>
+
+@code {
+    public sealed record Node(string Name, string? Role = null, string? Icon = null, List<Node>? Children = null);
+
+    private static readonly Node[] Sites =
+    [
+        new("France", "Pays", "layout", [
+            new("Auvergne-Rhône-Alpes", "Région", "columns", [
+                new("Usine de Lyon", "Site industriel", "zap", [new("Compteur 41", "Compteur", "settings"), new("Compteur 42", "Compteur", "settings")]),
+                new("Entrepôt de Grenoble", "Logistique", "download"),
+            ]),
+            new("Île-de-France", "Région", "columns", [
+                new("Siège Paris", "Bureaux", "user"),
+                new("Data center Saclay", "Informatique", "lock", [new("Salle A", "Salle"), new("Salle B", "Salle")]),
+            ]),
+        ]),
+        new("Belgique", "Pays", "layout", [new("Agence Bruxelles", "Bureaux", "user")]),
+    ];
+
+    private static readonly Node[] Org =
+    [
+        new("Ada Lovelace", "Directrice générale", Children: [
+            new("Alan Turing", "Exploitation", Children: [new("Grace Hopper", "Dispatching"), new("Ken Thompson", "Astreinte")]),
+            new("Margaret Hamilton", "Data", Children: [new("Barbara Liskov", "Prévisions"), new("Dennis Ritchie", "Plateforme"), new("Linus Torvalds", "Outillage")]),
+            new("Katherine Johnson", "Finance"),
+        ]),
+    ];
+
+    private Node? _selected;
+
+    private const string ListCode = """
+        <VeloTreeView Items="sites" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemIcon="n => n.Icon"
+                      @bind-SelectedItem="selected" ExpandDepth="2" />
+        """;
+
+    private const string DiagramCode = """
+        <VeloTreeView Items="org" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemDescription="n => n.Role"
+                      Layout="VeloTreeLayout.Diagram" />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items / ChildrenOf", "IEnumerable<T> / Func<T, IEnumerable<T>?>", null, "Les racines et les enfants d'un élément."),
+        new("Layout", "VeloTreeLayout", null, "List (explorateur) ou Diagram (organigramme)."),
+        new("ItemText / ItemIcon / ItemDescription", "Func<T, string?>", null, "Libellé, icône, seconde ligne (diagramme)."),
+        new("ItemTemplate", "RenderFragment<T>", null, "Contenu libre d'un nœud."),
+        new("SelectedItem / ItemKey", "T? / Func<T, object>", null, "Sélection (@bind-SelectedItem) ; identité d'un élément."),
+        new("ExpandDepth / ShowLines", "int / bool", "--velo-tree-line", "Niveaux dépliés au départ ; lignes de guidage."),
+    ];
+}

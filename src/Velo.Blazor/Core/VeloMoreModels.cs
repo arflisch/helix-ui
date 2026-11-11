@@ -4,6 +4,14 @@ public enum VeloRadioAppearance { Default, Cards, Segmented }
 
 public enum VeloDrawerPosition { Right, Left, Bottom }
 
+/// <summary>Donut, or a tall segmented bar (easier to read for "how does the whole split").</summary>
+public enum VeloPartShape { Donut, SegmentedBar }
+
+public enum VeloTreeLayout { List, Diagram }
+
+/// <summary>One part of a <see cref="VeloDonut"/>.</summary>
+public sealed record VeloPart(string Label, double Value, string? Color = null);
+
 /// <summary>A row of a <see cref="VeloBarList"/>.</summary>
 public sealed record VeloBarItem(string Label, double Value)
 {

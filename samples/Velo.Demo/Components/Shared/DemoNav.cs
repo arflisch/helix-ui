@@ -31,6 +31,8 @@ public static class DemoNav
             new("RadioGroup", "components/radiogroup", "Un choix parmi plusieurs : classique, cartes ou segmenté.", "check"),
             new("NumberField", "components/numberfield", "Nombre avec − / +, bornes, pas et unité.", "plus"),
             new("DatePicker", "components/datepicker", "Calendrier au clavier, dates interdites, culture.", "calendar"),
+            new("ColorPicker", "components/colorpicker", "Couleur : zone, teinte, opacité, pipette.", "sparkles"),
+            new("Rating", "components/rating", "Note en étoiles ou en cœurs.", "star"),
         ]),
         new("Données",
         [
@@ -41,6 +43,8 @@ public static class DemoNav
             new("Heatmap", "components/heatmap", "Grille colorée : échelle simple ou divergente.", "columns"),
             new("BarList", "components/barlist", "Classement en barres horizontales (top N).", "trending-up"),
             new("Gauge", "components/gauge", "Jauge avec seuils et libellé d'état.", "zap"),
+            new("Donut", "components/donut", "Répartition d'un tout, ou barre segmentée.", "chevron-right"),
+            new("TreeView", "components/treeview", "Hiérarchie en liste ou en organigramme.", "columns"),
         ]),
         new("Interaction",
         [
@@ -60,6 +64,7 @@ public static class DemoNav
             new("Accordion", "components/accordion", "Sections repliables animées.", "chevron-down"),
             new("EmptyState", "components/emptystate", "Écran vide qui explique et propose une action.", "search"),
             new("Skeleton", "components/skeleton", "Silhouettes de chargement.", "minus"),
+            new("Carousel", "components/carousel", "Diapositives au doigt, aux flèches ou automatiques.", "arrow-right"),
         ]),
         new("Feedback",
         [

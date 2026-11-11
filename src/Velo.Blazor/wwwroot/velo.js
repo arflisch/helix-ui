@@ -258,3 +258,116 @@ export function attachSplitter(root, dotnet, options) {
         },
     };
 }
+
+/** Stops the browser's default action (scrolling) for these keys only; .NET still receives them. */
+export function preventKeys(el, keys) {
+    if (!el || el.__veloKeys) return;
+    el.__veloKeys = true;
+    el.addEventListener("keydown", e => {
+        if (keys.includes(e.key)) e.preventDefault();
+    });
+}
+
+/**
+ * Carousel: native scroll-snap does the swiping; this reports the current slide to .NET
+ * and scrolls to a slide on demand.
+ */
+export function attachCarousel(track, dotnet) {
+    let last = -1;
+    let timer = null;
+    const slides = () => [...track.querySelectorAll(":scope > .velo-carousel__slide")];
+    const current = () => {
+        const list = slides();
+        if (list.length === 0) return 0;
+        const left = track.scrollLeft;
+        let best = 0;
+        let bestDist = Infinity;
+        list.forEach((s, i) => {
+            const d = Math.abs(s.offsetLeft - track.offsetLeft - left);
+            if (d < bestDist) { bestDist = d; best = i; }
+        });
+        return best;
+    };
+    const onScroll = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            const i = current();
+            if (i !== last) {
+                last = i;
+                dotnet.invokeMethodAsync("OnSlideChanged", i);
+            }
+        }, 90);
+    };
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return {
+        goTo(index, smooth) {
+            const s = slides()[index];
+            if (!s) return;
+            const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+            track.scrollTo({ left: s.offsetLeft - track.offsetLeft, behavior: smooth && !reduce ? "smooth" : "auto" });
+        },
+        count() { return slides().length; },
+        dispose() { track.removeEventListener("scroll", onScroll); clearTimeout(timer); },
+    };
+}
+
+/**
+ * Color picker saturation/value square: drag (live, throttled to one .NET call per frame) and arrow keys.
+ */
+export function attachColorArea(area, dotnet) {
+    let dragging = false;
+    let pending = null;
+    let frame = 0;
+    const thumb = () => area.querySelector(".velo-color__area-thumb");
+    const send = () => {
+        frame = 0;
+        if (pending) dotnet.invokeMethodAsync("OnArea", pending.s, pending.v);
+        pending = null;
+    };
+    const at = e => {
+        const r = area.getBoundingClientRect();
+        const s = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+        const v = Math.min(1, Math.max(0, 1 - (e.clientY - r.top) / r.height));
+        const t = thumb();
+        if (t) { t.style.left = `${s * 100}%`; t.style.top = `${(1 - v) * 100}%`; }
+        pending = { s, v };
+        if (!frame) frame = requestAnimationFrame(send);
+    };
+    const down = e => { if (e.button !== 0) return; dragging = true; area.setPointerCapture(e.pointerId); at(e); e.preventDefault(); area.focus(); };
+    const move = e => { if (dragging) at(e); };
+    const up = () => { dragging = false; };
+    const key = e => {
+        const step = e.shiftKey ? 0.1 : 0.02;
+        const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }[e.key];
+        if (!d) return;
+        e.preventDefault();
+        dotnet.invokeMethodAsync("OnAreaStep", d[0], d[1]);
+    };
+    area.addEventListener("pointerdown", down);
+    area.addEventListener("pointermove", move);
+    area.addEventListener("pointerup", up);
+    area.addEventListener("lostpointercapture", up);
+    area.addEventListener("keydown", key);
+    return {
+        dispose() {
+            area.removeEventListener("pointerdown", down);
+            area.removeEventListener("pointermove", move);
+            area.removeEventListener("pointerup", up);
+            area.removeEventListener("lostpointercapture", up);
+            area.removeEventListener("keydown", key);
+        },
+    };
+}
+
+/** Screen color picker (Chromium only). Returns "#rrggbb", or null if unsupported or cancelled. */
+export async function eyeDropper() {
+    if (!("EyeDropper" in window)) return null;
+    try {
+        const result = await new window.EyeDropper().open();
+        return result.sRGBHex;
+    } catch {
+        return null;
+    }
+}
+
+export function hasEyeDropper() { return "EyeDropper" in window; }

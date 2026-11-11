@@ -1,0 +1,77 @@
+@page "/components/carousel"
+
+<DemoPage Title="Carousel" Description="Diapositives qui défilent au doigt (défilement natif), aux flèches, aux points ou au clavier. Plusieurs diapositives à la fois, défilement automatique qui s'arrête au survol et au focus, avec un bouton pause.">
+    <Example Title="Bannières (défilement automatique)" Code="@BannerCode">
+        <VeloCarousel Autoplay="true" Height="220px" @bind-Index="_index" AriaLabel="Actualités">
+            @foreach (var slide in Banners)
+            {
+                <VeloCarouselSlide Label="@slide.Title">
+                    <div class="banner" style="--_b:@slide.Color">
+                        <VeloBadge Variant="VeloBadgeVariant.Solid" Color="neutral">@slide.Tag</VeloBadge>
+                        <h3>@slide.Title</h3>
+                        <p>@slide.Text</p>
+                    </div>
+                </VeloCarouselSlide>
+            }
+        </VeloCarousel>
+        <p class="muted" style="margin:10px 0 0;font-size:13px">Diapositive courante : @(_index + 1)</p>
+    </Example>
+
+    <Example Title="Plusieurs à la fois" Code="@CardsCode">
+        <VeloCarousel SlidesPerView="3" Gap="14px" AriaLabel="Sites">
+            @foreach (var site in Sites)
+            {
+                <VeloCarouselSlide Label="@site.Name">
+                    <VeloCard Title="@site.Name" Subtitle="@site.City" Style="height:100%">
+                        <VeloStat Bare="true" Label="Consommation" Value="site.Mwh" Unit="MWh" Trend="DemoData.Trend(site.Seed)" />
+                    </VeloCard>
+                </VeloCarouselSlide>
+            }
+        </VeloCarousel>
+    </Example>
+
+    <ApiTable Title="VeloCarousel et VeloCarouselSlide" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly (string Tag, string Title, string Text, string Color)[] Banners =
+    [
+        ("Nouveau", "Thèmes clair et sombre", "Composez votre palette pour chaque mode, ou laissez l'ordinateur choisir.", "#4f46e5"),
+        ("Données", "Chargement côté serveur", "Le DataGrid ne demande qu'une page à la fois à votre base.", "#0369a1"),
+        ("Planning", "Timeline éditable", "Glissez, redimensionnez, changez de ligne : au doigt comme au clavier.", "#15803d"),
+        ("Tableaux de bord", "Disposition personnelle", "Chaque utilisateur arrange ses tuiles ; la disposition se sauvegarde.", "#c2410c"),
+    ];
+
+    private static readonly (string Name, string City, double Mwh, int Seed)[] Sites =
+    [
+        ("Usine", "Lyon", 1840, 1), ("Entrepôt", "Lille", 920, 2), ("Siège", "Paris", 610, 3),
+        ("Data center", "Marseille", 2410, 4), ("Atelier", "Nantes", 455, 5), ("Agence", "Bordeaux", 180, 6),
+    ];
+
+    private int _index;
+
+    private const string BannerCode = """
+        <VeloCarousel Autoplay Height="220px" @bind-Index="index">
+            <VeloCarouselSlide Label="Thèmes clair et sombre">…</VeloCarouselSlide>
+            <VeloCarouselSlide Label="Chargement côté serveur">…</VeloCarouselSlide>
+        </VeloCarousel>
+        """;
+
+    private const string CardsCode = """
+        <VeloCarousel SlidesPerView="3" Gap="14px">
+            @foreach (var site in sites)
+            {
+                <VeloCarouselSlide Label="@site.Name"><VeloCard …/></VeloCarouselSlide>
+            }
+        </VeloCarousel>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("ChildContent", "VeloCarouselSlide…", null, "Les diapositives (contenu libre ; Label pour les lecteurs d'écran)."),
+        new("SlidesPerView / Gap / Height", "int / string / string", "--velo-carousel-height", "Diapositives visibles à la fois, espacement, hauteur."),
+        new("Autoplay / Interval", "bool / TimeSpan", null, "Défilement automatique (5 s), en pause au survol, au focus et via le bouton."),
+        new("Loop / ShowArrows / ShowDots", "bool", null, "Boucler ; flèches ; points."),
+        new("Index", "int", null, "Diapositive courante (@bind-Index)."),
+    ];
+}

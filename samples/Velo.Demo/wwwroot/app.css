@@ -215,6 +215,20 @@ body { background: #fafafa; }
     border-top-right-radius: 0;
 }
 
+.banner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 8px;
+    height: 100%;
+    padding: 28px 32px;
+    background: color-mix(in oklab, var(--_b) 92%, black);
+    color: #fff;
+}
+.banner h3 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.banner p { margin: 0; max-width: 520px; font-size: 14.5px; line-height: 1.5; color: rgb(255 255 255 / .85); }
+
 /* ---------- Theme builder ---------- */
 
 .demo-theme-dot {

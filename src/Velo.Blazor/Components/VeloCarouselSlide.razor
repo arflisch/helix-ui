@@ -1,0 +1,33 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@implements IDisposable
+
+@{
+    var index = Carousel?.IndexOf(this) ?? 0;
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("velo-carousel__slide").Add(Class).Build())" style="@Style"
+     role="group" aria-roledescription="diapositive" aria-label="@($"{index + 1} sur {Carousel?.Count}{(string.IsNullOrEmpty(Label) ? "" : $" : {Label}")}")">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] private VeloCarousel? Carousel { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Name read by screen readers ("2 sur 5 : Usine de Lyon").</summary>
+    [Parameter] public string? Label { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Carousel is null)
+        {
+            throw new InvalidOperationException($"{nameof(VeloCarouselSlide)} must be placed inside a {nameof(VeloCarousel)}.");
+        }
+
+        Carousel.Add(this);
+    }
+
+    public void Dispose() => Carousel?.Remove(this);
+}
