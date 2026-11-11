@@ -22,16 +22,21 @@
 
 @code {
     private const string Wpf1 = """
-        <velo:VeloField Label="Livraison" Hint="Choisissez un mode">
-            <StackPanel>
-                <velo:VeloRadioButton GroupName="ship" Content="Standard" Description="3 à 5 jours" IsChecked="True" />
-                <velo:VeloRadioButton GroupName="ship" Content="Express" Description="Demain" Margin="0,10,0,0" />
-                <velo:VeloRadioButton GroupName="ship" Content="Retrait" Accent="#EC4899" Margin="0,10,0,0" />
-            </StackPanel>
-        </velo:VeloField>
+        <!-- Appearance : Default (liste), Cards (cartes) ou Segmented -->
+        <velo:VeloRadioGroup Label="Formule" Appearance="Cards" Columns="3"
+                             ItemsSource="{Binding Plans}" SelectedItem="{Binding Plan}"
+                             Hint="Changeable à tout moment." Accent="#8B5CF6" CornerRadius="14" />
 
-        <!-- Variante segmentée : VeloButtonGroup -->
-        <velo:VeloButtonGroup SelectedIndex="0"><ListBoxItem Content="Standard" /><ListBoxItem Content="Express" /></velo:VeloButtonGroup>
+        // ViewModel : titre, description et icône par option
+        Plans = [new VeloRadioOption("Découverte", "Jusqu'à 3 sites", "star"),
+                 new VeloRadioOption("Pro", "Sites illimités", "zap"),
+                 new VeloRadioOption("Entreprise", "SSO et support dédié", "lock")];
+
+        <!-- Ou des options écrites en XAML -->
+        <velo:VeloRadioGroup Label="Livraison" SelectedIndex="0">
+            <velo:VeloRadioItem Content="Standard" Description="3 à 5 jours" />
+            <velo:VeloRadioItem Content="Express" Description="Demain" />
+        </velo:VeloRadioGroup>
         """;
 
     public sealed record Plan(string Name, string Description);

@@ -57,6 +57,27 @@
             </UniformGrid>
         </Border>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="RadioGroup" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Un seul choix, en liste, en cartes ou en boutons segmentés (Appearance). Les flèches changent d'option." />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <velo:VeloRadioGroup x:Name="Plans" Label="Formule" Appearance="Cards" Columns="3" SelectedIndex="1"
+                                     Hint="Changeable à tout moment." Margin="0,0,0,24" />
+                <UniformGrid Columns="2">
+                    <velo:VeloRadioGroup Label="Livraison" SelectedIndex="0" Margin="0,0,24,0">
+                        <velo:VeloRadioItem Content="Standard" Description="3 à 5 jours" />
+                        <velo:VeloRadioItem Content="Express" Description="Demain" />
+                        <velo:VeloRadioItem Content="Retrait" IsEnabled="False" Description="Bientôt" />
+                    </velo:VeloRadioGroup>
+                    <velo:VeloRadioGroup Label="Période" Appearance="Segmented" SelectedIndex="1" VerticalAlignment="Top">
+                        <velo:VeloRadioItem Content="Jour" />
+                        <velo:VeloRadioItem Content="Semaine" />
+                        <velo:VeloRadioItem Content="Mois" />
+                    </velo:VeloRadioGroup>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Slider" />
         <Border Style="{StaticResource Stage}">
             <StackPanel MaxWidth="460" HorizontalAlignment="Left">

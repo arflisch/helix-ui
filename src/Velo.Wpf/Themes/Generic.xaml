@@ -2020,6 +2020,19 @@
         </Setter>
     </Style>
 
+    <Style TargetType="{x:Type local:VeloMenuLabel}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloMenuLabel}">
+                    <TextBlock Text="{TemplateBinding Text}" Margin="10,8,10,4" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Velo.TextSubtle}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type local:VeloMenuItem}">
         <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
         <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
@@ -3181,6 +3194,184 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- ===================================================================== RadioGroup (Default, Cards, Segmented) -->
+
+    <ControlTemplate x:Key="Velo.RadioItemDefault" TargetType="{x:Type local:VeloRadioItem}">
+        <DockPanel x:Name="Root" Background="Transparent" Margin="0,0,0,12">
+            <Grid DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Top" Margin="0,1,0,0">
+                <Ellipse x:Name="Halo" Margin="-3" StrokeThickness="3" Opacity="0"
+                         Stroke="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+                <Ellipse x:Name="Circle" Fill="{DynamicResource Velo.Surface}" Stroke="{DynamicResource Velo.BorderStrong}" StrokeThickness="1.5" />
+            </Grid>
+            <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                <ContentPresenter RecognizesAccessKey="True" />
+                <TextBlock x:Name="Description" Text="{TemplateBinding Description}" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"
+                           Foreground="{DynamicResource Velo.TextMuted}" />
+            </StackPanel>
+        </DockPanel>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Description" Value="{x:Null}">
+                <Setter TargetName="Description" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <DataTrigger Binding="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" Value="Horizontal">
+                <Setter TargetName="Root" Property="Margin" Value="0,0,24,0" />
+            </DataTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Circle" Property="Stroke" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Circle" Property="Stroke" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+                <Setter TargetName="Circle" Property="StrokeThickness" Value="5.5" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Halo" Property="Opacity" Value="0.3" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="0.5" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Velo.RadioItemCard" TargetType="{x:Type local:VeloRadioItem}">
+        <Grid x:Name="Root" Margin="0,0,12,12">
+            <Border x:Name="Card" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}" BorderThickness="1.5"
+                    CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+            <Border x:Name="Tint" Opacity="0" IsHitTestVisible="False"
+                    Background="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}"
+                    CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+            <Border x:Name="Halo" Margin="-4" BorderThickness="3" Opacity="0" IsHitTestVisible="False"
+                    BorderBrush="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}"
+                    CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+            <DockPanel Margin="16,14">
+                <Grid DockPanel.Dock="Right" Width="18" Height="18" VerticalAlignment="Top" Margin="12,0,0,0">
+                    <Ellipse x:Name="Circle" Fill="{DynamicResource Velo.Surface}" Stroke="{DynamicResource Velo.BorderStrong}" StrokeThickness="1.5" />
+                </Grid>
+                <Grid x:Name="IconBox" DockPanel.Dock="Top" Width="34" Height="34" HorizontalAlignment="Left" Margin="0,0,0,10">
+                    <Border x:Name="IconBg" CornerRadius="9" Background="{DynamicResource Velo.Surface2}" />
+                    <local:VeloIcon x:Name="Icon" Icon="{TemplateBinding Icon}" Size="18" Foreground="{DynamicResource Velo.TextMuted}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+                <StackPanel>
+                    <ContentPresenter TextElement.FontWeight="SemiBold" RecognizesAccessKey="True" />
+                    <TextBlock x:Name="Description" Text="{TemplateBinding Description}" FontSize="12.5" Margin="0,3,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Velo.TextMuted}" />
+                </StackPanel>
+            </DockPanel>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Icon" Value="{x:Null}">
+                <Setter TargetName="IconBox" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="Description" Value="{x:Null}">
+                <Setter TargetName="Description" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource Velo.BorderStrong}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Card" Property="BorderBrush" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+                <Setter TargetName="Tint" Property="Opacity" Value="0.06" />
+                <Setter TargetName="Circle" Property="Stroke" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+                <Setter TargetName="Circle" Property="StrokeThickness" Value="5.5" />
+                <Setter TargetName="Icon" Property="Foreground" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Halo" Property="Opacity" Value="0.25" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Root" Property="Opacity" Value="0.5" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Velo.RadioItemSegment" TargetType="{x:Type local:VeloRadioItem}">
+        <Border x:Name="Bg" CornerRadius="8" Background="Transparent" Padding="14,6">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface}" />
+                <Setter TargetName="Bg" Property="Effect" Value="{StaticResource Velo.ShadowSm}" />
+                <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.45" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style TargetType="{x:Type local:VeloRadioItem}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template" Value="{StaticResource Velo.RadioItemDefault}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Appearance, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" Value="Cards">
+                <Setter Property="Template" Value="{StaticResource Velo.RadioItemCard}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Appearance, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" Value="Segmented">
+                <Setter Property="Template" Value="{StaticResource Velo.RadioItemSegment}" />
+                <Setter Property="Foreground" Value="{DynamicResource Velo.TextMuted}" />
+                <Setter Property="FontWeight" Value="Medium" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <ItemsPanelTemplate x:Key="Velo.RadioPanelList">
+        <StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" />
+    </ItemsPanelTemplate>
+    <ItemsPanelTemplate x:Key="Velo.RadioPanelCards">
+        <UniformGrid Columns="{Binding Columns, RelativeSource={RelativeSource AncestorType={x:Type local:VeloRadioGroup}}}" Margin="0,0,-12,-12" />
+    </ItemsPanelTemplate>
+    <ItemsPanelTemplate x:Key="Velo.RadioPanelSegments">
+        <StackPanel Orientation="Horizontal" />
+    </ItemsPanelTemplate>
+
+    <Style TargetType="{x:Type local:VeloRadioGroup}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ItemsPanel" Value="{StaticResource Velo.RadioPanelList}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloRadioGroup}">
+                    <local:VeloField Label="{TemplateBinding Label}" Hint="{TemplateBinding Hint}">
+                        <Border x:Name="Frame" HorizontalAlignment="Stretch">
+                            <ItemsPresenter />
+                        </Border>
+                    </local:VeloField>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Appearance" Value="Segmented">
+                            <Setter TargetName="Frame" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+                            <Setter TargetName="Frame" Property="CornerRadius" Value="10" />
+                            <Setter TargetName="Frame" Property="Padding" Value="3" />
+                            <Setter TargetName="Frame" Property="HorizontalAlignment" Value="Left" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Appearance" Value="Cards">
+                <Setter Property="ItemsPanel" Value="{StaticResource Velo.RadioPanelCards}" />
+            </Trigger>
+            <Trigger Property="Appearance" Value="Segmented">
+                <Setter Property="ItemsPanel" Value="{StaticResource Velo.RadioPanelSegments}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ===================================================================== Dialog (shown by VeloHost) -->

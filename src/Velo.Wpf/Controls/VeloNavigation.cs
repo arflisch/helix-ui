@@ -829,6 +829,16 @@ public class VeloMenuSeparator : Separator
     static VeloMenuSeparator() => DefaultStyleKeyProperty.OverrideMetadata(typeof(VeloMenuSeparator), new FrameworkPropertyMetadata(typeof(VeloMenuSeparator)));
 }
 
+/// <summary>A small heading that groups menu items ("Compte", "Danger zone"…); not selectable.</summary>
+public class VeloMenuLabel : Separator
+{
+    static VeloMenuLabel() => DefaultStyleKeyProperty.OverrideMetadata(typeof(VeloMenuLabel), new FrameworkPropertyMetadata(typeof(VeloMenuLabel)));
+
+    public static readonly DependencyProperty TextProperty = VeloProperty.Register<VeloMenuLabel, string?>(nameof(Text), null);
+
+    public string? Text { get => (string?)GetValue(TextProperty); set => SetValue(TextProperty, value); }
+}
+
 /// <summary>A button that opens its <see cref="Menu"/> below it.</summary>
 public class VeloMenuButton : VeloButton
 {
