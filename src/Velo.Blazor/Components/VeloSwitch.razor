@@ -9,11 +9,37 @@
            checked="@Checked"
            disabled="@Disabled"
            aria-checked="@(Checked ? "true" : "false")"
+           aria-describedby="@(string.IsNullOrEmpty(Description) ? null : _descriptionId)"
            @onchange="OnChange" />
-    <span class="velo-switch__track"><span class="velo-switch__thumb"></span></span>
-    @if (!string.IsNullOrEmpty(Label) || ChildContent is not null)
+    <span class="velo-switch__track">
+        @if (HasText)
+        {
+            <span class="velo-switch__state is-on" aria-hidden="true">@OnText</span>
+            <span class="velo-switch__state is-off" aria-hidden="true">@OffText</span>
+        }
+        <span class="velo-switch__thumb">
+            @if (!string.IsNullOrEmpty(OnIcon))
+            {
+                <VeloIcon Name="@OnIcon" Size="IconSize" StrokeWidth="2.5" Class="velo-switch__icon is-on" />
+            }
+            @if (!string.IsNullOrEmpty(OffIcon))
+            {
+                <VeloIcon Name="@OffIcon" Size="IconSize" StrokeWidth="2.5" Class="velo-switch__icon is-off" />
+            }
+        </span>
+    </span>
+    @if (!string.IsNullOrEmpty(Label) || ChildContent is not null || !string.IsNullOrEmpty(Description))
     {
-        <span class="velo-switch__label">@Label@ChildContent</span>
+        <span class="velo-switch__text">
+            @if (!string.IsNullOrEmpty(Label) || ChildContent is not null)
+            {
+                <span class="velo-switch__label">@Label@ChildContent</span>
+            }
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <span class="velo-switch__description" id="@_descriptionId">@Description</span>
+            }
+        </span>
     }
 </label>
 
@@ -22,8 +48,32 @@
     [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
     [Parameter] public string? Label { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Second line under the label, smaller and muted; read by screen readers with the switch.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Label after the switch (End) or before it (Start). Null: VeloOptions.Defaults.Switch.LabelPosition, else End.</summary>
+    [Parameter] public VeloLabelPosition? LabelPosition { get; set; }
+
     [Parameter] public bool Disabled { get; set; }
-    [Parameter] public VeloSize Size { get; set; } = VeloSize.Md;
+
+    /// <summary>Null: the app default (Switch, then global), else Md.</summary>
+    [Parameter] public VeloSize? Size { get; set; }
+
+    /// <summary>Built-in icon shown in the thumb when ON, e.g. "check" or "moon".</summary>
+    [Parameter] public string? OnIcon { get; set; }
+
+    /// <summary>Built-in icon shown in the thumb when OFF, e.g. "x" or "sun".</summary>
+    [Parameter] public string? OffIcon { get; set; }
+
+    /// <summary>Short text inside the track when ON, e.g. "ON" or "Auto". The track grows to fit the longer text.</summary>
+    [Parameter] public string? OnText { get; set; }
+
+    /// <summary>Short text inside the track when OFF, e.g. "OFF".</summary>
+    [Parameter] public string? OffText { get; set; }
+
+    /// <summary>Minimum track width when it shows a text, e.g. "80px" so several switches line up.</summary>
+    [Parameter] public string? Width { get; set; }
 
     /// <summary>Track color when ON. Semantic name or any CSS color.</summary>
     [Parameter] public string? Color { get; set; }
@@ -40,8 +90,18 @@
     /// <summary>Corner radius of track and thumb, e.g. "6px" for a square switch.</summary>
     [Parameter] public string? Radius { get; set; }
 
+    private readonly string _descriptionId = VeloId.Next("switch-desc");
+
+    private VeloSize EffectiveSize => Size ?? Defaults.Switch.Size ?? Defaults.Size ?? VeloSize.Md;
+
+    private bool HasText => !string.IsNullOrEmpty(OnText) || !string.IsNullOrEmpty(OffText);
+
+    private int IconSize => EffectiveSize switch { VeloSize.Sm => 9, VeloSize.Lg => 13, _ => 11 };
+
     private string ClassValue => new CssBuilder("velo-switch")
-        .Add($"velo-switch--{Size.Css()}")
+        .Add($"velo-switch--{EffectiveSize.Css()}")
+        .Add("velo-switch--label-start", (LabelPosition ?? Defaults.Switch.LabelPosition) == VeloLabelPosition.Start)
+        .Add("has-text", HasText)
         .Add("is-checked", Checked)
         .Add("is-disabled", Disabled)
         .Add(Class)
@@ -53,6 +113,7 @@
         .Var("--velo-switch-thumb", ThumbColor)
         .Var("--velo-switch-thumb-on", ThumbOnColor)
         .Var("--velo-switch-radius", Radius)
+        .Var("--velo-switch-width", Width)
         .Raw(Style)
         .Build();
 

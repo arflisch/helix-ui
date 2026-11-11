@@ -17,7 +17,7 @@
                         <p class="velo-drawer__description">@Description</p>
                     }
                 </div>
-                <button type="button" class="velo-close" aria-label="Fermer" @onclick="Close"><VeloIcon Name="x" /></button>
+                <button type="button" class="velo-close" aria-label="@Texts.Close" @onclick="Close"><VeloIcon Name="x" /></button>
             </header>
             <div class="velo-drawer__body">@ChildContent</div>
             @if (Footer is not null)

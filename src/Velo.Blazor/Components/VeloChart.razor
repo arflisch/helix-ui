@@ -40,12 +40,12 @@
 
     @if (_series.Count >= 2)
     {
-        <div class="velo-chart__legend" role="group" aria-label="Séries">
+        <div class="velo-chart__legend" role="group" aria-label="@Texts.Series">
             @foreach (var series in _series)
             {
                 var hidden = _hidden.Contains(series);
                 <button type="button" class="@(new CssBuilder("velo-chart__legend-item").Add("is-off", hidden).Build())"
-                        aria-pressed="@(hidden ? "false" : "true")" title="@($"{(hidden ? "Afficher" : "Masquer")} {series.Name}")"
+                        aria-pressed="@(hidden ? "false" : "true")" title="@VeloTexts.Format(hidden ? Texts.ShowSeries : Texts.HideSeries, series.Name)"
                         @onclick="() => Toggle(series)">
                     <span class="@($"velo-chart__key velo-chart__key--{KeyShape(series)}{(series.Dashed ? " is-dashed" : "")}")" style="--_s:@ColorOf(series)"></span>
                     @series.Name
@@ -87,7 +87,7 @@
     }
     else if (model is null)
     {
-        <div class="velo-chart__empty" style="height:@Height">@EmptyText</div>
+        <div class="velo-chart__empty" style="height:@Height">@(EmptyText ?? Texts.NoData)</div>
     }
     else
     {
@@ -206,9 +206,9 @@
                 <span class="velo-chart__nav-shade" style="left:@VeloScale.Pct(_to * 100);right:0"></span>
                 <span class="velo-chart__nav-window" style="left:@VeloScale.Pct(_from * 100);width:@VeloScale.Pct((_to - _from) * 100)"></span>
                 <input type="range" class="velo-chart__nav-input" min="0" max="1000" step="1" value="@VeloScale.Num(_from * 1000)"
-                       aria-label="Début de la période affichée" @oninput="e => SetWindow(e, start: true)" />
+                       aria-label="@Texts.WindowStart" @oninput="e => SetWindow(e, start: true)" />
                 <input type="range" class="velo-chart__nav-input" min="0" max="1000" step="1" value="@VeloScale.Num(_to * 1000)"
-                       aria-label="Fin de la période affichée" @oninput="e => SetWindow(e, start: false)" />
+                       aria-label="@Texts.WindowEnd" @oninput="e => SetWindow(e, start: false)" />
             </div>
         }
     }
@@ -257,7 +257,7 @@
     /// <summary>"Tableau" button: the same data as an accessible table.</summary>
     [Parameter] public bool ShowTableToggle { get; set; } = true;
 
-    [Parameter] public string EmptyText { get; set; } = "Aucune donnée";
+    [Parameter] public string? EmptyText { get; set; }
     [Parameter] public CultureInfo? Culture { get; set; }
 
     /// <summary>Clock used by the now line (inject a fake one in tests).</summary>

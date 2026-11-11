@@ -86,15 +86,15 @@ public sealed class VeloToastService : IDisposable
 
 public static class VeloServiceCollectionExtensions
 {
-    /// <summary>Registers the Velo services (toasts). One line in Program.cs.</summary>
-    public static IServiceCollection AddVelo(this IServiceCollection services, Action<VeloToastService>? configureToasts = null)
+    /// <summary>
+    /// Registers toasts, confirmations and the app-wide <see cref="VeloOptions"/> (texts and component defaults).
+    /// </summary>
+    public static IServiceCollection AddVelo(this IServiceCollection services, Action<VeloOptions>? configure = null)
     {
-        services.AddScoped(_ =>
-        {
-            var toasts = new VeloToastService();
-            configureToasts?.Invoke(toasts);
-            return toasts;
-        });
+        var options = new VeloOptions();
+        configure?.Invoke(options);
+        services.AddSingleton(options);
+        services.AddScoped(_ => new VeloToastService { DefaultDuration = options.ToastDuration });
         services.AddScoped<VeloConfirmService>();
         return services;
     }

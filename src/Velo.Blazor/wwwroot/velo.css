@@ -424,7 +424,7 @@
     border-radius: var(--velo-switch-radius, 999px);
     background: var(--velo-switch-track, var(--velo-surface-3));
     box-shadow: inset 0 1px 2px rgb(0 0 0 / .08);
-    transition: background 200ms var(--velo-ease), box-shadow var(--velo-duration) var(--velo-ease);
+    transition: background 180ms var(--velo-ease), box-shadow var(--velo-duration) var(--velo-ease);
 }
 :where(.velo-switch__thumb) {
     position: absolute;
@@ -435,17 +435,55 @@
     border-radius: var(--velo-switch-radius, 999px);
     background: var(--velo-switch-thumb, #fff);
     box-shadow: 0 1px 3px rgb(0 0 0 / .22), 0 1px 1px rgb(0 0 0 / .06);
-    transition: transform 240ms var(--velo-ease), width 160ms var(--velo-ease), background 200ms var(--velo-ease);
+    transition: transform 180ms var(--velo-ease), width 140ms var(--velo-ease), background 180ms var(--velo-ease);
 }
 :where(.velo-switch:active:not(.is-disabled) .velo-switch__thumb) { width: calc(var(--_h) - var(--_p) * 2 + 5px); }
-:where(.velo-switch.is-checked .velo-switch__track) { background: var(--velo-switch-track-on, var(--_c)); }
-:where(.velo-switch.is-checked .velo-switch__thumb) {
+/* The look follows the native checkbox, which the browser flips instantly on click:
+   no wait for the server round trip (Blazor Server) before the thumb starts moving. */
+:where(.velo-switch__input:checked + .velo-switch__track) { background: var(--velo-switch-track-on, var(--_c)); }
+:where(.velo-switch__input:checked + .velo-switch__track .velo-switch__thumb) {
     transform: translateX(calc(var(--_w) - var(--_h)));
     background: var(--velo-switch-thumb-on, var(--velo-switch-thumb, #fff));
 }
-:where(.velo-switch.is-checked:active:not(.is-disabled) .velo-switch__thumb) { transform: translateX(calc(var(--_w) - var(--_h) - 5px)); }
+:where(.velo-switch:active:not(.is-disabled) .velo-switch__input:checked + .velo-switch__track .velo-switch__thumb) { transform: translateX(calc(var(--_w) - var(--_h) - 5px)); }
 :where(.velo-switch__input:focus-visible + .velo-switch__track) { box-shadow: 0 0 0 3px color-mix(in oklab, var(--_c) 28%, transparent); }
 :where(.velo-switch.is-disabled) { opacity: .5; cursor: not-allowed; }
+
+/* Label before the switch, and the label + description block. */
+:where(.velo-switch--label-start) { flex-direction: row-reverse; justify-content: flex-end; }
+:where(.velo-switch__text) { display: grid; gap: 2px; min-width: 0; }
+:where(.velo-switch__description) { font-size: 12.5px; line-height: 1.4; color: var(--velo-text-muted); }
+
+/* Icons in the thumb: the one matching the state shows, following the native checkbox (instant). */
+:where(.velo-switch__thumb) { display: grid; place-items: center; }
+:where(.velo-switch__icon) { grid-area: 1 / 1; opacity: 0; transition: opacity 120ms var(--velo-ease); color: var(--velo-text-muted); }
+:where(.velo-switch__icon.is-on) { color: var(--_c); }
+:where(.velo-switch__input:not(:checked) + .velo-switch__track .velo-switch__icon.is-off),
+:where(.velo-switch__input:checked + .velo-switch__track .velo-switch__icon.is-on) { opacity: 1; }
+
+/* Text in the track: the track sizes itself to the longer text; ON text left of the thumb, OFF text right of it. */
+:where(.velo-switch.has-text .velo-switch__track) { display: inline-grid; width: auto; min-width: var(--velo-switch-width, calc(var(--_h) * 2.4)); }
+:where(.velo-switch__state) {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    font-size: calc(var(--_h) * .45);
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 120ms var(--velo-ease);
+    pointer-events: none;
+}
+:where(.velo-switch__state.is-on) { padding-inline: calc(var(--_h) * .4) calc(var(--_h) + 2px); color: var(--velo-switch-on-color, #fff); }
+:where(.velo-switch__state.is-off) { padding-inline: calc(var(--_h) + 2px) calc(var(--_h) * .4); justify-content: flex-end; color: var(--velo-text-muted); }
+:where(.velo-switch__input:not(:checked) + .velo-switch__track .velo-switch__state.is-off),
+:where(.velo-switch__input:checked + .velo-switch__track .velo-switch__state.is-on) { opacity: 1; }
+/* The width depends on the text: move the thumb with left instead of a fixed translation. */
+:where(.velo-switch.has-text .velo-switch__thumb) { transition: left 180ms var(--velo-ease), width 140ms var(--velo-ease), background 180ms var(--velo-ease); }
+:where(.velo-switch.has-text .velo-switch__input:checked + .velo-switch__track .velo-switch__thumb) { transform: none; left: calc(100% - var(--_h) + var(--_p)); }
+:where(.velo-switch.has-text:active:not(.is-disabled) .velo-switch__input:checked + .velo-switch__track .velo-switch__thumb) { transform: translateX(-5px); }
 
 /* ---------- Slider ------------------------------------------------------- */
 

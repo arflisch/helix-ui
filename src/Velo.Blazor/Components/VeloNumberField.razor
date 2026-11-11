@@ -2,18 +2,15 @@
 @inherits VeloComponentBase
 @using System.Globalization
 
-<div class="@(new CssBuilder("velo-field").Add("is-invalid", !string.IsNullOrEmpty(Error)).Add("is-disabled", Disabled).Add(Class).Build())" style="@StyleValue">
-    @if (!string.IsNullOrEmpty(Label))
-    {
-        <label class="velo-field__label" for="@_id">@Label</label>
-    }
+<VeloFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
     <div class="velo-input velo-number">
-        @if (ShowSteppers)
+        @if (Steppers)
         {
-            <button type="button" class="velo-number__step" tabindex="-1" aria-label="Diminuer" disabled="@(Disabled || AtMin)" @onclick="() => StepBy(-1)">
+            <button type="button" class="velo-number__step" tabindex="-1" aria-label="@Texts.Decrease" disabled="@(Disabled || AtMin)" @onclick="() => StepBy(-1)">
                 <VeloIcon Name="minus" Size="14" />
             </button>
         }
+        @Prefix
         <input @attributes="Attributes"
                id="@_id"
                type="number"
@@ -25,30 +22,52 @@
                step="@Inv(Step)"
                placeholder="@Placeholder"
                disabled="@Disabled"
+               required="@Required"
                aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")"
+               aria-describedby="@VeloFieldFrame.DescribedBy(_id, Hint, Error)"
                @onchange="OnChange" />
         @if (!string.IsNullOrEmpty(Unit))
         {
             <span class="velo-input__affix velo-number__unit">@Unit</span>
         }
-        @if (ShowSteppers)
+        @Suffix
+        @if (Steppers)
         {
-            <button type="button" class="velo-number__step" tabindex="-1" aria-label="Augmenter" disabled="@(Disabled || AtMax)" @onclick="() => StepBy(1)">
+            <button type="button" class="velo-number__step" tabindex="-1" aria-label="@Texts.Increase" disabled="@(Disabled || AtMax)" @onclick="() => StepBy(1)">
                 <VeloIcon Name="plus" Size="14" />
             </button>
         }
     </div>
-    @if (!string.IsNullOrEmpty(Error))
-    {
-        <p class="velo-field__error">@Error</p>
-    }
-    else if (!string.IsNullOrEmpty(Hint))
-    {
-        <p class="velo-field__hint">@Hint</p>
-    }
-</div>
+</VeloFieldFrame>
 
 @code {
+    /// <summary>Content at the start of the input (icon, sign, currency…).</summary>
+    [Parameter] public RenderFragment? Prefix { get; set; }
+
+    /// <summary>Content at the end of the input (unit, button…).</summary>
+    [Parameter] public RenderFragment? Suffix { get; set; }
+
+    /// <summary>Help text under the field, announced with it.</summary>
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Shows the field in error state with this message (replaces the hint).</summary>
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Required { get; set; }
+
+    /// <summary>Focus color. Null: VeloOptions.Defaults.Field.Color, else primary.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private string? FieldStyle => new StyleBuilder()
+        .Color("input", Color)
+        .Var("--velo-input-radius", Radius)
+        .Var("--velo-input-bg", Background)
+        .Var("--velo-input-border", BorderColor)
+        .Raw(Style)
+        .Build();
+
     [Parameter] public double? Value { get; set; }
     [Parameter] public EventCallback<double?> ValueChanged { get; set; }
     [Parameter] public double? Min { get; set; }
@@ -62,12 +81,13 @@
 
     [Parameter] public string? Label { get; set; }
     [Parameter] public string? Unit { get; set; }
+
     [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public string? Hint { get; set; }
-    [Parameter] public string? Error { get; set; }
-    [Parameter] public bool ShowSteppers { get; set; } = true;
+    /// <summary>The − / + buttons. Null: VeloOptions.Defaults.Field.ShowSteppers, else true.</summary>
+    [Parameter] public bool? ShowSteppers { get; set; }
+
+    private bool Steppers => ShowSteppers ?? Defaults.Field.ShowSteppers ?? true;
     [Parameter] public bool Disabled { get; set; }
-    [Parameter] public string? Color { get; set; }
 
     private readonly string _id = VeloId.Next("number");
 
@@ -76,7 +96,6 @@
 
     private string? Raw => Value?.ToString(CultureInfo.InvariantCulture);
 
-    private string? StyleValue => new StyleBuilder().Color("input", Color).Raw(Style).Build();
 
     private static string? Inv(double? value) => value?.ToString(CultureInfo.InvariantCulture);
 

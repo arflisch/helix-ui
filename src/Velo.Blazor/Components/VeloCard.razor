@@ -45,7 +45,7 @@
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>Shadow instead of border.</summary>
-    [Parameter] public bool Elevated { get; set; }
+    [Parameter] public bool? Elevated { get; set; }
 
     /// <summary>Lifts on hover.</summary>
     [Parameter] public bool Hoverable { get; set; }
@@ -56,7 +56,7 @@
     [Parameter] public string? BorderColor { get; set; }
 
     private string ClassValue => new CssBuilder("velo-card")
-        .Add("velo-card--elevated", Elevated)
+        .Add("velo-card--elevated", Elevated ?? Defaults.Card.Elevated ?? false)
         .Add("is-hoverable", Hoverable)
         .Add(Class)
         .Build();

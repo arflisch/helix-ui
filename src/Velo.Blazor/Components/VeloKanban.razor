@@ -46,7 +46,7 @@
                              draggable="true"
                              data-velo-drag
                              tabindex="0"
-                             aria-roledescription="carte déplaçable"
+                             aria-roledescription="@Texts.DraggableCard"
                              @ondragstart="() => DragStart(card, column.Key)"
                              @ondragenter="() => EnterCard(column.Key, index)"
                              @ondragenter:stopPropagation="true"
@@ -70,7 +70,7 @@
                 }
                 @if (count == 0)
                 {
-                    <p class="velo-kanban__empty">@EmptyText</p>
+                    <p class="velo-kanban__empty">@(EmptyText ?? Texts.DropCardHere)</p>
                 }
             </div>
         </section>
@@ -99,7 +99,7 @@
     [Parameter] public Func<TItem, string, bool>? CanMove { get; set; }
 
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
-    [Parameter] public string EmptyText { get; set; } = "Déposez une carte ici";
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>Column width, e.g. "300px".</summary>
     [Parameter] public string? ColumnWidth { get; set; }
@@ -215,16 +215,16 @@
             case "Enter" when _grabbed is null:
                 _grabbed = card;
                 _grabOrigin = (column, index);
-                _announcement = "Carte saisie. Flèches pour déplacer, Entrée pour déposer, Échap pour annuler.";
+                _announcement = Texts.CardGrabbed;
                 break;
             case "Enter" or " " when _grabbed is not null:
-                _announcement = $"Carte déposée dans {Columns.FirstOrDefault(c => c.Key == column)?.Title}, position {index + 1}.";
+                _announcement = VeloTexts.Format(Texts.CardDroppedIn, Columns.FirstOrDefault(c => c.Key == column)?.Title, index + 1);
                 _grabbed = default;
                 _grabOrigin = null;
                 break;
             case "Escape" when _grabbed is not null && _grabOrigin is { } origin:
                 await MoveTo(card, column, origin.Column, origin.Index);
-                _announcement = "Déplacement annulé.";
+                _announcement = Texts.MoveCancelled;
                 _grabbed = default;
                 _grabOrigin = null;
                 break;
@@ -245,7 +245,7 @@
                 if (to != index)
                 {
                     await MoveTo(card, column, column, to);
-                    _announcement = $"Position {to + 1} sur {count}.";
+                    _announcement = VeloTexts.Format(Texts.PositionAnnouncement, to + 1, count);
                 }
 
                 break;

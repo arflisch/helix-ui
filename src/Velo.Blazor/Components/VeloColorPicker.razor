@@ -25,7 +25,7 @@
             <div class="velo-select__backdrop" @onclick="Close"></div>
             <div class="velo-color__panel" role="dialog" aria-label="Choisir une couleur">
                 <div class="velo-color__area" @ref="_area" tabindex="0" role="slider"
-                     aria-label="Saturation et luminosité" aria-valuetext="@($"Saturation {_s * 100:0} %, luminosité {_v * 100:0} %")"
+                     aria-label="@Texts.SaturationBrightness" aria-valuetext="@VeloTexts.Format(Texts.SaturationBrightnessValue, Math.Round(_s * 100), Math.Round(_v * 100))"
                      style="--_hue:@hueColor">
                     <span class="velo-color__area-thumb" style="left:@VeloScale.Pct(_s * 100);top:@VeloScale.Pct((1 - _v) * 100);background:@opaque"></span>
                 </div>
@@ -34,28 +34,28 @@
                         <input type="range" class="velo-color__hue" min="0" max="360" step="1" value="@Inv(_h)" aria-label="Teinte" @oninput="OnHue" />
                         @if (ShowAlpha)
                         {
-                            <input type="range" class="velo-color__alpha" min="0" max="100" step="1" value="@Inv(_a * 100)" aria-label="Opacité"
+                            <input type="range" class="velo-color__alpha" min="0" max="100" step="1" value="@Inv(_a * 100)" aria-label="@Texts.Opacity"
                                    style="--_v:@opaque" @oninput="OnAlpha" />
                         }
                     </div>
                     <span class="velo-color__preview" style="--_v:@(Value ?? opaque)"></span>
                 </div>
                 <div class="velo-color__inputs">
-                    <input class="velo-color__hex-input" value="@(Value ?? opaque)" aria-label="Code hexadécimal" spellcheck="false" maxlength="9" @onchange="OnHexInput" />
+                    <input class="velo-color__hex-input" value="@(Value ?? opaque)" aria-label="@Texts.HexCode" spellcheck="false" maxlength="9" @onchange="OnHexInput" />
                     @if (ShowAlpha)
                     {
                         <span class="velo-color__alpha-text">@Inv(Math.Round(_a * 100)) %</span>
                     }
                     @if (_eyeDropper)
                     {
-                        <button type="button" class="velo-close" aria-label="Prendre une couleur à l'écran" title="Pipette" @onclick="PickFromScreen">
+                        <button type="button" class="velo-close" aria-label="@Texts.PickFromScreen" title="@Texts.Eyedropper" @onclick="PickFromScreen">
                             <VeloIcon Svg="<path d='m2 22 1-1h3l9-9M3 21v-3l9-9M15 6l3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3z'/>" Size="15" />
                         </button>
                     }
                 </div>
                 @if (Swatches.Count > 0)
                 {
-                    <div class="velo-color__swatches" role="group" aria-label="Couleurs proposées">
+                    <div class="velo-color__swatches" role="group" aria-label="@Texts.SuggestedColors">
                         @foreach (var swatch in Swatches)
                         {
                             <button type="button" class="@(new CssBuilder("velo-color__preset").Add("is-active", string.Equals(swatch, Value, StringComparison.OrdinalIgnoreCase)).Build())"

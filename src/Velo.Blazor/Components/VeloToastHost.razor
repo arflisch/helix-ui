@@ -1,4 +1,5 @@
 @namespace Velo.Blazor
+@inherits VeloComponentBase
 @implements IDisposable
 @inject VeloToastService Toasts
 
@@ -15,7 +16,7 @@
                 }
                 <p class="velo-toast__message">@toast.Message</p>
             </div>
-            <button type="button" class="velo-close" aria-label="Fermer" @onclick="() => Toasts.Dismiss(toast.Id)">
+            <button type="button" class="velo-close" aria-label="@Texts.Close" @onclick="() => Toasts.Dismiss(toast.Id)">
                 <VeloIcon Name="x" Size="14" />
             </button>
             @if (toast.Duration > TimeSpan.Zero)

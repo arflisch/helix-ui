@@ -10,7 +10,7 @@
      class="@(new CssBuilder("velo-rating").Add($"velo-rating--{Size.Css()}").Add("is-readonly", ReadOnly).Add("is-disabled", Disabled).Add(Class).Build())"
      style="@(new StyleBuilder().Color("rating", Color).Raw(Style).Build())"
      role="@(ReadOnly ? "img" : "radiogroup")"
-     aria-label="@(ReadOnly ? $"{Label ?? "Note"} : {Value.ToString("0.#", EffectiveCulture)} sur {Max}" : Label ?? "Note")"
+     aria-label="@(ReadOnly ? $"{Label ?? Texts.Rating}: {VeloTexts.Format(Texts.PositionOf, Value.ToString("0.#", EffectiveCulture), Max)}" : Label ?? Texts.Rating)"
      @onmouseleave="() => _hover = null">
     @for (var i = 1; i <= Max; i++)
     {
@@ -25,7 +25,7 @@
         {
             <label class="velo-rating__item" title="@title" @onmouseenter="() => _hover = index">
                 <input type="radio" class="velo-sr-input velo-rating__input" name="@_name" checked="@(Value == index)" disabled="@Disabled"
-                       aria-label="@(title ?? $"{index} sur {Max}")"
+                       aria-label="@(title ?? VeloTexts.Format(Texts.PositionOf, index, Max))"
                        @onchange="() => Set(index)" @onclick="() => ClearIfSame(index)" />
                 @Icon(fill)
             </label>

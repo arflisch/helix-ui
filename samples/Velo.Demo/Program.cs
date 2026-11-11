@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddVelo();
+builder.Services.AddVelo(o => o.Texts = VeloTexts.French); // the demo site is in French
 builder.Services.AddScoped<DemoThemeState>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<EmployeeApi>();

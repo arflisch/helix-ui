@@ -1,4 +1,5 @@
 @namespace Velo.Blazor
+@inherits VeloComponentBase
 @implements IDisposable
 @inject VeloConfirmService Confirm
 
@@ -14,8 +15,8 @@
         }
     </ChildContent>
     <Footer>
-        <VeloButton Variant="VeloVariant.Ghost" Color="neutral" OnClick="() => Confirm.Resolve(false)">@current?.CancelText</VeloButton>
-        <VeloButton Color="@(current?.Danger == true ? "danger" : null)" OnClick="() => Confirm.Resolve(true)">@current?.ConfirmText</VeloButton>
+        <VeloButton Variant="VeloVariant.Ghost" Color="neutral" OnClick="() => Confirm.Resolve(false)">@(current?.CancelText ?? Texts.Cancel)</VeloButton>
+        <VeloButton Color="@(current?.Danger == true ? "danger" : null)" OnClick="() => Confirm.Resolve(true)">@(current?.ConfirmText ?? Texts.Confirm)</VeloButton>
     </Footer>
 </VeloDialog>
 

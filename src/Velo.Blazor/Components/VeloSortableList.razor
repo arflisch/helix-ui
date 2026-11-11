@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 
 <ul @attributes="Attributes" class="@(new CssBuilder("velo-sortable").Add("is-dragging", _dragIndex is not null).Add(Class).Build())" style="@Style"
-    aria-label="@AriaLabel">
+    aria-label="@(AriaLabel ?? Texts.SortableListHelp)">
     @for (var i = 0; i < Items.Count; i++)
     {
         var index = i;
@@ -15,7 +15,7 @@
             draggable="@(Disabled ? "false" : "true")"
             data-velo-drag
             tabindex="0"
-            aria-roledescription="élément déplaçable"
+            aria-roledescription="@Texts.DraggableItem"
             aria-pressed="@(_grabbed == index ? "true" : "false")"
             @ondragstart="() => DragStart(index)"
             @ondragenter="() => DragEnter(index)"
@@ -56,7 +56,7 @@
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
     [Parameter] public bool ShowHandle { get; set; } = true;
     [Parameter] public bool Disabled { get; set; }
-    [Parameter] public string AriaLabel { get; set; } = "Liste réordonnable. Entrée pour saisir, flèches pour déplacer, Entrée pour déposer.";
+    [Parameter] public string? AriaLabel { get; set; }
 
     private int? _dragIndex;
     private int? _dropIndex;
@@ -140,10 +140,10 @@
             case "Enter" when _grabbed is null:
                 _grabbed = index;
                 _beforeGrab = Items.ToList();
-                _announcement = $"Élément {index + 1} saisi. Flèches pour déplacer, Entrée pour déposer, Échap pour annuler.";
+                _announcement = VeloTexts.Format(Texts.ItemGrabbed, index + 1);
                 break;
             case "Enter" or " ":
-                _announcement = $"Déposé en position {_grabbed + 1}.";
+                _announcement = VeloTexts.Format(Texts.DroppedAt, _grabbed + 1);
                 _grabbed = null;
                 _beforeGrab = null;
                 break;
@@ -154,7 +154,7 @@
                     await ItemsChanged.InvokeAsync(_beforeGrab);
                 }
 
-                _announcement = "Déplacement annulé.";
+                _announcement = Texts.MoveCancelled;
                 _grabbed = null;
                 break;
             case "ArrowUp" or "ArrowDown" when _grabbed is { } grabbed:
@@ -163,7 +163,7 @@
                 {
                     await Move(grabbed, target);
                     _grabbed = target;
-                    _announcement = $"Position {target + 1} sur {Items.Count}.";
+                    _announcement = VeloTexts.Format(Texts.PositionAnnouncement, target + 1, Items.Count);
                 }
 
                 break;

@@ -42,7 +42,7 @@
     @if (Limit is { } limit && rows.Count > limit)
     {
         <button type="button" class="velo-barlist__more" aria-expanded="@(_expanded ? "true" : "false")" @onclick="() => _expanded = !_expanded">
-            @(_expanded ? "Réduire" : $"Voir tout ({rows.Count})")
+            @(_expanded ? Texts.ShowLess : VeloTexts.Format(Texts.ShowAll, rows.Count))
             <VeloIcon Name="chevron-down" Size="14" Class="@(_expanded ? "is-flipped" : null)" />
         </button>
     }

@@ -9,12 +9,12 @@
      style="@(new StyleBuilder().Color("pagination", Color).Raw(Style).Build())" aria-label="@AriaLabel">
     @if (ShowInfo && TotalItems is { } total)
     {
-        <span class="velo-pagination__info">@((Page - 1) * PageSize + (total == 0 ? 0 : 1))–@Math.Min(total, Page * PageSize) sur @total</span>
+        <span class="velo-pagination__info">@(VeloTexts.Format(Texts.RangeOf, (Page - 1) * PageSize + (total == 0 ? 0 : 1), Math.Min(total, Page * PageSize), total))</span>
     }
     <div class="velo-pagination__pages">
-        <button type="button" class="velo-pagination__nav" disabled="@(Page <= 1)" aria-label="Page précédente" @onclick="() => Go(Page - 1)">
+        <button type="button" class="velo-pagination__nav" disabled="@(Page <= 1)" aria-label="@Texts.PreviousPage" @onclick="() => Go(Page - 1)">
             <VeloIcon Name="chevron-left" Size="15" />
-            @if (ShowLabels) { <span>Précédent</span> }
+            @if (ShowLabels) { <span>@Texts.Previous</span> }
         </button>
         @if (Compact)
         {
@@ -32,12 +32,12 @@
                 {
                     var number = p + 1;
                     <button type="button" class="@(new CssBuilder("velo-pagination__page").Add("is-active", number == Page).Build())"
-                            aria-current="@(number == Page ? "page" : null)" aria-label="@($"Page {number}")" @onclick="() => Go(number)">@number</button>
+                            aria-current="@(number == Page ? "page" : null)" aria-label="@VeloTexts.Format(Texts.PageNumber, number)" @onclick="() => Go(number)">@number</button>
                 }
             }
         }
-        <button type="button" class="velo-pagination__nav" disabled="@(Page >= count)" aria-label="Page suivante" @onclick="() => Go(Page + 1)">
-            @if (ShowLabels) { <span>Suivant</span> }
+        <button type="button" class="velo-pagination__nav" disabled="@(Page >= count)" aria-label="@Texts.NextPage" @onclick="() => Go(Page + 1)">
+            @if (ShowLabels) { <span>@Texts.Next</span> }
             <VeloIcon Name="chevron-right" Size="15" />
         </button>
     </div>
@@ -53,7 +53,7 @@
     [Parameter] public int? TotalItems { get; set; }
     [Parameter] public int PageSize { get; set; } = 10;
 
-    /// <summary>"11–20 sur 87" on the left (needs TotalItems).</summary>
+    /// <summary>"11–20 of 87" on the left (needs TotalItems).</summary>
     [Parameter] public bool ShowInfo { get; set; }
 
     /// <summary>"Précédent" / "Suivant" next to the arrows.</summary>

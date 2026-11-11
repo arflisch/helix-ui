@@ -7,7 +7,7 @@
 }
 
 <div @attributes="Attributes" class="@(new CssBuilder("velo-carousel__slide").Add(Class).Build())" style="@Style"
-     role="group" aria-roledescription="diapositive" aria-label="@($"{index + 1} sur {Carousel?.Count}{(string.IsNullOrEmpty(Label) ? "" : $" : {Label}")}")">
+     role="group" aria-roledescription="@Texts.SlideRole" aria-label="@AriaLabelText(index)">
     @ChildContent
 </div>
 
@@ -16,8 +16,14 @@
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Name read by screen readers ("2 sur 5 : Usine de Lyon").</summary>
+    /// <summary>Name read by screen readers ("2 of 5: Lyon plant").</summary>
     [Parameter] public string? Label { get; set; }
+
+    private string AriaLabelText(int index)
+    {
+        var position = VeloTexts.Format(Texts.PositionOf, index + 1, Carousel?.Count);
+        return string.IsNullOrEmpty(Label) ? position : $"{position}: {Label}";
+    }
 
     protected override void OnInitialized()
     {

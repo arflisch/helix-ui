@@ -64,13 +64,12 @@
     [
         new("Value", "string?", null, "Valeur, à utiliser avec @bind-Value (mise à jour à chaque frappe)."),
         new("Label / Placeholder / Hint", "string", null, "Textes du champ."),
-        new("Error", "string", null, "Passe le champ en erreur avec ce message."),
         new("Icon", "string", null, "Icône au début du champ."),
         new("Prefix / Suffix", "RenderFragment", null, "Contenu libre avant / après la saisie."),
         new("Clearable", "bool", null, "Bouton pour vider le champ."),
-        new("Color", "string", "--velo-input-color", "Couleur de la bordure et de l'anneau au focus."),
-        new("Radius", "string", "--velo-input-radius", "Arrondi."),
-        new("Background", "string", "--velo-input-bg", "Fond du champ."),
-        new("BorderColor", "string", "--velo-input-border", "Bordure au repos."),
+        new("Prefix / Suffix", "RenderFragment", null, "Contenu au début / à la fin du champ (icône, signe, unité…). Même slots sur tous les champs."),
+        new("Hint / Error", "string", null, "Aide sous le champ, ou erreur qui la remplace ; reliées au champ pour les lecteurs d'écran (aria-describedby)."),
+        new("Required", "bool", null, "Astérisque après le libellé et attribut required."),
+        new("Color / Radius / Background / BorderColor", "string", "--velo-input-*", "Même apparence sur tous les champs ; valeurs par défaut via Defaults.Field."),
     ];
 }

@@ -146,5 +146,5 @@
     }
 
     private string FormatValue(double? value) =>
-        value is null ? "Aucune donnée" : value.Value.ToString(Format, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");
+        value is null ? Texts.NoData : value.Value.ToString(Format, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");
 }

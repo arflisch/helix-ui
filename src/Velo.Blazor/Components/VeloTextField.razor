@@ -1,13 +1,7 @@
 @namespace Velo.Blazor
 @inherits VeloComponentBase
 
-<div class="@ClassValue" style="@StyleValue">
-    @if (!string.IsNullOrEmpty(Label))
-    {
-        <label class="velo-field__label" for="@_id">
-            @Label@if (Required) { <span class="velo-field__required">*</span> }
-        </label>
-    }
+<VeloFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
     <div class="velo-input">
         @if (!string.IsNullOrEmpty(Icon))
         {
@@ -23,70 +17,65 @@
                disabled="@Disabled"
                readonly="@ReadOnly"
                required="@Required"
-               aria-invalid="@(HasError ? "true" : null)"
+               aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")"
+               aria-describedby="@VeloFieldFrame.DescribedBy(_id, Hint, Error)"
                @oninput="OnInput" />
-        @if (Clearable && !string.IsNullOrEmpty(Value) && !Disabled && !ReadOnly)
+        @if ((Clearable ?? Defaults.Field.Clearable ?? false) && !string.IsNullOrEmpty(Value) && !Disabled && !ReadOnly)
         {
-            <button type="button" class="velo-close velo-input__clear" aria-label="Effacer" @onclick="Clear">
+            <button type="button" class="velo-close velo-input__clear" aria-label="@Texts.Clear" @onclick="Clear">
                 <VeloIcon Name="x" Size="14" />
             </button>
         }
         @Suffix
     </div>
-    @if (HasError)
-    {
-        <p class="velo-field__error">@Error</p>
-    }
-    else if (!string.IsNullOrEmpty(Hint))
-    {
-        <p class="velo-field__hint">@Hint</p>
-    }
-</div>
+</VeloFieldFrame>
 
 @code {
-    [Parameter] public string? Value { get; set; }
-    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    /// <summary>Content at the start of the input (icon, sign, currency…).</summary>
+    [Parameter] public RenderFragment? Prefix { get; set; }
 
-    [Parameter] public string? Label { get; set; }
-    [Parameter] public string? Placeholder { get; set; }
+    /// <summary>Content at the end of the input (unit, button…).</summary>
+    [Parameter] public RenderFragment? Suffix { get; set; }
+
+    /// <summary>Help text under the field, announced with it.</summary>
     [Parameter] public string? Hint { get; set; }
 
-    /// <summary>Shows the field in error state with this message.</summary>
+    /// <summary>Shows the field in error state with this message (replaces the hint).</summary>
     [Parameter] public string? Error { get; set; }
-
-    /// <summary>Built-in icon name displayed at the start.</summary>
-    [Parameter] public string? Icon { get; set; }
-
-    [Parameter] public RenderFragment? Prefix { get; set; }
-    [Parameter] public RenderFragment? Suffix { get; set; }
-    [Parameter] public string Type { get; set; } = "text";
-    [Parameter] public bool Clearable { get; set; }
-    [Parameter] public bool Disabled { get; set; }
-    [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public bool Required { get; set; }
 
-    /// <summary>Focus color.</summary>
+    /// <summary>Focus color. Null: VeloOptions.Defaults.Field.Color, else primary.</summary>
     [Parameter] public string? Color { get; set; }
     [Parameter] public string? Radius { get; set; }
     [Parameter] public string? Background { get; set; }
     [Parameter] public string? BorderColor { get; set; }
 
-    private readonly string _id = VeloId.Next("input");
-    private bool HasError => !string.IsNullOrEmpty(Error);
-
-    private string ClassValue => new CssBuilder("velo-field")
-        .Add("is-invalid", HasError)
-        .Add("is-disabled", Disabled)
-        .Add(Class)
-        .Build();
-
-    private string? StyleValue => new StyleBuilder()
+    private string? FieldStyle => new StyleBuilder()
         .Color("input", Color)
         .Var("--velo-input-radius", Radius)
         .Var("--velo-input-bg", Background)
         .Var("--velo-input-border", BorderColor)
         .Raw(Style)
         .Build();
+
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+
+
+    /// <summary>Built-in icon name displayed at the start.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    [Parameter] public string Type { get; set; } = "text";
+    /// <summary>The × button. Null: VeloOptions.Defaults.Field.Clearable, else false.</summary>
+    [Parameter] public bool? Clearable { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+
+    private readonly string _id = VeloId.Next("input");
 
     private Task OnInput(ChangeEventArgs e)
     {

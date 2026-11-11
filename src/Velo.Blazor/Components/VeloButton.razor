@@ -27,7 +27,8 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>Solid, Soft, Outline or Ghost.</summary>
-    [Parameter] public VeloVariant Variant { get; set; } = VeloVariant.Solid;
+    /// <summary>Null: VeloOptions.Defaults.Button.Variant, else Solid.</summary>
+    [Parameter] public VeloVariant? Variant { get; set; }
 
     /// <summary>"primary", "neutral", "success", "warning", "danger", "info" or any CSS color.</summary>
     [Parameter] public string? Color { get; set; }
@@ -38,7 +39,11 @@
     /// <summary>Corner radius, e.g. "999px" for a pill.</summary>
     [Parameter] public string? Radius { get; set; }
 
-    [Parameter] public VeloSize Size { get; set; } = VeloSize.Md;
+    /// <summary>Null: the app default (Button, then global), else Md.</summary>
+    [Parameter] public VeloSize? Size { get; set; }
+
+    private VeloVariant EffectiveVariant => Variant ?? Defaults.Button.Variant ?? VeloVariant.Solid;
+    private VeloSize EffectiveSize => Size ?? Defaults.Button.Size ?? Defaults.Size ?? VeloSize.Md;
     [Parameter] public string? Icon { get; set; }
     [Parameter] public string? IconEnd { get; set; }
     [Parameter] public bool Block { get; set; }
@@ -47,11 +52,11 @@
     [Parameter] public string Type { get; set; } = "button";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    private int IconSize => Size switch { VeloSize.Sm => 14, VeloSize.Lg => 18, _ => 16 };
+    private int IconSize => EffectiveSize switch { VeloSize.Sm => 14, VeloSize.Lg => 18, _ => 16 };
 
     private string ClassValue => new CssBuilder("velo-btn")
-        .Add($"velo-btn--{Variant.Css()}")
-        .Add($"velo-btn--{Size.Css()}")
+        .Add($"velo-btn--{EffectiveVariant.Css()}")
+        .Add($"velo-btn--{EffectiveSize.Css()}")
         .Add("velo-btn--block", Block)
         .Add("velo-btn--icon-only", ChildContent is null && (Icon is not null || IconEnd is not null))
         .Add("is-loading", Loading)

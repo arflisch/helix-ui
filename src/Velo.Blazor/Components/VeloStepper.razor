@@ -2,7 +2,7 @@
 @inherits VeloComponentBase
 
 <ol @attributes="Attributes" class="@(new CssBuilder("velo-stepper").Add(Vertical ? "velo-stepper--vertical" : "velo-stepper--horizontal").Add(Class).Build())"
-    style="@(new StyleBuilder().Color("stepper", Color).Raw(Style).Build())" aria-label="@AriaLabel">
+    style="@(new StyleBuilder().Color("stepper", Color).Raw(Style).Build())" aria-label="@(AriaLabel ?? Texts.Steps)">
     @for (var i = 0; i < Steps.Count; i++)
     {
         var index = i;
@@ -39,7 +39,7 @@
     [Parameter] public bool AllowSkip { get; set; }
     [Parameter] public bool Vertical { get; set; }
     [Parameter] public string? Color { get; set; }
-    [Parameter] public string AriaLabel { get; set; } = "Étapes";
+    [Parameter] public string? AriaLabel { get; set; }
 
     private async Task Go(int index)
     {
@@ -47,7 +47,7 @@
         await ActiveIndexChanged.InvokeAsync(index);
     }
 
-    private static RenderFragment Body(int index, VeloStep step, string state) => __builder =>
+    private RenderFragment Body(int index, VeloStep step, string state) => __builder =>
     {
         <span class="velo-stepper__marker" aria-hidden="true">
             @if (state == "done")
@@ -67,13 +67,13 @@
             <span class="velo-stepper__title">@step.Title</span>
             @if (state == "error")
             {
-                <span class="velo-stepper__description velo-stepper__error">Erreur à corriger</span>
+                <span class="velo-stepper__description velo-stepper__error">@Texts.StepErrorHint</span>
             }
             else if (!string.IsNullOrEmpty(step.Description))
             {
                 <span class="velo-stepper__description">@step.Description</span>
             }
-            <span class="velo-sr-only">@(state switch { "done" => "(terminée)", "current" => "(en cours)", "error" => "(en erreur)", _ => "" })</span>
+            <span class="velo-sr-only">@(state switch { "done" => Texts.StepDone, "current" => Texts.StepCurrent, "error" => Texts.StepError, _ => "" })</span>
         </span>
     };
 }

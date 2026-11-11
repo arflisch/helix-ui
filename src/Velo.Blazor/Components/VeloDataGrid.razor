@@ -22,8 +22,8 @@
         <div class="velo-grid__toolbar">
             @if (Searchable)
             {
-                <VeloTextField Class="velo-grid__search" Icon="search" Clearable="true" Placeholder="@SearchPlaceholder"
-                               Value="@_search" ValueChanged="OnSearch" aria-label="@SearchPlaceholder" />
+                <VeloTextField Class="velo-grid__search" Icon="search" Clearable="true" Placeholder="@(SearchPlaceholder ?? Texts.Search)"
+                               Value="@_search" ValueChanged="OnSearch" aria-label="@(SearchPlaceholder ?? Texts.Search)" />
             }
             <div class="velo-grid__toolbar-end">
                 @Toolbar
@@ -35,8 +35,8 @@
                         @if (_chooserOpen)
                         {
                             <div class="velo-select__backdrop" @onclick="() => _chooserOpen = false"></div>
-                            <div class="velo-grid__chooser-menu" role="dialog" aria-label="Colonnes affichées">
-                                <p class="velo-grid__chooser-title">Colonnes affichées</p>
+                            <div class="velo-grid__chooser-menu" role="dialog" aria-label="@Texts.VisibleColumns">
+                                <p class="velo-grid__chooser-title">@Texts.VisibleColumns</p>
                                 @foreach (var (column, visible) in OrderedColumns)
                                 {
                                     var col = column;
@@ -44,7 +44,7 @@
                                                   Disabled="@(visible && columns.Count == 1)"
                                                   CheckedChanged="v => SetColumnVisible(col, v)" />
                                 }
-                                <button type="button" class="velo-grid__chooser-reset" @onclick="ResetColumns">Réinitialiser</button>
+                                <button type="button" class="velo-grid__chooser-reset" @onclick="ResetColumns">@Texts.Reset</button>
                             </div>
                         }
                     </div>
@@ -56,7 +56,7 @@
     <div class="velo-grid__body">
         @if (_loadingData && _hasLoaded)
         {
-            <div class="velo-grid__refresh" role="progressbar" aria-label="Chargement"></div>
+            <div class="velo-grid__refresh" role="progressbar" aria-label="@Texts.Loading"></div>
         }
         <div class="velo-grid__scroll">
             <table class="velo-grid__table">
@@ -67,7 +67,7 @@
                             <th class="velo-grid__check" scope="col">
                                 <VeloCheckbox Checked="view.AllSelected" Indeterminate="view.SomeSelected" Color="@Color"
                                               Disabled="@(view.Page.Count == 0)" CheckedChanged="ToggleAll"
-                                              aria-label="@(IsServerMode ? "Sélectionner la page" : "Tout sélectionner")" />
+                                              aria-label="@(IsServerMode ? Texts.SelectPage : Texts.SelectAll)" />
                             </th>
                         }
                         @foreach (var column in columns)
@@ -117,8 +117,8 @@
                         <tr>
                             <td class="velo-grid__empty velo-grid__error" colspan="@colCount">
                                 <VeloIcon Name="danger" Size="22" />
-                                <p>@ErrorText</p>
-                                <VeloButton Variant="VeloVariant.Soft" Color="neutral" Size="VeloSize.Sm" OnClick="RefreshAsync">Réessayer</VeloButton>
+                                <p>@(ErrorText ?? Texts.LoadError)</p>
+                                <VeloButton Variant="VeloVariant.Soft" Color="neutral" Size="VeloSize.Sm" OnClick="RefreshAsync">@Texts.Retry</VeloButton>
                             </td>
                         </tr>
                     }
@@ -133,7 +133,7 @@
                                 else
                                 {
                                     <VeloIcon Name="search" Size="22" />
-                                    <p>@(string.IsNullOrWhiteSpace(_search) ? EmptyText : $"Aucun résultat pour « {_search} »")</p>
+                                    <p>@(string.IsNullOrWhiteSpace(_search) ? EmptyText ?? Texts.NoData : VeloTexts.Format(Texts.NoResultsFor, _search))</p>
                                 }
                             </td>
                         </tr>
@@ -150,7 +150,7 @@
                                 @if (Selectable)
                                 {
                                     <td class="velo-grid__check" @onclick:stopPropagation="true">
-                                        <VeloCheckbox Checked="selected" Color="@Color" CheckedChanged="v => ToggleItem(item, v)" aria-label="Sélectionner la ligne" />
+                                        <VeloCheckbox Checked="selected" Color="@Color" CheckedChanged="v => ToggleItem(item, v)" aria-label="@Texts.SelectRow" />
                                     </td>
                                 }
                                 @foreach (var column in columns)
@@ -181,16 +181,16 @@
                 @(view.From)–@(view.To) sur @view.Total
                 @if (Selectable && _selected.Count > 0)
                 {
-                    <span class="velo-grid__info-sel"> · @_selected.Count sélectionné@(_selected.Count > 1 ? "s" : "")</span>
+                    <span class="velo-grid__info-sel"> · @VeloTexts.Format(Texts.SelectedCount, _selected.Count)</span>
                 }
             </span>
             <div class="velo-grid__pager">
                 @if (PageSizes.Length > 1)
                 {
                     <span class="velo-grid__rows-label">Lignes</span>
-                    <VeloSelect TValue="int" Class="velo-grid__size" Items="PageSizes" Value="_pageSize" ValueChanged="SetPageSize" aria-label="Lignes par page" />
+                    <VeloSelect TValue="int" Class="velo-grid__size" Items="PageSizes" Value="_pageSize" ValueChanged="SetPageSize" aria-label="@Texts.RowsPerPageLabel" />
                 }
-                <button type="button" class="velo-grid__page" disabled="@(_page == 0)" aria-label="Page précédente" @onclick="() => GoTo(_page - 1)">
+                <button type="button" class="velo-grid__page" disabled="@(_page == 0)" aria-label="@Texts.PreviousPage" @onclick="() => GoTo(_page - 1)">
                     <VeloIcon Name="chevron-left" Size="15" />
                 </button>
                 @foreach (var p in PageNumbers(view.PageCount))
@@ -206,7 +206,7 @@
                                 aria-current="@(page == _page ? "page" : null)" @onclick="() => GoTo(page)">@(page + 1)</button>
                     }
                 }
-                <button type="button" class="velo-grid__page" disabled="@(_page >= view.PageCount - 1)" aria-label="Page suivante" @onclick="() => GoTo(_page + 1)">
+                <button type="button" class="velo-grid__page" disabled="@(_page >= view.PageCount - 1)" aria-label="@Texts.NextPage" @onclick="() => GoTo(_page + 1)">
                     <VeloIcon Name="chevron-right" Size="15" />
                 </button>
             </div>
@@ -227,7 +227,7 @@
     /// <summary>Delay after the last keystroke before searching in server mode.</summary>
     [Parameter] public TimeSpan SearchDelay { get; set; } = TimeSpan.FromMilliseconds(300);
 
-    [Parameter] public string ErrorText { get; set; } = "Impossible de charger les données.";
+    [Parameter] public string? ErrorText { get; set; }
 
     /// <summary>Called when the ItemsProvider throws (log it, show a toast…).</summary>
     [Parameter] public EventCallback<Exception> OnLoadError { get; set; }
@@ -240,13 +240,16 @@
 
     /// <summary>Shows a search box that filters on every searchable column.</summary>
     [Parameter] public bool Searchable { get; set; }
-    [Parameter] public string SearchPlaceholder { get; set; } = "Rechercher…";
+    [Parameter] public string? SearchPlaceholder { get; set; }
 
     /// <summary>Content on the right of the toolbar (buttons, filters…).</summary>
     [Parameter] public RenderFragment? Toolbar { get; set; }
 
     /// <summary>Rows per page. 0 shows every row.</summary>
-    [Parameter] public int PageSize { get; set; } = 10;
+    /// <summary>Rows per page; 0 shows all. Null: VeloOptions.Defaults.DataGrid.PageSize, else 10.</summary>
+    [Parameter] public int? PageSize { get; set; }
+
+    private int EffectivePageSize => PageSize ?? Defaults.DataGrid.PageSize ?? 10;
     [Parameter] public int[] PageSizes { get; set; } = [10, 25, 50];
 
     /// <summary>Adds a checkbox column. Use with @bind-SelectedItems.</summary>
@@ -259,15 +262,16 @@
     /// <summary>Extra CSS class per row, e.g. item => item.IsLate ? "late" : null.</summary>
     [Parameter] public Func<TItem, string?>? RowClass { get; set; }
 
-    [Parameter] public bool Striped { get; set; }
+    [Parameter] public bool? Striped { get; set; }
 
     /// <summary>Row height: Sm (compact), Md, Lg (comfortable).</summary>
-    [Parameter] public VeloSize Density { get; set; } = VeloSize.Md;
+    /// <summary>Null: VeloOptions.Defaults.DataGrid.Density, else Md.</summary>
+    [Parameter] public VeloSize? Density { get; set; }
 
     /// <summary>Forces skeleton rows (in server mode they appear automatically on the first load).</summary>
     [Parameter] public bool Loading { get; set; }
     [Parameter] public RenderFragment? EmptyContent { get; set; }
-    [Parameter] public string EmptyText { get; set; } = "Aucune donnée";
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>Culture used by column formats (defaults to the current culture).</summary>
     [Parameter] public CultureInfo? Culture { get; set; }
@@ -425,10 +429,10 @@
         }
 
         var reload = false;
-        if (_lastPageSizeParam != PageSize)
+        if (_lastPageSizeParam != EffectivePageSize)
         {
-            _lastPageSizeParam = PageSize;
-            _pageSize = PageSize;
+            _lastPageSizeParam = EffectivePageSize;
+            _pageSize = EffectivePageSize;
             _page = 0;
             reload = true;
         }
@@ -725,8 +729,8 @@
     }
 
     private string ClassValue(bool showFooter) => new CssBuilder("velo-grid")
-        .Add($"velo-grid--{Density.Css()}")
-        .Add("velo-grid--striped", Striped)
+        .Add($"velo-grid--{(Density ?? Defaults.DataGrid.Density ?? VeloSize.Md).Css()}")
+        .Add("velo-grid--striped", Striped ?? Defaults.DataGrid.Striped ?? false)
         .Add("has-toolbar", HasToolbar)
         .Add("has-footer", showFooter)
         .Add("is-refreshing", _loadingData && _hasLoaded)

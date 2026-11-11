@@ -281,7 +281,7 @@ else
                 }
                 @if (children.Count > 0)
                 {
-                    <span class="velo-org__toggle" title="@(expanded ? "Replier" : $"Déplier ({children.Count})")"
+                    <span class="velo-org__toggle" title="@(expanded ? Texts.Collapse : VeloTexts.Format(Texts.ExpandCount, children.Count))"
                           @onclick="() => Toggle(item)" @onclick:stopPropagation="true">
                         @(expanded ? "−" : children.Count.ToString())
                     </span>

@@ -6,7 +6,7 @@
     <label class="velo-filedrop__zone" @ondragenter="() => _over = true" @ondragleave="() => _over = false" @ondrop="() => _over = false">
         <InputFile class="velo-filedrop__input" OnChange="OnChange" multiple="@Multiple" accept="@Accept" disabled="@Disabled" />
         <span class="velo-filedrop__icon" aria-hidden="true"><VeloIcon Name="upload" Size="20" /></span>
-        <span class="velo-filedrop__title">@(_over ? "Relâchez pour ajouter" : Title)</span>
+        <span class="velo-filedrop__title">@(_over ? Texts.ReleaseToAdd : Title ?? Texts.DropFilesHere)</span>
         <span class="velo-filedrop__subtitle">ou <span class="velo-filedrop__link">cliquez pour parcourir</span></span>
         @if (!string.IsNullOrEmpty(HintText))
         {
@@ -42,7 +42,7 @@
     /// <summary>Maximum size of one file in bytes (refused files are listed with the reason).</summary>
     [Parameter] public long MaxFileSize { get; set; } = 10 * 1024 * 1024;
     [Parameter] public int MaxFiles { get; set; } = 10;
-    [Parameter] public string Title { get; set; } = "Glissez vos fichiers ici";
+    [Parameter] public string? Title { get; set; }
     [Parameter] public string? Hint { get; set; }
     [Parameter] public bool ShowList { get; set; } = true;
     [Parameter] public bool Compact { get; set; }
@@ -60,7 +60,7 @@
     private string? HintText => Hint ?? string.Join(" · ", new[]
     {
         Accept is null ? null : Accept.Replace(",", ", "),
-        $"{VeloPaging.FileSize(MaxFileSize)} max{(Multiple ? " par fichier" : "")}",
+        $"{VeloPaging.FileSize(MaxFileSize)} max{(Multiple ? Texts.PerFile : "")}",
     }.Where(s => s is not null));
 
     private string? StyleValue => new StyleBuilder().Color("filedrop", Color).Raw(Style).Build();

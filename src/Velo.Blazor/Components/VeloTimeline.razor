@@ -21,7 +21,7 @@
                 @if (Collapsible)
                 {
                     <button type="button" class="velo-close velo-timeline__toggle" aria-expanded="@(_collapsed ? "false" : "true")"
-                            aria-label="@(_collapsed ? "Déplier" : "Replier")" @onclick="ToggleCollapsed">
+                            aria-label="@(_collapsed ? Texts.Expand : Texts.Collapse)" @onclick="ToggleCollapsed">
                         <VeloIcon Name="chevron-down" />
                     </button>
                 }
@@ -88,7 +88,7 @@
                 <div class="velo-timeline__body">
                     @if (model.Lanes.Count == 0)
                     {
-                        <div class="velo-timeline__empty">@EmptyText</div>
+                        <div class="velo-timeline__empty">@(EmptyText ?? Texts.NothingPlanned)</div>
                     }
                     @foreach (var lane in model.Lanes)
                     {
@@ -104,7 +104,7 @@
                                     var status = StatusOf(item);
                                     var editable = Editable && (CanEdit?.Invoke(item) ?? true);
                                     <button type="button" @key="item.Id" data-id="@item.Id" data-editable="@(editable ? "true" : null)"
-                                            aria-description="@(editable ? "Glisser pour déplacer, flèches pour décaler, Maj + flèches pour allonger" : null)"
+                                            aria-description="@(editable ? Texts.TimelineEditHint : null)"
                                             class="@(new CssBuilder("velo-timeline__item").Add($"is-{(status?.Appearance ?? VeloTimelineAppearance.Filled).Css()}").Add("is-cut-start", placed.CutStart).Add("is-cut-end", placed.CutEnd).Add("is-clickable", OnItemClick.HasDelegate).Add("is-movable", editable).Build())"
                                             style="left:@VeloScale.Pct(placed.Left);width:@VeloScale.Pct(placed.Width);top:@(placed.Row * RowHeight)px;--_c:@ColorValue(item.Color ?? status?.Color)"
                                             title="@Describe(item, status)"
@@ -187,7 +187,7 @@
     /// <summary>Slot label, e.g. (start, end) => $"{start:HH:mm}".</summary>
     [Parameter] public Func<DateTime, DateTime, string>? SlotLabel { get; set; }
 
-    [Parameter] public string EmptyText { get; set; } = "Rien de planifié sur cette période";
+    [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>Items can be dragged (move, change lane) and resized from their edges, or moved with the arrow keys.</summary>
     [Parameter] public bool Editable { get; set; }

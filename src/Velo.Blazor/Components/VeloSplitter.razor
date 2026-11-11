@@ -11,7 +11,7 @@
     <div class="velo-splitter__divider" role="separator" tabindex="0"
          aria-orientation="@(Vertical ? "horizontal" : "vertical")"
          aria-valuemin="@Inv(Min)" aria-valuemax="@Inv(Max)" aria-valuenow="@Math.Round(Size)"
-         aria-label="@AriaLabel" title="Glisser pour redimensionner · double-clic pour réinitialiser"
+         aria-label="@(AriaLabel ?? Texts.ResizePanels)" title="@Texts.ResizeHint"
          @ondblclick="Reset">
         <span class="velo-splitter__grip"></span>
     </div>
@@ -36,7 +36,7 @@
 
     /// <summary>Arrow-key step in percent.</summary>
     [Parameter] public double KeyboardStep { get; set; } = 5;
-    [Parameter] public string AriaLabel { get; set; } = "Redimensionner les panneaux";
+    [Parameter] public string? AriaLabel { get; set; }
 
     private ElementReference _root;
     private IJSObjectReference? _module;

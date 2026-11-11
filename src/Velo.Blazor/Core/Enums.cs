@@ -20,3 +20,6 @@ public enum VeloToastPosition { TopRight, TopCenter, TopLeft, BottomRight, Botto
 
 /// <summary>System follows the operating system setting (and its changes, live).</summary>
 public enum VeloThemeMode { Light, Dark, System }
+
+/// <summary>Side of a control where its label goes.</summary>
+public enum VeloLabelPosition { End, Start }

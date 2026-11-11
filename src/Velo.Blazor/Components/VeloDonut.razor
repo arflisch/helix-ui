@@ -29,13 +29,13 @@
 
     @if (total <= 0)
     {
-        <p class="velo-chart__empty">@EmptyText</p>
+        <p class="velo-chart__empty">@(EmptyText ?? Texts.NoData)</p>
     }
     else if (_table)
     {
         <div class="velo-chart__table-wrap">
             <table class="velo-chart__table">
-                <thead><tr><th scope="col">@(LabelHeader ?? "Catégorie")</th><th scope="col" class="is-end">Valeur</th><th scope="col" class="is-end">Part</th></tr></thead>
+                <thead><tr><th scope="col">@(LabelHeader ?? Texts.Category)</th><th scope="col" class="is-end">@Texts.Value</th><th scope="col" class="is-end">@Texts.Share</th></tr></thead>
                 <tbody>
                     @foreach (var part in parts)
                     {
@@ -99,7 +99,7 @@
                     else
                     {
                         <span class="velo-donut__center-value">@FormatValue(total)</span>
-                        <span class="velo-donut__center-label">@CenterLabel</span>
+                        <span class="velo-donut__center-label">@(CenterLabel ?? Texts.Total)</span>
                     }
                 </div>
             </div>
@@ -116,11 +116,11 @@
 
     /// <summary>Beyond this, the smallest parts are grouped into "Autres" (6 max: more becomes unreadable).</summary>
     [Parameter] public int MaxParts { get; set; } = 6;
-    [Parameter] public string OtherLabel { get; set; } = "Autres";
+    [Parameter] public string? OtherLabel { get; set; }
 
     /// <summary>Largest first (true).</summary>
     [Parameter] public bool Sort { get; set; } = true;
-    [Parameter] public string CenterLabel { get; set; } = "Total";
+    [Parameter] public string? CenterLabel { get; set; }
     [Parameter] public string? Unit { get; set; }
     [Parameter] public string ValueFormat { get; set; } = "#,0.##";
     [Parameter] public string? LabelHeader { get; set; }
@@ -131,7 +131,7 @@
     /// <summary>Ring diameter, e.g. "200px".</summary>
     [Parameter] public string? Size { get; set; }
     [Parameter] public bool ShowTableToggle { get; set; } = true;
-    [Parameter] public string EmptyText { get; set; } = "Aucune donnée";
+    [Parameter] public string? EmptyText { get; set; }
     [Parameter] public EventCallback<VeloPart> OnItemClick { get; set; }
     [Parameter] public CultureInfo? Culture { get; set; }
 
@@ -154,7 +154,7 @@
         if (items.Count > max)
         {
             var rest = items.Skip(max - 1).ToList();
-            items = items.Take(max - 1).Append(new VeloPart(OtherLabel, rest.Sum(r => r.Value), "var(--velo-text-subtle)")).ToList();
+            items = items.Take(max - 1).Append(new VeloPart(OtherLabel ?? Texts.Others, rest.Sum(r => r.Value), "var(--velo-text-subtle)")).ToList();
         }
 
         // Colors follow the fixed series order; an explicit color wins.
@@ -188,7 +188,7 @@
     };
 
     private string Describe(List<Part> parts, double total) =>
-        $"{Title ?? "Répartition"} : " + string.Join(", ", parts.Select(p => $"{p.Label} {FormatPct(p.Value / total)}"));
+        $"{Title ?? Texts.Breakdown}: " + string.Join(", ", parts.Select(p => $"{p.Label} {FormatPct(p.Value / total)}"));
 
     private string FormatValue(double value) =>
         value.ToString(ValueFormat, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");

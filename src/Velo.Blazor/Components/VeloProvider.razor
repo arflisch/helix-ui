@@ -4,7 +4,9 @@
 
 @* Wrap your layout once: theme (light, dark or system), toasts and confirmations. *@
 @{
-    var sheet = Theme.ToStyleSheet($"[data-velo-root=\"{_id}\"]");
+    var selector = $"[data-velo-root=\"{_id}\"]";
+    var defaults = _options.Defaults.Declarations();
+    var sheet = Theme.ToStyleSheet(selector) + (defaults.Length > 0 ? $"{selector}{{{defaults}}}" : "");
 }
 @if (sheet.Length > 0)
 {
@@ -16,22 +18,30 @@
      class="@(new CssBuilder("velo-root").Add(Class).Build())"
      data-velo-theme="@ModeAttribute"
      style="@Style">
-    @ChildContent
+    <CascadingValue Value="_options">
+        @ChildContent
 
-    @if (ShowHosts && _hasToasts)
-    {
-        <VeloToastHost Position="ToastPosition" />
-    }
-    @if (ShowHosts && _hasConfirm)
-    {
-        <VeloConfirmHost />
-    }
+        @if (ShowHosts && _hasToasts)
+        {
+            <VeloToastHost Position="ToastPosition" />
+        }
+        @if (ShowHosts && _hasConfirm)
+        {
+            <VeloConfirmHost />
+        }
+    </CascadingValue>
 </div>
 
 @code {
     [Parameter] public VeloTheme Theme { get; set; } = new();
     [Parameter] public VeloToastPosition ToastPosition { get; set; } = VeloToastPosition.BottomRight;
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Texts and component defaults for everything inside. Null: the options registered with AddVelo.
+    /// A nested provider can pass its own, e.g. a French section in an English app.
+    /// </summary>
+    [Parameter] public VeloOptions? Options { get; set; }
 
     /// <summary>
     /// Renders the toast and confirmation hosts (true). Set false for a nested provider, e.g. a theme preview.
@@ -41,6 +51,7 @@
     private readonly string _id = Guid.NewGuid().ToString("N")[..8];
     private bool _hasToasts;
     private bool _hasConfirm;
+    private VeloOptions _options = VeloOptions.Fallback;
 
     private string ModeAttribute => Theme.Mode switch
     {
@@ -54,4 +65,7 @@
         _hasToasts = Services.GetService(typeof(VeloToastService)) is not null;
         _hasConfirm = Services.GetService(typeof(VeloConfirmService)) is not null;
     }
+
+    protected override void OnParametersSet() =>
+        _options = Options ?? Services.GetService(typeof(VeloOptions)) as VeloOptions ?? VeloOptions.Fallback;
 }

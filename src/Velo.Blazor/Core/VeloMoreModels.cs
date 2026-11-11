@@ -30,8 +30,11 @@ public sealed record VeloStep(string Title, string? Description = null);
 public sealed record VeloConfirmOptions(string Title)
 {
     public string? Message { get; init; }
-    public string ConfirmText { get; init; } = "Confirmer";
-    public string CancelText { get; init; } = "Annuler";
+    /// <summary>Null: the built-in "Confirm" text, in the app's language.</summary>
+    public string? ConfirmText { get; init; }
+
+    /// <summary>Null: the built-in "Cancel" text, in the app's language.</summary>
+    public string? CancelText { get; init; }
 
     /// <summary>Red confirm button, for destructive actions.</summary>
     public bool Danger { get; init; }
@@ -78,7 +81,7 @@ internal static class VeloPaging
     };
 }
 
-/// <summary>Promise-style confirmation: if (await Confirm.AskAsync("Supprimer ?")) …</summary>
+/// <summary>Promise-style confirmation: if (await Confirm.AskAsync("Delete?")) …</summary>
 public sealed class VeloConfirmService : IDisposable
 {
     private TaskCompletionSource<bool>? _pending;
@@ -89,7 +92,7 @@ public sealed class VeloConfirmService : IDisposable
     internal event Action? Changed;
 
     public Task<bool> AskAsync(string title, string? message = null, bool danger = false, string? confirmText = null) =>
-        AskAsync(new VeloConfirmOptions(title) { Message = message, Danger = danger, ConfirmText = confirmText ?? "Confirmer" });
+        AskAsync(new VeloConfirmOptions(title) { Message = message, Danger = danger, ConfirmText = confirmText });
 
     /// <summary>Shows the dialog and completes with true (confirmed) or false (cancelled, closed, or token cancelled).</summary>
     public Task<bool> AskAsync(VeloConfirmOptions options, CancellationToken cancellationToken = default)

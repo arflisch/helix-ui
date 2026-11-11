@@ -1,14 +1,18 @@
 @page "/components/switch"
 @using static Velo.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Switch" Description="L'interrupteur. Chaque partie a son paramètre : la piste allumée, la piste éteinte, la pastille, la pastille allumée et l'arrondi. Aucun template à copier.">
+<DemoPage Title="Switch" Description="L'interrupteur. Chaque partie a son paramètre : la piste, la pastille, une icône ou un texte dedans, une description, le côté du libellé. Aucun template à copier.">
     <Playground Code="@Code">
         <Preview>
-            <VeloSwitch @bind-Checked="_checked" Label="@_label" Size="_size" Color="@_color" TrackColor="@_track"
-                        ThumbColor="@_thumb" ThumbOnColor="@_thumbOn" Radius="@Radius" Disabled="_disabled" />
+            <VeloSwitch @bind-Checked="_checked" Label="@_label" Description="@_description" LabelPosition="_position" Size="_size"
+                        Color="@_color" TrackColor="@_track" ThumbColor="@_thumb" ThumbOnColor="@_thumbOn" Radius="@Radius"
+                        OnIcon="@OnIcon" OffIcon="@OffIcon" OnText="@OnText" OffText="@OffText" Disabled="_disabled" />
         </Preview>
         <Controls>
             <VeloTextField Label="Label" @bind-Value="_label" />
+            <VeloTextField Label="Description" @bind-Value="_description" />
+            <Choice TEnum="VeloLabelPosition" Label="LabelPosition" @bind-Value="_position" />
+            <Choice TEnum="Inside" Label="Dans l'interrupteur" @bind-Value="_inside" />
             <Choice TEnum="VeloSize" Label="Size" @bind-Value="_size" />
             <ColorPicker Label="Color (piste allumée)" @bind-Value="_color" />
             <ColorPicker Label="TrackColor (piste éteinte)" @bind-Value="_track" Colors="@(["#d4d4d8", "#fecaca", "#bfdbfe", "#18181b"])" />
@@ -28,6 +32,22 @@
         </div>
     </Example>
 
+    <Example Title="Icône ou texte dans l'interrupteur" Description="OnIcon / OffIcon dans la pastille, OnText / OffText dans la piste (elle s'élargit). Ils changent à l'instant du clic." Code="@InsideCode">
+        <div class="row" style="gap:28px">
+            <VeloSwitch @bind-Checked="_demo" OnIcon="check" OffIcon="x" Label="Icônes" />
+            <VeloSwitch @bind-Checked="_demo" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Thème" />
+            <VeloSwitch @bind-Checked="_demo" OnText="On" OffText="Off" Label="Texte" />
+            <VeloSwitch @bind-Checked="_demo" OnText="Auto" OffText="Manuel" Color="#ff8a00" Size="VeloSize.Lg" Label="Pilote" />
+        </div>
+    </Example>
+
+    <Example Title="Description et côté du libellé" Description="Une deuxième ligne sous le libellé, lue avec l'interrupteur. LabelPosition=Start pour les listes de réglages." Code="@DescriptionCode">
+        <div class="stack" style="max-width:420px">
+            <VeloSwitch @bind-Checked="_demo" Label="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
+            <VeloSwitch @bind-Checked="_demo2" LabelPosition="VeloLabelPosition.Start" Label="Synchronisation" Description="Chaque nuit à 2 h." Style="width:100%;justify-content:space-between" />
+        </div>
+    </Example>
+
     <Example Title="Tailles" Code="@SizesCode">
         <div class="row" style="gap:28px">
             <VeloSwitch @bind-Checked="_demo" Size="VeloSize.Sm" Label="Sm" />
@@ -40,7 +60,17 @@
 </DemoPage>
 
 @code {
-    private bool _checked = true, _disabled, _demo = true;
+    private enum Inside { Rien, Icônes, Texte }
+
+    private bool _checked = true, _disabled, _demo = true, _demo2;
+    private string? _description;
+    private VeloLabelPosition _position = VeloLabelPosition.End;
+    private Inside _inside = Inside.Rien;
+
+    private string? OnIcon => _inside == Inside.Icônes ? "check" : null;
+    private string? OffIcon => _inside == Inside.Icônes ? "x" : null;
+    private string? OnText => _inside == Inside.Texte ? "On" : null;
+    private string? OffText => _inside == Inside.Texte ? "Off" : null;
     private string? _label = "Mode avion";
     private VeloSize _size = VeloSize.Md;
     private string? _color, _track, _thumb, _thumbOn;
@@ -49,12 +79,24 @@
     private string? Radius => _radius >= 12 ? null : $"{N(_radius)}px";
 
     private string Code =>
-        $"<VeloSwitch @bind-Checked=\"isOn\"{A("Label", _label)}{A("Size", _size, VeloSize.Md)}{A("Color", _color)}{A("TrackColor", _track)}{A("ThumbColor", _thumb)}{A("ThumbOnColor", _thumbOn)}{A("Radius", Radius)}{B("Disabled", _disabled)} />";
+        $"<VeloSwitch @bind-Checked=\"isOn\"{A("Label", _label)}{A("Description", _description)}{A("LabelPosition", _position, VeloLabelPosition.End)}{A("OnIcon", OnIcon)}{A("OffIcon", OffIcon)}{A("OnText", OnText)}{A("OffText", OffText)}{A("Size", _size, VeloSize.Md)}{A("Color", _color)}{A("TrackColor", _track)}{A("ThumbColor", _thumb)}{A("ThumbOnColor", _thumbOn)}{A("Radius", Radius)}{B("Disabled", _disabled)} />";
 
     private const string ThumbCode = """
         <VeloSwitch @bind-Checked="on" ThumbColor="#f59e0b" Label="Ambre" />
         <VeloSwitch @bind-Checked="on" ThumbColor="#18181b" TrackColor="#e4e4e7" Color="#a3e635" Label="Lime" />
         <VeloSwitch @bind-Checked="on" Color="danger" ThumbOnColor="#ffe4e6" Label="Danger" />
+        """;
+
+    private const string InsideCode = """
+        <VeloSwitch @bind-Checked="on" OnIcon="check" OffIcon="x" Label="Icônes" />
+        <VeloSwitch @bind-Checked="on" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Thème" />
+        <VeloSwitch @bind-Checked="on" OnText="On" OffText="Off" Label="Texte" />
+        <VeloSwitch @bind-Checked="on" OnText="Auto" OffText="Manuel" Color="#ff8a00" Size="VeloSize.Lg" Label="Pilote" />
+        """;
+
+    private const string DescriptionCode = """
+        <VeloSwitch @bind-Checked="on" Label="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
+        <VeloSwitch @bind-Checked="sync" LabelPosition="VeloLabelPosition.Start" Label="Synchronisation" Description="Chaque nuit à 2 h." />
         """;
 
     private const string SizesCode = """
@@ -71,6 +113,12 @@
         new("ThumbColor", "string", "--velo-switch-thumb", "Pastille."),
         new("ThumbOnColor", "string", "--velo-switch-thumb-on", "Pastille quand allumé (ThumbColor par défaut)."),
         new("Radius", "string", "--velo-switch-radius", "Arrondi de la piste et de la pastille."),
-        new("Size", "VeloSize", null, "Sm, Md ou Lg."),
+        new("Size", "VeloSize?", null, "Sm, Md ou Lg. Par défaut : Defaults.Switch.Size, puis Defaults.Size, puis Md."),
+        new("Label / ChildContent", "string / RenderFragment", null, "Libellé cliquable."),
+        new("Description", "string", null, "Deuxième ligne sous le libellé, lue par les lecteurs d'écran."),
+        new("LabelPosition", "VeloLabelPosition?", null, "End (après, par défaut) ou Start (avant)."),
+        new("OnIcon / OffIcon", "string", null, "Icône intégrée dans la pastille selon l'état (check, x, sun, moon…)."),
+        new("OnText / OffText", "string", null, "Texte court dans la piste selon l'état ; la piste s'élargit."),
+        new("Width", "string", "--velo-switch-width", "Largeur minimale de la piste avec un texte (elle s'adapte sinon au texte le plus long)."),
     ];
 }

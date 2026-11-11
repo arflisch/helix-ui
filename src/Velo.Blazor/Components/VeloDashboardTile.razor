@@ -34,17 +34,17 @@
                 <div class="velo-dashboard__tile-actions">
                     @if (editing)
                     {
-                        <div class="velo-dashboard__tools" role="group" aria-label="Disposition de @Title">
-                            <button type="button" class="velo-close" aria-label="Déplacer avant" @onclick="() => Dashboard.Shift(Id, -1)"><VeloIcon Name="chevron-left" Size="14" /></button>
-                            <button type="button" class="velo-close" aria-label="Déplacer après" @onclick="() => Dashboard.Shift(Id, 1)"><VeloIcon Name="chevron-right" Size="14" /></button>
+                        <div class="velo-dashboard__tools" role="group" aria-label="@VeloTexts.Format(Texts.TileLayout, Title)">
+                            <button type="button" class="velo-close" aria-label="@Texts.MoveBefore" @onclick="() => Dashboard.Shift(Id, -1)"><VeloIcon Name="chevron-left" Size="14" /></button>
+                            <button type="button" class="velo-close" aria-label="@Texts.MoveAfter" @onclick="() => Dashboard.Shift(Id, 1)"><VeloIcon Name="chevron-right" Size="14" /></button>
                             <span class="velo-dashboard__sep"></span>
-                            <button type="button" class="velo-close" aria-label="Plus étroit" disabled="@(span <= MinSpan)" @onclick="() => Dashboard.Resize(Id, -1)"><VeloIcon Name="minus" Size="14" /></button>
-                            <span class="velo-dashboard__span" aria-label="Largeur">@span / @Dashboard.ColumnCount</span>
-                            <button type="button" class="velo-close" aria-label="Plus large" disabled="@(span >= Math.Min(MaxSpan, Dashboard.ColumnCount))" @onclick="() => Dashboard.Resize(Id, 1)"><VeloIcon Name="plus" Size="14" /></button>
+                            <button type="button" class="velo-close" aria-label="@Texts.Narrower" disabled="@(span <= MinSpan)" @onclick="() => Dashboard.Resize(Id, -1)"><VeloIcon Name="minus" Size="14" /></button>
+                            <span class="velo-dashboard__span" aria-label="@Texts.Width">@span / @Dashboard.ColumnCount</span>
+                            <button type="button" class="velo-close" aria-label="@Texts.Wider" disabled="@(span >= Math.Min(MaxSpan, Dashboard.ColumnCount))" @onclick="() => Dashboard.Resize(Id, 1)"><VeloIcon Name="plus" Size="14" /></button>
                             @if (CanHide)
                             {
                                 <span class="velo-dashboard__sep"></span>
-                                <button type="button" class="velo-close" aria-label="Masquer @Title" @onclick="() => Dashboard.SetHidden(Id, true)"><VeloIcon Name="eye-off" Size="14" /></button>
+                                <button type="button" class="velo-close" aria-label="@VeloTexts.Format(Texts.HideTile, Title)" @onclick="() => Dashboard.SetHidden(Id, true)"><VeloIcon Name="eye-off" Size="14" /></button>
                             }
                         </div>
                     }

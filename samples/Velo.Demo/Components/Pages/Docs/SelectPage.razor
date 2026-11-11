@@ -63,8 +63,10 @@
         new("Value", "T?", null, "Option sélectionnée (@bind-Value)."),
         new("ItemText", "Func<T, string>", null, "Texte affiché pour une option (ToString par défaut)."),
         new("Label / Placeholder / Hint", "string", null, "Textes."),
-        new("Color", "string", "--velo-input-color", "Couleur du focus et de l'option sélectionnée."),
-        new("Radius", "string", "--velo-input-radius", "Arrondi."),
         new("—", "", "--velo-select-menu-bg", "Fond du menu déroulant."),
+        new("Prefix / Suffix", "RenderFragment", null, "Contenu au début / à la fin du champ (icône, signe, unité…). Même slots sur tous les champs."),
+        new("Hint / Error", "string", null, "Aide sous le champ, ou erreur qui la remplace ; reliées au champ pour les lecteurs d'écran (aria-describedby)."),
+        new("Required", "bool", null, "Astérisque après le libellé et attribut required."),
+        new("Color / Radius / Background / BorderColor", "string", "--velo-input-*", "Même apparence sur tous les champs ; valeurs par défaut via Defaults.Field."),
     ];
 }

@@ -10,7 +10,7 @@
 
 <section @attributes="Attributes" class="@(new CssBuilder("velo-carousel").Add(Class).Build())"
          style="@(new StyleBuilder().Var("--_per", Math.Max(1, SlidesPerView).ToString()).Var("--_gap", Gap).Var("--velo-carousel-height", Height).Raw(Style).Build())"
-         aria-roledescription="carrousel" aria-label="@AriaLabel"
+         aria-roledescription="@Texts.CarouselRole" aria-label="@(AriaLabel ?? Texts.Carousel)"
          @onmouseenter="() => _hovered = true" @onmouseleave="() => _hovered = false"
          @onfocusin="() => _focused = true" @onfocusout="() => _focused = false">
     <div class="velo-carousel__viewport">
@@ -19,11 +19,11 @@
         </div>
         @if (ShowArrows && count > SlidesPerView)
         {
-            <button type="button" class="velo-carousel__arrow is-prev" aria-label="Diapositive précédente"
+            <button type="button" class="velo-carousel__arrow is-prev" aria-label="@Texts.PreviousSlide"
                     disabled="@(!Loop && _index == 0)" @onclick="() => GoTo(_index == 0 ? lastStart : _index - 1)">
                 <VeloIcon Name="chevron-left" Size="18" />
             </button>
-            <button type="button" class="velo-carousel__arrow is-next" aria-label="Diapositive suivante"
+            <button type="button" class="velo-carousel__arrow is-next" aria-label="@Texts.NextSlide"
                     disabled="@(!Loop && _index >= lastStart)" @onclick="() => GoTo(_index >= lastStart ? 0 : _index + 1)">
                 <VeloIcon Name="chevron-right" Size="18" />
             </button>
@@ -34,19 +34,19 @@
         <div class="velo-carousel__footer">
             @if (Autoplay)
             {
-                <button type="button" class="velo-close velo-carousel__play" aria-label="@(_paused ? "Lancer le défilement" : "Mettre en pause")"
+                <button type="button" class="velo-close velo-carousel__play" aria-label="@(_paused ? Texts.Play : Texts.Pause)"
                         @onclick="() => _paused = !_paused">
                     <VeloIcon Svg="@(_paused ? "<path d='M7 4v16l13-8z'/>" : "<path d='M7 4v16M17 4v16'/>")" Size="14" />
                 </button>
             }
             @if (ShowDots)
             {
-                <div class="velo-carousel__dots" role="group" aria-label="Choisir une diapositive">
+                <div class="velo-carousel__dots" role="group" aria-label="@Texts.ChooseSlide">
                     @for (var i = 0; i <= lastStart; i++)
                     {
                         var target = i;
                         <button type="button" class="@(new CssBuilder("velo-carousel__dot").Add("is-active", target == _index).Build())"
-                                aria-label="@($"Diapositive {target + 1} sur {lastStart + 1}")" aria-current="@(target == _index ? "true" : null)"
+                                aria-label="@VeloTexts.Format(Texts.SlideOf, target + 1, lastStart + 1)" aria-current="@(target == _index ? "true" : null)"
                                 @onclick="() => GoTo(target)"></button>
                     }
                 </div>
@@ -78,7 +78,7 @@
     /// <summary>Current slide (0-based). @bind-Index.</summary>
     [Parameter] public int Index { get; set; }
     [Parameter] public EventCallback<int> IndexChanged { get; set; }
-    [Parameter] public string AriaLabel { get; set; } = "Carrousel";
+    [Parameter] public string? AriaLabel { get; set; }
 
     private readonly List<VeloCarouselSlide> _slides = [];
     private readonly VeloTicker _ticker = new();
