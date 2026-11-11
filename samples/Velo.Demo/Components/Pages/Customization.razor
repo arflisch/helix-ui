@@ -1,0 +1,188 @@
+@page "/customization"
+@inject DemoThemeState ThemeState
+
+<DemoPage Title="Personnalisation" Eyebrow="Guide"
+          Description="Changer la couleur de la pastille d'un switch ne devrait jamais demander de copier un template. Avec Velo, il y a trois niveaux, du plus local au plus global, et vous choisissez le plus simple pour votre besoin.">
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">1</span>
+            <div>
+                <h2 class="demo-section__title">Un paramètre sur le composant</h2>
+                <p class="demo-section__text">
+                    Chaque partie visuelle est un paramètre nommé simplement. Pour un switch : <code>Color</code> (piste active),
+                    <code>TrackColor</code>, <code>ThumbColor</code>, <code>ThumbOnColor</code>, <code>Radius</code>.
+                </p>
+                <div class="demo-example">
+                    <div class="demo-example__stage row" style="gap:28px">
+                        <VeloSwitch @bind-Checked="_a" Label="Par défaut" />
+                        <VeloSwitch @bind-Checked="_a" Label="Pastille ambre" ThumbColor="#f59e0b" />
+                        <VeloSwitch @bind-Checked="_a" Label="Vert + pastille" Color="success" ThumbOnColor="#dcfce7" />
+                        <VeloSwitch @bind-Checked="_a" Label="Carré" Radius="6px" Color="#18181b" />
+                    </div>
+                    <CodeBlock Flush="true" Code="@Level1Code" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">2</span>
+            <div>
+                <h2 class="demo-section__title">Le thème : toute l'application d'un coup</h2>
+                <p class="demo-section__text">
+                    <code>VeloTheme</code> règle les couleurs, l'arrondi, la densité et la police. <code>Set()</code> accepte n'importe quelle
+                    variable Velo, par exemple <code>switch-thumb</code> pour toutes les pastilles. Modifiez ce thème : il s'applique à tout ce site.
+                </p>
+                <div class="pg">
+                    <div class="pg__stage">
+                        <VeloCard Title="Aperçu du thème" Subtitle="Tous les composants suivent." Style="width:100%;max-width:380px">
+                            <ChildContent>
+                                <div class="stack">
+                                    <VeloTextField Label="Projet" Value="Velo UI" />
+                                    <VeloSwitch @bind-Checked="_b" Label="Publier" />
+                                    <div class="row">
+                                        <VeloBadge Color="primary">Nouveau</VeloBadge>
+                                        <VeloBadge Color="success" Dot="true">En ligne</VeloBadge>
+                                    </div>
+                                </div>
+                            </ChildContent>
+                            <Footer>
+                                <VeloButton Variant="VeloVariant.Outline" Color="neutral">Annuler</VeloButton>
+                                <VeloButton>Enregistrer</VeloButton>
+                            </Footer>
+                        </VeloCard>
+                    </div>
+                    <aside class="pg__controls">
+                        <ColorPicker Label="Primary" Value="@Theme.Primary" ValueChanged="v => Apply(() => Theme.Primary = v is null || v.StartsWith('#') ? v : null)"
+                                     Colors="@(["#0ea5e9", "#10b981", "#f59e0b", "#e11d48", "#8b5cf6", "#18181b"])" />
+                        <VeloSlider Label="Radius" Value="_radius" Min="0" Max="20" ValueChanged="SetRadius" Format="@(v => $"{v} px")" />
+                        <VeloSlider Label="Hauteur des contrôles" Value="_height" Min="30" Max="46" ValueChanged="SetHeight" Format="@(v => $"{v} px")" />
+                        <ColorPicker Label="switch-thumb (toutes les pastilles)" Value="@_thumb" ValueChanged="v => Apply(() => SetThumb(v))"
+                                     Colors="@(["#fef3c7", "#e0e7ff", "#18181b"])" />
+                        <VeloSwitch Label="Boutons en pilule" Checked="_pill" CheckedChanged="v => Apply(() => SetPill(v))" />
+                        <VeloSwitch Label="Mode sombre" Checked="@(Theme.Mode == VeloThemeMode.Dark)"
+                                    CheckedChanged="v => Apply(() => Theme.Mode = v ? VeloThemeMode.Dark : VeloThemeMode.Light)" />
+                        <VeloButton Variant="VeloVariant.Soft" Color="neutral" Size="VeloSize.Sm" OnClick="Reset">Réinitialiser</VeloButton>
+                    </aside>
+                </div>
+                <CodeBlock Language="c#" Code="@ThemeCode" />
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">3</span>
+            <div>
+                <h2 class="demo-section__title">Du CSS normal, qui gagne toujours</h2>
+                <p class="demo-section__text">
+                    Les styles Velo sont écrits dans <code>:where()</code> : leur spécificité est nulle. Une simple classe suffit à les surcharger,
+                    sans <code>!important</code>. Chaque partie a une classe stable (<code>.velo-switch__thumb</code>, <code>.velo-btn</code>…)
+                    et lit une variable <code>--velo-*</code>.
+                </p>
+                <div class="demo-example">
+                    <div class="demo-example__stage row" style="gap:28px">
+                        <style>
+                            .glow .velo-switch__thumb { box-shadow: 0 0 0 4px rgb(236 72 153 / .25), 0 1px 3px rgb(0 0 0 / .3); }
+                            .brand { --velo-switch-color: #ec4899; --velo-btn-color: #ec4899; --velo-btn-radius: 999px; }
+                        </style>
+                        <VeloSwitch @bind-Checked="_c" Label="Classe .glow" Class="glow" Color="#ec4899" />
+                        <div class="brand row">
+                            <VeloSwitch @bind-Checked="_c" Label="Variables dans .brand" />
+                            <VeloButton>Bouton .brand</VeloButton>
+                        </div>
+                    </div>
+                    <CodeBlock Flush="true" Language="css" Code="@Level3Code" />
+                </div>
+            </div>
+        </div>
+    </section>
+</DemoPage>
+
+@code {
+    private VeloTheme Theme => ThemeState.Theme;
+
+    private bool _a = true, _b = true, _c = true, _pill;
+    private double _radius = 10, _height = 38;
+    private string? _thumb;
+
+    private void Apply(Action change)
+    {
+        change();
+        ThemeState.Notify();
+    }
+
+    private void SetRadius(double value) => Apply(() =>
+    {
+        _radius = value;
+        Theme.Radius = $"{value}px";
+    });
+
+    private void SetHeight(double value) => Apply(() =>
+    {
+        _height = value;
+        Theme.ControlHeight = $"{value}px";
+    });
+
+    private void SetThumb(string? value)
+    {
+        _thumb = value;
+        if (value is null) Theme.Variables.Remove("switch-thumb");
+        else Theme.Set("switch-thumb", value);
+    }
+
+    private void SetPill(bool value)
+    {
+        _pill = value;
+        if (value) Theme.Set("btn-radius", "999px");
+        else Theme.Variables.Remove("btn-radius");
+    }
+
+    private void Reset()
+    {
+        Theme.Primary = null;
+        Theme.Radius = null;
+        Theme.ControlHeight = null;
+        Theme.Variables.Clear();
+        _radius = 10;
+        _height = 38;
+        _thumb = null;
+        _pill = false;
+        ThemeState.Notify();
+    }
+
+    private string ThemeCode
+    {
+        get
+        {
+            var lines = new List<string>();
+            if (Theme.Mode == VeloThemeMode.Dark) lines.Add("    Mode = VeloThemeMode.Dark,");
+            if (Theme.Primary is not null) lines.Add($"    Primary = \"{Theme.Primary}\",");
+            if (Theme.Radius is not null) lines.Add($"    Radius = \"{Theme.Radius}\",");
+            if (Theme.ControlHeight is not null) lines.Add($"    ControlHeight = \"{Theme.ControlHeight}\",");
+            var body = lines.Count == 0 ? "" : "\n" + string.Join("\n", lines) + "\n";
+            var sets = string.Concat(Theme.Variables.Select(v => $"\n    .Set(\"{v.Key}\", \"{v.Value}\")"));
+            return $"var theme = new VeloTheme {{{body}}}{sets};\n\n// MainLayout.razor\n<VeloProvider Theme=\"theme\">@Body</VeloProvider>";
+        }
+    }
+
+    private const string Level1Code = """
+        <VeloSwitch @bind-Checked="on" Label="Pastille ambre" ThumbColor="#f59e0b" />
+        <VeloSwitch @bind-Checked="on" Label="Vert + pastille" Color="success" ThumbOnColor="#dcfce7" />
+        <VeloSwitch @bind-Checked="on" Label="Carré" Radius="6px" Color="#18181b" />
+        """;
+
+    private const string Level3Code = """
+        /* Une classe sur un composant */
+        .glow .velo-switch__thumb { box-shadow: 0 0 0 4px rgb(236 72 153 / .25); }
+
+        /* Ou des variables sur une zone entière */
+        .brand {
+            --velo-switch-color: #ec4899;
+            --velo-btn-color: #ec4899;
+            --velo-btn-radius: 999px;
+        }
+        """;
+}

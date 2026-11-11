@@ -1,0 +1,22 @@
+<section class="demo-section">
+    <h2 class="demo-section__title">@Title</h2>
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <p class="demo-section__text">@Description</p>
+    }
+    <div class="demo-example">
+        <div class="demo-example__stage" style="@StageStyle">@ChildContent</div>
+        @if (!string.IsNullOrEmpty(Code))
+        {
+            <CodeBlock Code="@Code" Flush="true" />
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Code { get; set; }
+    [Parameter] public string? StageStyle { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

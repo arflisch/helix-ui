@@ -1,0 +1,96 @@
+@page "/components/kanban"
+@inject VeloToastService Toasts
+
+<DemoPage Title="Kanban" Description="Tableau de cartes : glisser-déposer entre et dans les colonnes, limites de travail en cours, règles de déplacement, ajout de carte. Au clavier : Entrée pour saisir une carte, flèches pour la déplacer, Entrée pour la déposer, Échap pour annuler.">
+    <section class="demo-section">
+        <h2 class="demo-section__title">Exemple</h2>
+        <p class="demo-section__text">
+            Règle de l'exemple (<code>CanMove</code>) : une carte n'entre dans <strong>Terminé</strong> qu'en venant de <strong>En revue</strong>.
+            La colonne refusée se colore pendant le glissement. « En cours » est limitée à 3 cartes, « En revue » à 2.
+        </p>
+        <VeloKanban TItem="Ticket" Items="_tickets" Columns="DemoData.KanbanColumns" ColumnOf="t => t.Column" ItemKey="t => t.Id"
+                    CanMove="(t, column) => column != DoneColumn || t.Column is ReviewColumn or DoneColumn"
+                    OnCardMoved="Move" OnAdd="Add" OnCardClick="Open">
+            <CardTemplate>
+                <div class="ticket">
+                    <div class="ticket__top">
+                        <span class="ticket__id">#@context.Id</span>
+                        <VeloBadge Color="@PriorityColor(context.Priority)" Variant="VeloBadgeVariant.Soft">@context.Priority</VeloBadge>
+                    </div>
+                    <p class="ticket__title">@context.Title</p>
+                    <div class="ticket__bottom">
+                        <VeloAvatar Name="@context.Assignee" Size="VeloSize.Sm" />
+                        <span class="ticket__points">@context.Points pts</span>
+                    </div>
+                </div>
+            </CardTemplate>
+        </VeloKanban>
+        <CodeBlock Code="@Code" />
+    </section>
+
+    <ApiTable Title="VeloKanban" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string DoneColumn = "done";
+    private const string ReviewColumn = "review";
+
+    private List<Ticket> _tickets = DemoData.Tickets();
+    private int _nextId = 9;
+
+    private void Move(VeloKanbanMove<Ticket> move)
+    {
+        _tickets = move.ApplyTo(_tickets, t => t.Column, (t, column) => t with { Column = column });
+        if (move.From != move.To)
+        {
+            var to = DemoData.KanbanColumns.First(c => c.Key == move.To).Title;
+            Toasts.Show($"#{move.Item.Id} déplacée vers « {to} »", VeloSeverity.Info, duration: TimeSpan.FromSeconds(2));
+        }
+    }
+
+    private void Add(string column) =>
+        _tickets.Add(new Ticket(_nextId++, "Nouvelle tâche", column, "Alan Turing", "Basse", 1));
+
+    private void Open(Ticket ticket) => Toasts.Info(ticket.Title, $"Ticket #{ticket.Id}");
+
+    private static string PriorityColor(string priority) => priority switch
+    {
+        "Haute" => "danger",
+        "Moyenne" => "warning",
+        _ => "neutral",
+    };
+
+    private const string Code = """
+        <VeloKanban Items="tickets" Columns="columns" ColumnOf="t => t.Column" ItemKey="t => t.Id"
+                    CanMove="@((t, col) => col != "done" || t.Column == "review")"
+                    OnCardMoved="Move" OnAdd="Add">
+            <CardTemplate>@context.Title</CardTemplate>
+        </VeloKanban>
+
+        @code {
+            private VeloKanbanColumn[] columns =
+            [
+                new("todo", "À faire"),
+                new("doing", "En cours", Limit: 3),
+                new("review", "En revue", Limit: 2),
+                new("done", "Terminé", "success"),
+            ];
+
+            // Une ligne pour appliquer le déplacement (ou appelez votre API).
+            private void Move(VeloKanbanMove<Ticket> move) =>
+                tickets = move.ApplyTo(tickets, t => t.Column, (t, col) => t with { Column = col });
+        }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items / Columns / ColumnOf", "IReadOnlyList<T> / IReadOnlyList<VeloKanbanColumn> / Func<T, string>", null, "Les cartes, les colonnes, et la colonne d'une carte."),
+        new("CardTemplate", "RenderFragment<T>", null, "Contenu d'une carte."),
+        new("OnCardMoved", "EventCallback<VeloKanbanMove<T>>", null, "Item, From, To, Index ; move.ApplyTo(…) applique le déplacement."),
+        new("CanMove", "Func<T, string, bool>", null, "Règles métier : la colonne refusée est signalée pendant le glissement."),
+        new("VeloKanbanColumn", "(Key, Title, Color?, Limit?)", null, "Limit = limite de travail en cours (compteur en rouge au-delà)."),
+        new("OnAdd / OnCardClick", "EventCallback<string> / EventCallback<T>", null, "Bouton + par colonne ; clic sur une carte."),
+        new("ColumnWidth", "string", "--velo-kanban-column-w", "Largeur des colonnes ; défilement horizontal au-delà."),
+        new("—", "", "--velo-kanban-column-bg", "Fond des colonnes."),
+    ];
+}

@@ -1,0 +1,126 @@
+@page "/"
+@inject VeloToastService Toasts
+
+<PageTitle>Velo UI · Composants Blazor</PageTitle>
+
+<div class="demo-page">
+    <section class="hero">
+        <VeloBadge Color="primary" Dot="true" Class="hero__badge">v0.1 · Blazor · .NET 10</VeloBadge>
+        <h1 class="hero__title">Des composants Blazor <em>beaux par défaut</em>, simples à personnaliser.</h1>
+        <p class="hero__lead">
+            Velo UI vous donne des composants épurés et accessibles. Chaque détail visuel est un paramètre :
+            pas de template à copier, pas de CSS à combattre.
+        </p>
+        <div class="row">
+            <VeloButton Size="VeloSize.Lg" IconEnd="arrow-right" OnClick="@(() => Nav.NavigateTo("getting-started"))">Commencer</VeloButton>
+            <VeloButton Size="VeloSize.Lg" Variant="VeloVariant.Outline" Color="neutral" Icon="settings" OnClick="@(() => Nav.NavigateTo("customization"))">Personnalisation</VeloButton>
+        </div>
+    </section>
+
+    <section class="showcase">
+        <VeloCard Title="Créer un compte" Subtitle="Quelques secondes suffisent." Elevated="true">
+            <ChildContent>
+                <div class="stack">
+                    <div class="grid-2">
+                        <VeloTextField Label="Prénom" @bind-Value="_firstName" Placeholder="Ada" />
+                        <VeloTextField Label="Nom" @bind-Value="_lastName" Placeholder="Lovelace" />
+                    </div>
+                    <VeloTextField Label="Email" Icon="mail" @bind-Value="_email" Placeholder="ada@exemple.fr" Clearable="true"
+                                   Error="@(_email is { Length: > 0 } && !_email.Contains('@') ? "Adresse invalide" : null)" />
+                    <VeloSelect Label="Rôle" Items="_roles" @bind-Value="_role" />
+                    <VeloCheckbox @bind-Checked="_terms" Label="J'accepte les conditions d'utilisation" />
+                </div>
+            </ChildContent>
+            <Footer>
+                <VeloButton Variant="VeloVariant.Ghost" Color="neutral">Annuler</VeloButton>
+                <VeloButton Disabled="!_terms" Loading="_saving" OnClick="Save">Créer le compte</VeloButton>
+            </Footer>
+        </VeloCard>
+
+        <div class="stack">
+            <VeloCard Title="Notifications" Subtitle="Choisissez ce que vous recevez.">
+                <Actions><VeloBadge Color="success" Dot="true">Actif</VeloBadge></Actions>
+                <ChildContent>
+                    <div class="stack">
+                        <VeloSwitch @bind-Checked="_n1" Label="Nouveaux commentaires" />
+                        <VeloSwitch @bind-Checked="_n2" Label="Mentions" Color="#10b981" />
+                        <VeloSwitch @bind-Checked="_n3" Label="Résumé hebdomadaire" Color="#f59e0b" ThumbOnColor="#fff7ed" />
+                        <VeloSlider Label="Volume" @bind-Value="_volume" Format="@(v => $"{v:0} %")" />
+                    </div>
+                </ChildContent>
+            </VeloCard>
+            <VeloCard>
+                <div class="row" style="justify-content:space-between">
+                    <VeloAvatarGroup>
+                        <VeloAvatar Name="Ada Lovelace" />
+                        <VeloAvatar Name="Alan Turing" />
+                        <VeloAvatar Name="Grace Hopper" />
+                        <VeloAvatar Name="Linus Torvalds" />
+                    </VeloAvatarGroup>
+                    <VeloTooltip Text="Inviter un membre">
+                        <VeloButton Variant="VeloVariant.Soft" Icon="plus" aria-label="Inviter" />
+                    </VeloTooltip>
+                </div>
+                <div style="margin-top:16px">
+                    <VeloProgress Label="Stockage" Value="68" ShowValue="true" />
+                </div>
+            </VeloCard>
+        </div>
+    </section>
+
+    <section class="features">
+        <VeloCard>
+            <span class="feature__icon"><VeloIcon Name="sparkles" Size="18" /></span>
+            <p class="feature__title">Beau sans effort</p>
+            <p class="feature__text">Typographie, espacements, ombres et animations soignés. Clair et sombre inclus.</p>
+        </VeloCard>
+        <VeloCard>
+            <span class="feature__icon"><VeloIcon Name="settings" Size="18" /></span>
+            <p class="feature__title">Un paramètre, pas un template</p>
+            <p class="feature__text"><code>&lt;VeloSwitch ThumbColor="#f59e0b" /&gt;</code> : la pastille change, c'est tout.</p>
+        </VeloCard>
+        <VeloCard>
+            <span class="feature__icon"><VeloIcon Name="lock" Size="18" /></span>
+            <p class="feature__title">Votre CSS gagne toujours</p>
+            <p class="feature__text">Styles en spécificité zéro : une simple classe surcharge Velo, sans <code>!important</code>.</p>
+        </VeloCard>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Composants</h2>
+        <p class="demo-section__text">Chaque page a un playground : réglez les paramètres et copiez le code généré.</p>
+        <div class="comp-grid">
+            @foreach (var item in DemoNav.Components)
+            {
+                <a class="comp-link" href="@item.Href">
+                    <VeloCard Hoverable="true" Padding="18px">
+                        <div class="comp-link__head">
+                            <span class="comp-link__title">@item.Title</span>
+                            <VeloIcon Name="arrow-right" Size="15" Class="comp-link__arrow" />
+                        </div>
+                        <p class="comp-link__text">@item.Description</p>
+                    </VeloCard>
+                </a>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private readonly string[] _roles = ["Développeur", "Designer", "Product manager", "Autre"];
+    private string? _firstName, _lastName, _email;
+    private string? _role = "Développeur";
+    private bool _terms, _saving;
+    private bool _n1 = true, _n2 = true, _n3;
+    private double _volume = 60;
+
+    private async Task Save()
+    {
+        _saving = true;
+        await Task.Delay(900);
+        _saving = false;
+        Toasts.Success($"Bienvenue {(_firstName is { Length: > 0 } ? _firstName : "à bord")} !", "Compte créé");
+    }
+}

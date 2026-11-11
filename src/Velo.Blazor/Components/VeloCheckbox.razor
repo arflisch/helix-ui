@@ -1,0 +1,55 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<label class="@ClassValue" style="@StyleValue">
+    <input @attributes="Attributes"
+           type="checkbox"
+           class="velo-sr-input velo-check__input"
+           checked="@Checked"
+           disabled="@Disabled"
+           aria-checked="@(Indeterminate ? "mixed" : null)"
+           @onchange="OnChange" />
+    <span class="velo-check__box"><VeloIcon Name="@(Indeterminate ? "minus" : "check")" Size="12" StrokeWidth="3" /></span>
+    @if (!string.IsNullOrEmpty(Label) || ChildContent is not null)
+    {
+        <span class="velo-check__label">@Label@ChildContent</span>
+    }
+</label>
+
+@code {
+    [Parameter] public bool Checked { get; set; }
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Partially checked (e.g. "select all" when only some rows are selected).</summary>
+    [Parameter] public bool Indeterminate { get; set; }
+
+    /// <summary>Box color when checked.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Color of the check mark.</summary>
+    [Parameter] public string? CheckColor { get; set; }
+
+    [Parameter] public string? Radius { get; set; }
+
+    private string ClassValue => new CssBuilder("velo-check")
+        .Add("is-checked", Checked || Indeterminate)
+        .Add("is-disabled", Disabled)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("check", Color)
+        .Var("--velo-check-mark", CheckColor)
+        .Var("--velo-check-radius", Radius)
+        .Raw(Style)
+        .Build();
+
+    private Task OnChange(ChangeEventArgs e)
+    {
+        Checked = !Indeterminate && e.Value is true;
+        return CheckedChanged.InvokeAsync(Checked);
+    }
+}

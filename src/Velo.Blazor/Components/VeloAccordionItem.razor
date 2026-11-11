@@ -1,0 +1,64 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@implements IDisposable
+
+@{
+    var open = Accordion?.IsOpen(this) ?? false;
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("velo-accordion__item").Add("is-open", open).Add("is-disabled", Disabled).Add(Class).Build())" style="@Style">
+    <h3 class="velo-accordion__heading">
+        <button type="button" id="@_buttonId" class="velo-accordion__trigger" aria-expanded="@(open ? "true" : "false")" aria-controls="@_panelId"
+                disabled="@Disabled" @onclick="() => Accordion?.Toggle(this)">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <span class="velo-accordion__icon"><VeloIcon Name="@Icon" Size="16" /></span>
+            }
+            <span class="velo-accordion__titles">
+                <span class="velo-accordion__title">@Title</span>
+                @if (!string.IsNullOrEmpty(Subtitle))
+                {
+                    <span class="velo-accordion__subtitle">@Subtitle</span>
+                }
+            </span>
+            @Extra
+            <VeloIcon Name="chevron-down" Size="16" Class="velo-accordion__chevron" />
+        </button>
+    </h3>
+    <div id="@_panelId" class="velo-accordion__panel" role="region" aria-labelledby="@_buttonId" inert="@(!open)">
+        <div class="velo-accordion__inner">
+            <div class="velo-accordion__content">@ChildContent</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private VeloAccordion? Accordion { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Content on the right of the title (badge…).</summary>
+    [Parameter] public RenderFragment? Extra { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Open at first render.</summary>
+    [Parameter] public bool Expanded { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private readonly string _buttonId = VeloId.Next("acc-btn");
+    private readonly string _panelId = VeloId.Next("acc-panel");
+
+    protected override void OnInitialized()
+    {
+        if (Accordion is null)
+        {
+            throw new InvalidOperationException($"{nameof(VeloAccordionItem)} must be placed inside a {nameof(VeloAccordion)}.");
+        }
+
+        Accordion.Add(this, Expanded);
+    }
+
+    public void Dispose() => Accordion?.Remove(this);
+}

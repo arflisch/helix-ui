@@ -1,0 +1,41 @@
+@page "/components/breadcrumb"
+
+<DemoPage Title="Breadcrumb" Description="Fil d'Ariane : où suis-je, et comment remonter. Les chemins longs se replient en « … » (cliquez pour tout voir).">
+    <Example Title="Exemples" Code="@Code">
+        <div class="stack">
+            <VeloBreadcrumb Items="Short" />
+            <VeloBreadcrumb Items="Long" MaxItems="3" />
+        </div>
+    </Example>
+
+    <ApiTable Title="VeloBreadcrumb" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly VeloBreadcrumbItem[] Short =
+    [
+        new("Accueil", "", "layout"), new("Composants", "components/button"), new("Breadcrumb"),
+    ];
+
+    private static readonly VeloBreadcrumbItem[] Long =
+    [
+        new("Accueil", "", "layout"), new("Exploitation", "components/dashboard"), new("Sites", "components/barlist"),
+        new("Lyon", "components/barlist"), new("Compteurs", "components/datagrid"), new("Compteur 42"),
+    ];
+
+    private const string Code = """
+        <VeloBreadcrumb MaxItems="3" Items="@([
+            new("Accueil", "/", "layout"),
+            new("Sites", "/sites"),
+            new("Lyon", "/sites/lyon"),
+            new("Compteur 42"),
+        ])" />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items", "IEnumerable<VeloBreadcrumbItem>", null, "(Text, Href?, Icon?) ; le dernier est la page courante."),
+        new("MaxItems", "int?", null, "Au-delà, les éléments du milieu se replient en « … »."),
+        new("AriaLabel", "string", null, "Nom de la navigation (« Fil d'Ariane »)."),
+    ];
+}

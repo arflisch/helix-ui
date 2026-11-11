@@ -1,0 +1,21 @@
+<VeloBadge Color="@Color" Dot="true">@Label</VeloBadge>
+
+@code {
+    [Parameter] public EmployeeStatus Status { get; set; }
+
+    private string Color => Status switch
+    {
+        EmployeeStatus.Active => "success",
+        EmployeeStatus.Remote => "info",
+        EmployeeStatus.Leave => "warning",
+        _ => "danger",
+    };
+
+    private string Label => Status switch
+    {
+        EmployeeStatus.Active => "Actif",
+        EmployeeStatus.Remote => "Télétravail",
+        EmployeeStatus.Leave => "Congé",
+        _ => "Départ",
+    };
+}

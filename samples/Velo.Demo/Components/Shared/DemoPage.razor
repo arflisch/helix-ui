@@ -1,0 +1,23 @@
+<PageTitle>@Title · Velo UI</PageTitle>
+
+<article class="demo-page">
+    <header class="demo-page__header">
+        @if (!string.IsNullOrEmpty(Eyebrow))
+        {
+            <p class="demo-eyebrow">@Eyebrow</p>
+        }
+        <h1 class="demo-page__title">@Title</h1>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="demo-page__lead">@Description</p>
+        }
+    </header>
+    @ChildContent
+</article>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Eyebrow { get; set; } = "Composant";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

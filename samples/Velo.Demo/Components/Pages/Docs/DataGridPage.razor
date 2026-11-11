@@ -1,0 +1,383 @@
+@page "/components/datagrid"
+@using System.Globalization
+@using static Velo.Demo.Components.Shared.Snippet
+@inject VeloToastService Toasts
+@inject EmployeeApi Server
+@implements IDisposable
+
+<DemoPage Title="DataGrid" Description="Tableau de données : colonnes déclarées en une ligne, tri, recherche, pagination, sélection, chargement et en-tête fixe. Les cellules peuvent contenir n'importe quel composant.">
+    <section class="demo-section">
+        <h2 class="demo-section__title">Playground</h2>
+        <div class="pg pg--wide">
+            <div class="pg__stage pg__stage--block">
+                <VeloDataGrid Items="_employees" Culture="French" Searchable="_searchable" Selectable="_selectable" @bind-SelectedItems="_selection"
+                              PageSize="_pageSize" PageSizes="@([5, 10, 25])" Striped="_striped" Density="_density" Loading="_loading"
+                              MaxHeight="@(_sticky ? "360px" : null)" Color="@_color" HeaderBackground="@_header" SelectedColor="@_selectedColor"
+                              OnRowClick="RowClick" SearchPlaceholder="Rechercher un employé…"
+                              ReorderableColumns="_reorder" ColumnChooser="_chooser" @bind-ColumnLayout="_columnLayout">
+                    <Toolbar>
+                        @if (_selection.Count > 0)
+                        {
+                            <VeloButton Variant="VeloVariant.Soft" Color="danger" Size="VeloSize.Sm" Icon="trash" OnClick="DeleteSelection">
+                                Supprimer (@_selection.Count)
+                            </VeloButton>
+                        }
+                        <VeloButton Size="VeloSize.Sm" Icon="plus">Ajouter</VeloButton>
+                    </Toolbar>
+                    <ChildContent>
+                        <VeloColumn Field="e => e.Name" Title="Employé" Width="30%">
+                            <Template>
+                                <div class="person">
+                                    <VeloAvatar Name="@context.Name" Size="VeloSize.Sm" />
+                                    <div>
+                                        <div class="person__name">@context.Name</div>
+                                        <div class="person__email">@context.Email</div>
+                                    </div>
+                                </div>
+                            </Template>
+                        </VeloColumn>
+                        <VeloColumn Field="e => e.Department" Title="Service" />
+                        <VeloColumn Field="e => e.Role" Title="Poste" />
+                        <VeloColumn Field="e => e.Status" Title="Statut" SortBy="e => (int)e.Status">
+                            <Template><StatusBadge Status="context.Status" /></Template>
+                        </VeloColumn>
+                        <VeloColumn Field="e => e.StartDate" Title="Arrivée" Format="d MMM yyyy" />
+                        <VeloColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="VeloAlign.End" />
+                    </ChildContent>
+                </VeloDataGrid>
+            </div>
+            <aside class="pg__controls">
+                <Choice TEnum="VeloSize" Label="Density" @bind-Value="_density" />
+                <Choice TEnum="PageChoice" Label="PageSize" Value="_pageChoice" ValueChanged="SetPage" />
+                <ColorPicker Label="Color (tri, sélection, page)" @bind-Value="_color" />
+                <ColorPicker Label="HeaderBackground" @bind-Value="_header" Colors="@(["#eef2ff", "#f0fdf4", "#18181b", "#fafaf9"])" />
+                <ColorPicker Label="SelectedColor" @bind-Value="_selectedColor" Colors="@(["#fef9c3", "#dcfce7", "#fce7f3"])" />
+                <VeloSwitch Label="Searchable" @bind-Checked="_searchable" Size="VeloSize.Sm" />
+                <VeloSwitch Label="Selectable" @bind-Checked="_selectable" Size="VeloSize.Sm" />
+                <VeloSwitch Label="Striped" @bind-Checked="_striped" Size="VeloSize.Sm" />
+                <VeloSwitch Label="En-tête fixe (MaxHeight)" @bind-Checked="_sticky" Size="VeloSize.Sm" />
+                <VeloSwitch Label="OnRowClick" @bind-Checked="_rowClick" Size="VeloSize.Sm" />
+                <VeloSwitch Label="Loading" @bind-Checked="_loading" Size="VeloSize.Sm" />
+                <VeloSwitch Label="ReorderableColumns (glisser les en-têtes)" @bind-Checked="_reorder" Size="VeloSize.Sm" />
+                <VeloSwitch Label="ColumnChooser (menu Colonnes)" @bind-Checked="_chooser" Size="VeloSize.Sm" />
+            </aside>
+        </div>
+        <CodeBlock Code="@Code" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Chargement côté serveur</h2>
+        <p class="demo-section__text">
+            Remplacez <code>Items</code> par <code>ItemsProvider</code> : la grille demande une seule page à la fois (tri, recherche, pagination)
+            et votre code interroge la base ou l'API. La recherche attend la fin de la frappe, et chaque nouvelle requête annule la précédente.
+            L'API ci-dessous est simulée : réglez sa latence ou faites-la échouer.
+        </p>
+        <div class="pg pg--wide">
+            <div class="pg__stage pg__stage--block">
+                <VeloDataGrid @ref="_serverGrid" TItem="Employee" ItemsProvider="LoadEmployees" ItemKey="e => e.Id" Culture="French"
+                              Searchable="true" Selectable="true" @bind-SelectedItems="_serverSelection" PageSize="8" PageSizes="@([8, 16, 32])"
+                              SearchPlaceholder="Rechercher (côté serveur)…" OnLoadError="OnServerError">
+                    <Toolbar>
+                        @if (_serverSelection.Count > 0)
+                        {
+                            <VeloButton Variant="VeloVariant.Soft" Color="danger" Size="VeloSize.Sm" Icon="trash" Loading="_deleting" OnClick="DeleteOnServer">
+                                Supprimer (@_serverSelection.Count)
+                            </VeloButton>
+                        }
+                        <VeloTooltip Text="Recharger">
+                            <VeloButton Variant="VeloVariant.Outline" Color="neutral" Size="VeloSize.Sm" Icon="download" aria-label="Recharger" OnClick="() => _serverGrid!.RefreshAsync()" />
+                        </VeloTooltip>
+                    </Toolbar>
+                    <ChildContent>
+                        <VeloColumn Field="e => e.Name" Title="Employé" Width="30%">
+                            <Template>
+                                <div class="person">
+                                    <VeloAvatar Name="@context.Name" Size="VeloSize.Sm" />
+                                    <div>
+                                        <div class="person__name">@context.Name</div>
+                                        <div class="person__email">@context.Email</div>
+                                    </div>
+                                </div>
+                            </Template>
+                        </VeloColumn>
+                        <VeloColumn Field="e => e.Department" Title="Service" />
+                        <VeloColumn Field="e => e.Status" Title="Statut">
+                            <Template><StatusBadge Status="context.Status" /></Template>
+                        </VeloColumn>
+                        <VeloColumn Field="e => e.StartDate" Title="Arrivée" Format="d MMM yyyy" />
+                        <VeloColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="VeloAlign.End" />
+                    </ChildContent>
+                </VeloDataGrid>
+                <p class="request-log">
+                    <span class="request-log__label">Dernière requête</span>
+                    <code>@(_lastRequest is null ? "—" : Describe(_lastRequest))</code>
+                    <span class="muted">@_requestCount envoyée@(_requestCount > 1 ? "s" : "") · @_cancelledCount annulée@(_cancelledCount > 1 ? "s" : "")</span>
+                </p>
+            </div>
+            <aside class="pg__controls">
+                <VeloSlider Label="Latence de l'API" Value="Server.Latency.TotalMilliseconds" ValueChanged="v => Server.Latency = TimeSpan.FromMilliseconds(v)"
+                            Min="0" Max="2000" Step="100" Format="@(v => $"{v:0} ms")" />
+                <VeloSwitch Label="Simuler une erreur serveur" Checked="Server.SimulateFailure" CheckedChanged="v => Server.SimulateFailure = v" Color="danger" />
+            </aside>
+        </div>
+        <CodeBlock Code="@ServerRazorCode" />
+        <CodeBlock Language="c#" Code="@ServerCSharpCode" />
+    </section>
+
+    <Example Title="Le minimum" Description="Une collection et des colonnes. Le titre est déduit du nom de la propriété, le tri et la recherche suivent automatiquement." Code="@MinimalCode">
+        <VeloDataGrid Items="_employees.Take(4)" PageSize="0" Culture="French">
+            <VeloColumn Field="e => e.Name" />
+            <VeloColumn Field="e => e.Department" />
+            <VeloColumn Field="e => e.StartDate" Format="d" />
+            <VeloColumn Field="e => e.Salary" Format="C0" Align="VeloAlign.End" />
+        </VeloDataGrid>
+    </Example>
+
+    <Example Title="Personnaliser des lignes" Description="RowClass ajoute une classe par ligne ; une simple règle CSS fait le reste." Code="@RowClassCode">
+        <style>
+            .row-leaving td { color: var(--velo-text-subtle); text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--velo-danger) 50%, transparent); }
+        </style>
+        <VeloDataGrid Items="_employees.Take(6)" PageSize="0" Density="VeloSize.Sm" Culture="French"
+                      RowClass="@(e => e.Status == EmployeeStatus.Offboarding ? "row-leaving" : null)">
+            <VeloColumn Field="e => e.Name" Title="Employé" />
+            <VeloColumn Field="e => e.Status" Title="Statut">
+                <Template><StatusBadge Status="context.Status" /></Template>
+            </VeloColumn>
+            <VeloColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="VeloAlign.End" />
+        </VeloDataGrid>
+    </Example>
+
+    <ApiTable Rows="Api" />
+    <ApiTable Title="VeloColumn" Rows="ColumnApi" ShowIntro="false" />
+</DemoPage>
+
+<VeloDialog @bind-Open="_dialogOpen" Title="@_opened?.Name" Description="@_opened?.Email" Width="420px">
+    @if (_opened is not null)
+    {
+        <div class="stack">
+            <div class="row"><StatusBadge Status="_opened.Status" /><VeloBadge>@_opened.Department</VeloBadge></div>
+            <p style="margin:0">@_opened.Role depuis le @_opened.StartDate.ToString("d MMMM yyyy", French).</p>
+        </div>
+    }
+</VeloDialog>
+
+@code {
+    private enum PageChoice { Five, Ten, TwentyFive, All }
+
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+
+    private List<Employee> _employees = SampleData.Employees.ToList();
+    private IReadOnlyCollection<Employee> _selection = [];
+    private VeloSize _density = VeloSize.Md;
+    private PageChoice _pageChoice = PageChoice.Ten;
+    private int _pageSize = 10;
+    private string? _color, _header, _selectedColor;
+    private bool _reorder = true, _chooser = true;
+    private IReadOnlyList<VeloColumnState>? _columnLayout;
+    private bool _searchable = true, _selectable = true, _striped, _sticky, _rowClick, _loading;
+    private bool _dialogOpen;
+    private Employee? _opened;
+
+    private readonly CancellationTokenSource _pageCts = new();
+    private VeloDataGrid<Employee>? _serverGrid;
+    private IReadOnlyCollection<Employee> _serverSelection = [];
+    private VeloGridRequest? _lastRequest;
+    private int _requestCount, _cancelledCount;
+    private bool _deleting;
+
+    private async Task<VeloGridResult<Employee>> LoadEmployees(VeloGridRequest request, CancellationToken cancellationToken)
+    {
+        _lastRequest = request;
+        _requestCount++;
+        StateHasChanged();
+        try
+        {
+            return await Server.QueryAsync(request, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _cancelledCount++;
+            StateHasChanged();
+            throw;
+        }
+    }
+
+    private void OnServerError(Exception ex) => Toasts.Error(ex.Message, "Chargement impossible");
+
+    private async Task DeleteOnServer()
+    {
+        _deleting = true;
+        var ids = _serverSelection.Select(e => e.Id).ToArray();
+        try
+        {
+            await Server.DeleteAsync(ids, _pageCts.Token);
+            _serverSelection = [];
+            Toasts.Success($"{ids.Length} employé{(ids.Length > 1 ? "s" : "")} supprimé{(ids.Length > 1 ? "s" : "")} sur le serveur");
+            await _serverGrid!.RefreshAsync();
+        }
+        finally
+        {
+            _deleting = false;
+        }
+    }
+
+    private static string Describe(VeloGridRequest r) =>
+        $"Skip={r.Skip} Take={r.Take}" +
+        (r.SortBy is null ? "" : $" SortBy={r.SortBy}{(r.SortDescending ? " desc" : "")}") +
+        (r.Search is null ? "" : $" Search=\"{r.Search}\"");
+
+    public void Dispose()
+    {
+        _pageCts.Cancel();
+        _pageCts.Dispose();
+    }
+
+    private const string ServerRazorCode = """
+        <VeloDataGrid @ref="grid" TItem="Employee" ItemsProvider="LoadEmployees" ItemKey="e => e.Id"
+                      Searchable Selectable @bind-SelectedItems="selection">
+            <VeloColumn Field="e => e.Name" Title="Employé" />
+            <VeloColumn Field="e => e.Department" Title="Service" />
+            <VeloColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="VeloAlign.End" />
+        </VeloDataGrid>
+
+        @code {
+            private VeloDataGrid<Employee>? grid;
+
+            // Après un ajout / une suppression :  await grid!.RefreshAsync();
+        }
+        """;
+
+    private const string ServerCSharpCode = """
+        // Une seule méthode : la grille passe la page demandée et un jeton d'annulation.
+        private async Task<VeloGridResult<Employee>> LoadEmployees(VeloGridRequest request, CancellationToken ct)
+        {
+            var query = db.Employees.AsNoTracking();
+
+            if (request.Search is { } search)
+                query = query.Where(e => e.Name.Contains(search) || e.Department.Contains(search));
+
+            var total = await query.CountAsync(ct);
+            var items = await query
+                .ApplySort(request)   // ORDER BY <colonne cliquée>, fourni par Velo
+                .ApplyPage(request)   // OFFSET / FETCH, fourni par Velo
+                .ToListAsync(ct);
+
+            return new VeloGridResult<Employee>(items, total);
+        }
+        """;
+
+    private void SetPage(PageChoice choice)
+    {
+        _pageChoice = choice;
+        _pageSize = choice switch { PageChoice.Five => 5, PageChoice.TwentyFive => 25, PageChoice.All => 0, _ => 10 };
+    }
+
+    private EventCallback<Employee> RowClick =>
+        _rowClick ? EventCallback.Factory.Create<Employee>(this, OpenEmployee) : default;
+
+    private void OpenEmployee(Employee employee)
+    {
+        _opened = employee;
+        _dialogOpen = true;
+    }
+
+    private void DeleteSelection()
+    {
+        var count = _selection.Count;
+        _employees = _employees.Except(_selection).ToList();
+        _selection = [];
+        Toasts.Success($"{count} employé{(count > 1 ? "s" : "")} supprimé{(count > 1 ? "s" : "")}");
+    }
+
+    private string Code
+    {
+        get
+        {
+            var attrs = string.Concat(
+                B("Searchable", _searchable),
+                _selectable ? " Selectable @bind-SelectedItems=\"selection\"" : "",
+                _pageSize == 10 ? "" : $" PageSize=\"{_pageSize}\"",
+                A("Density", _density, VeloSize.Md),
+                B("Striped", _striped),
+                A("MaxHeight", _sticky ? "360px" : null),
+                A("Color", _color),
+                A("HeaderBackground", _header),
+                A("SelectedColor", _selectedColor),
+                _rowClick ? " OnRowClick=\"Open\"" : "",
+                B("Loading", _loading),
+                B("ReorderableColumns", _reorder),
+                _chooser ? " ColumnChooser @bind-ColumnLayout=\"columnLayout\"" : "");
+            return $"""
+                <VeloDataGrid Items="employees"{attrs}>
+                    <VeloColumn Field="e => e.Name" Title="Employé">
+                        <Template>
+                            <VeloAvatar Name="@context.Name" Size="VeloSize.Sm" /> @context.Name
+                        </Template>
+                    </VeloColumn>
+                    <VeloColumn Field="e => e.Department" Title="Service" />
+                    <VeloColumn Field="e => e.Role" Title="Poste" />
+                    <VeloColumn Field="e => e.Status" Title="Statut" SortBy="e => (int)e.Status">
+                        <Template><StatusBadge Status="context.Status" /></Template>
+                    </VeloColumn>
+                    <VeloColumn Field="e => e.StartDate" Title="Arrivée" Format="d MMM yyyy" />
+                    <VeloColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="VeloAlign.End" />
+                </VeloDataGrid>
+                """;
+        }
+    }
+
+    private const string MinimalCode = """
+        <VeloDataGrid Items="employees">
+            <VeloColumn Field="e => e.Name" />
+            <VeloColumn Field="e => e.Department" />
+            <VeloColumn Field="e => e.StartDate" Format="d" />
+            <VeloColumn Field="e => e.Salary" Format="C0" Align="VeloAlign.End" />
+        </VeloDataGrid>
+        """;
+
+    private const string RowClassCode = """
+        <VeloDataGrid Items="employees" RowClass="@(e => e.Status == EmployeeStatus.Offboarding ? "row-leaving" : null)">
+            …
+        </VeloDataGrid>
+
+        /* app.css */
+        .row-leaving td { color: var(--velo-text-subtle); text-decoration: line-through; }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items", "IEnumerable<T>", null, "Les lignes."),
+        new("Searchable / SearchPlaceholder", "bool / string", null, "Recherche sur toutes les colonnes."),
+        new("Toolbar", "RenderFragment", null, "Contenu à droite de la barre d'outils."),
+        new("PageSize / PageSizes", "int / int[]", null, "Lignes par page (0 = tout) et choix proposés."),
+        new("Selectable / SelectedItems", "bool / IReadOnlyCollection<T>", null, "Colonne de cases à cocher, @bind-SelectedItems."),
+        new("OnRowClick", "EventCallback<T>", null, "Clic sur une ligne (sinon le clic sélectionne)."),
+        new("RowClass", "Func<T, string?>", null, "Classe CSS par ligne."),
+        new("Density", "VeloSize", null, "Sm (compact), Md, Lg (aéré)."),
+        new("Striped / Loading", "bool", null, "Lignes alternées / squelettes de chargement."),
+        new("EmptyContent / EmptyText", "RenderFragment / string", null, "Affichage sans données."),
+        new("Culture", "CultureInfo", null, "Culture des formats (dates, montants)."),
+        new("ReorderableColumns", "bool", null, "Glisser les en-têtes pour réordonner les colonnes."),
+        new("ColumnChooser", "bool", null, "Bouton « Colonnes » : afficher / masquer des colonnes."),
+        new("ColumnLayout", "IReadOnlyList<VeloColumnState>", null, "Ordre et visibilité choisis (Key, Visible), à sauvegarder et restaurer (@bind-ColumnLayout)."),
+        new("Color", "string", "--velo-grid-color", "Tri, sélection et page active."),
+        new("HeaderBackground", "string", "--velo-grid-header-bg", "Fond de l'en-tête."),
+        new("HoverColor", "string", "--velo-grid-hover", "Fond d'une ligne survolée."),
+        new("StripeColor", "string", "--velo-grid-stripe", "Fond des lignes paires (Striped)."),
+        new("SelectedColor", "string", "--velo-grid-selected", "Fond d'une ligne sélectionnée."),
+        new("Radius", "string", "--velo-grid-radius", "Arrondi."),
+        new("MaxHeight", "string", "--velo-grid-max-height", "Hauteur maximale avec en-tête fixe."),
+        new("—", "", "--velo-grid-header-text, --velo-grid-border, --velo-grid-row-border, --velo-grid-bg", "Texte d'en-tête, bordures, fond."),
+    ];
+
+    private static readonly ApiRow[] ColumnApi =
+    [
+        new("Field", "Expression<Func<T, object?>>", null, "Propriété affichée, triée et recherchée."),
+        new("Title", "string", null, "En-tête (nom de la propriété par défaut)."),
+        new("Format", "string", null, "Format .NET : \"C0\", \"d\", \"N2\", \"P1\"…"),
+        new("Template", "RenderFragment<T>", null, "Contenu libre de la cellule (context = la ligne)."),
+        new("SortBy", "Func<T, object?>", null, "Clé de tri personnalisée."),
+        new("Sortable / Searchable", "bool", null, "Désactiver le tri / la recherche sur la colonne."),
+        new("Align / Width / CellClass", "VeloAlign / string / string", null, "Alignement, largeur, classe des cellules."),
+    ];
+}

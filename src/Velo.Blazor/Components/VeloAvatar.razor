@@ -1,0 +1,70 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<span @attributes="Attributes" class="@ClassValue" style="@StyleValue" title="@Name">
+    @if (!string.IsNullOrEmpty(Src))
+    {
+        <img class="velo-avatar__img" src="@Src" alt="@Name" />
+    }
+    else
+    {
+        @Initials
+    }
+    @if (Status != VeloAvatarStatus.None)
+    {
+        <span class="velo-avatar__status velo-avatar__status--@Status.Css()"></span>
+    }
+</span>
+
+@code {
+    /// <summary>Full name: used for initials, tooltip and the automatic color.</summary>
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public VeloSize Size { get; set; } = VeloSize.Md;
+    [Parameter] public VeloAvatarStatus Status { get; set; }
+
+    /// <summary>Defaults to a color derived from <see cref="Name"/>, so each person keeps the same color.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Use e.g. "8px" for a rounded square.</summary>
+    [Parameter] public string? Radius { get; set; }
+
+    private static readonly string[] Palette =
+        ["#4f46e5", "#0891b2", "#059669", "#d97706", "#db2777", "#7c3aed", "#2563eb", "#dc2626", "#0d9488"];
+
+    private string Initials
+    {
+        get
+        {
+            var parts = (Name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length switch
+            {
+                0 => "?",
+                1 => parts[0][..Math.Min(2, parts[0].Length)].ToUpperInvariant(),
+                _ => $"{char.ToUpperInvariant(parts[0][0])}{char.ToUpperInvariant(parts[^1][0])}",
+            };
+        }
+    }
+
+    private string AutoColor
+    {
+        get
+        {
+            var hash = 0;
+            foreach (var c in Name ?? "")
+            {
+                hash = unchecked(hash * 31 + c);
+            }
+
+            return Palette[(int)((uint)hash % Palette.Length)];
+        }
+    }
+
+    private string ClassValue => new CssBuilder("velo-avatar").Add($"velo-avatar--{Size.Css()}").Add(Class).Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("avatar", Color ?? AutoColor)
+        .Var("--velo-avatar-radius", Radius)
+        .Raw(Style)
+        .Build();
+}

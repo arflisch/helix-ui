@@ -1,0 +1,106 @@
+using Velo.Blazor;
+
+namespace Velo.Demo.Components.Shared;
+
+/// <summary>Deterministic fake grid-balancing data for today, relative to the current time.</summary>
+public static class EnergyData
+{
+    public static DateTime Today => DateTime.Today;
+
+    private static double Noise(int i, int seed) => Math.Sin(i * 12.9898 + seed * 78.233) * 43758.5453 % 1;
+
+    /// <summary>Measured imbalance (MW), every 15 min, until now.</summary>
+    public static IReadOnlyList<VeloPoint> Imbalance(DateTime now) =>
+        Enumerable.Range(0, 96).Select(i =>
+        {
+            var t = Today.AddMinutes(15 * i);
+            double? value = t <= now ? Math.Round(Shape(i) + Noise(i, 1) * 60) : null;
+            return VeloPoint.At(t, value);
+        }).ToList();
+
+    /// <summary>Forecast imbalance (MW) from one hour ago to the end of the day.</summary>
+    public static IReadOnlyList<VeloPoint> Forecast(DateTime now) =>
+        Enumerable.Range(0, 96).Select(i =>
+        {
+            var t = Today.AddMinutes(15 * i);
+            double? value = t >= now.AddHours(-1) ? Math.Round(Shape(i) * 0.9 + 20) : null;
+            return VeloPoint.At(t, value);
+        }).ToList();
+
+    /// <summary>Reserve activated by the operator (MW), held for an hour at a time.</summary>
+    public static IReadOnlyList<VeloPoint> Activated(DateTime now) =>
+        Enumerable.Range(0, 96).Select(i =>
+        {
+            var t = Today.AddMinutes(15 * i);
+            var hourStart = i / 4 * 4;
+            double? value = t <= now ? Math.Round(-Shape(hourStart) * 0.6 / 50) * 50 : null;
+            return VeloPoint.At(t, value);
+        }).ToList();
+
+    /// <summary>Imbalance price (€/MWh), hourly.</summary>
+    public static IReadOnlyList<VeloPoint> Prices() =>
+        Enumerable.Range(0, 24).Select(h =>
+            VeloPoint.At(Today.AddHours(h).AddMinutes(30), Math.Round(85 + 55 * Math.Sin((h - 7) / 24.0 * Math.PI * 2) + Noise(h, 3) * 25 - (h is 3 or 4 ? 140 : 0))))
+        .ToList();
+
+    private static double Shape(int quarter)
+    {
+        var hour = quarter / 4.0;
+        return 260 * Math.Sin((hour - 6) / 24 * Math.PI * 2) + 140 * Math.Sin(hour / 3.1) - 60;
+    }
+
+    public static readonly IReadOnlyList<VeloTimelineStatus> Statuses =
+    [
+        new("direct-saved", "Demande directe enregistrée", "var(--velo-series-2)", VeloTimelineAppearance.Dashed),
+        new("direct-sent", "Demande directe envoyée", "var(--velo-series-2)", VeloTimelineAppearance.Outline),
+        new("direct-ack", "Demande directe confirmée", "var(--velo-series-2)", VeloTimelineAppearance.Filled),
+        new("scheduled-saved", "Planifiée enregistrée", "var(--velo-series-1)", VeloTimelineAppearance.Dashed),
+        new("scheduled-sent", "Planifiée envoyée", "var(--velo-series-1)", VeloTimelineAppearance.Outline),
+        new("scheduled-ack", "Planifiée confirmée", "var(--velo-series-1)", VeloTimelineAppearance.Filled),
+        new("rejected", "Rejetée", "danger", VeloTimelineAppearance.Filled),
+        new("overwritten", "Remplacée", "var(--velo-text-subtle)", VeloTimelineAppearance.Filled),
+        new("local", "Demande locale", "var(--velo-series-4)", VeloTimelineAppearance.Filled),
+    ];
+
+    /// <summary>Dispatch requests over [start, start + hours], each one quarter-hour, status driven by time.</summary>
+    public static IReadOnlyList<VeloTimelineItem> Demands(DateTime start, int hours, DateTime now)
+    {
+        var items = new List<VeloTimelineItem>();
+        for (var q = 0; q < hours * 4; q++)
+        {
+            if (Noise(q, 7) < 0.25 && q % 3 != 0)
+            {
+                continue; // some quarters have no request
+            }
+
+            var from = start.AddMinutes(15 * q);
+            var to = from.AddMinutes(q % 5 == 0 ? 30 : 15);
+            var direct = q % 4 == 1;
+            var phase = to <= now ? "ack" : from <= now ? "sent" : "saved";
+            var status = q % 11 == 7 ? "rejected" : q % 13 == 5 ? "overwritten" : q % 9 == 4 ? "local" : $"{(direct ? "direct" : "scheduled")}-{phase}";
+            var mw = Math.Round(Math.Abs(Shape(q + 40)) / 10, 1);
+            items.Add(new VeloTimelineItem($"d{q}", from, to, $"SA : {mw:0.0} MW") { Status = status, Data = mw });
+        }
+
+        return items;
+    }
+
+    public static IReadOnlyList<VeloTimelineItem> UnitPlan(DateTime day)
+    {
+        (string Unit, int From, int To, string Status, string Label)[] plan =
+        [
+            ("Centrale A", 0, 6, "scheduled-ack", "Base 120 MW"),
+            ("Centrale A", 6, 10, "scheduled-ack", "Montée 180 MW"),
+            ("Centrale A", 17, 22, "scheduled-sent", "Pointe 210 MW"),
+            ("Centrale B", 5, 9, "direct-ack", "Réserve 40 MW"),
+            ("Centrale B", 8, 14, "scheduled-saved", "Maintenance"),
+            ("Centrale B", 18, 21, "direct-sent", "Réserve 60 MW"),
+            ("Batterie", 2, 5, "local", "Charge 20 MW"),
+            ("Batterie", 11, 13, "direct-ack", "Décharge 25 MW"),
+            ("Batterie", 12, 15, "rejected", "Décharge 30 MW"),
+            ("Batterie", 19, 21, "scheduled-saved", "Décharge 25 MW"),
+        ];
+
+        return plan.Select((p, i) => new VeloTimelineItem($"u{i}", day.AddHours(p.From), day.AddHours(p.To), p.Label) { Lane = p.Unit, Status = p.Status }).ToList();
+    }
+}

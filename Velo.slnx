@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/Velo.Demo/Velo.Demo.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Velo.Blazor/Velo.Blazor.csproj" />
+  </Folder>
+</Solution>

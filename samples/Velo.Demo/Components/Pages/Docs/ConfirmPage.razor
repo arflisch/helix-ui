@@ -1,0 +1,64 @@
+@page "/components/confirm"
+@inject VeloConfirmService Confirm
+@inject VeloToastService Toasts
+
+<DemoPage Title="Confirm" Description="Demander une confirmation depuis n'importe quel code, en une ligne qui attend la réponse : if (await Confirm.AskAsync(…)). Pas de dialogue à déclarer dans la page : VeloProvider l'affiche.">
+    <Example Title="Exemples" Code="@Code">
+        <div class="row">
+            <VeloButton Color="danger" Variant="VeloVariant.Soft" Icon="trash" OnClick="Delete">Supprimer le planning</VeloButton>
+            <VeloButton Variant="VeloVariant.Outline" Color="neutral" OnClick="Publish">Publier</VeloButton>
+            <span class="muted" style="font-size:13px">Dernière réponse : @_last</span>
+        </div>
+    </Example>
+
+    <ApiTable Title="VeloConfirmService" Rows="Api" />
+</DemoPage>
+
+@code {
+    private string _last = "—";
+
+    private async Task Delete()
+    {
+        var ok = await Confirm.AskAsync(new VeloConfirmOptions("Supprimer le planning ?")
+        {
+            Message = "Les 12 demandes planifiées seront annulées. Cette action est définitive.",
+            ConfirmText = "Supprimer",
+            Danger = true,
+        });
+        _last = ok ? "confirmé" : "annulé";
+        if (ok)
+        {
+            Toasts.Error("Planning supprimé");
+        }
+    }
+
+    private async Task Publish()
+    {
+        _last = await Confirm.AskAsync("Publier le planning ?", "Il sera visible par toute l'équipe.") ? "confirmé" : "annulé";
+    }
+
+    private const string Code = """
+        @inject VeloConfirmService Confirm
+
+        if (await Confirm.AskAsync(new VeloConfirmOptions("Supprimer le planning ?")
+            {
+                Message = "Cette action est définitive.",
+                ConfirmText = "Supprimer",
+                Danger = true,
+            }))
+        {
+            await planning.DeleteAsync();
+        }
+
+        // Version courte
+        if (await Confirm.AskAsync("Publier le planning ?")) { … }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("AskAsync(title, message, danger, confirmText)", "Task<bool>", null, "Version courte."),
+        new("AskAsync(VeloConfirmOptions, CancellationToken)", "Task<bool>", null, "true = confirmé ; false = annulé, fermé ou jeton annulé."),
+        new("VeloConfirmOptions", "record", null, "Title, Message, ConfirmText, CancelText, Danger."),
+        new("Inscription", "AddVelo()", null, "Service enregistré par AddVelo ; affiché par VeloProvider."),
+    ];
+}

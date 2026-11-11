@@ -1,0 +1,95 @@
+@page "/components/dialog"
+@using static Velo.Demo.Components.Shared.Snippet
+@inject VeloToastService Toasts
+
+<DemoPage Title="Dialog" Description="Fenêtre modale : focus automatique, fermeture par Échap ou clic sur le fond, en-tête, corps et pied.">
+    <Playground Code="@Code">
+        <Preview>
+            <VeloButton OnClick="() => _open = true">Ouvrir la fenêtre</VeloButton>
+            <VeloDialog @bind-Open="_open" Title="@_title" Description="@_description" Width="@($"{N(_width)}px")"
+                        CloseOnBackdrop="_backdrop" ShowClose="_showClose">
+                <ChildContent>
+                    <VeloTextField Label="Nom du projet" Value="Velo UI" />
+                </ChildContent>
+                <Footer>
+                    <VeloButton Variant="VeloVariant.Outline" Color="neutral" OnClick="() => _open = false">Annuler</VeloButton>
+                    <VeloButton OnClick="Confirm">Enregistrer</VeloButton>
+                </Footer>
+            </VeloDialog>
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Title" @bind-Value="_title" />
+            <VeloTextField Label="Description" @bind-Value="_description" />
+            <VeloSlider Label="Width" @bind-Value="_width" Min="320" Max="720" Step="20" Format="@(v => $"{v} px")" />
+            <VeloSwitch Label="CloseOnBackdrop" @bind-Checked="_backdrop" Size="VeloSize.Sm" />
+            <VeloSwitch Label="ShowClose" @bind-Checked="_showClose" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Confirmation destructive" Code="@ConfirmCode">
+        <VeloButton Color="danger" Variant="VeloVariant.Soft" Icon="trash" OnClick="() => _confirm = true">Supprimer le projet</VeloButton>
+        <VeloDialog @bind-Open="_confirm" Title="Supprimer le projet ?" Width="420px">
+            <ChildContent>Cette action est définitive. Toutes les données du projet seront perdues.</ChildContent>
+            <Footer>
+                <VeloButton Variant="VeloVariant.Ghost" Color="neutral" OnClick="() => _confirm = false">Annuler</VeloButton>
+                <VeloButton Color="danger" OnClick="Delete">Supprimer</VeloButton>
+            </Footer>
+        </VeloDialog>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private bool _open, _confirm, _backdrop = true, _showClose = true;
+    private string? _title = "Modifier le projet";
+    private string? _description = "Les changements sont visibles par toute l'équipe.";
+    private double _width = 480;
+
+    private void Confirm()
+    {
+        _open = false;
+        Toasts.Success("Projet enregistré");
+    }
+
+    private void Delete()
+    {
+        _confirm = false;
+        Toasts.Error("Projet supprimé", "Supprimé");
+    }
+
+    private string Code =>
+        $"""
+        <VeloButton OnClick="() => open = true">Ouvrir</VeloButton>
+
+        <VeloDialog @bind-Open="open"{A("Title", _title)}{A("Description", _description)}{A("Width", $"{N(_width)}px", "480px")}{(_backdrop ? "" : " CloseOnBackdrop=\"false\"")}{(_showClose ? "" : " ShowClose=\"false\"")}>
+            <ChildContent>…</ChildContent>
+            <Footer>
+                <VeloButton Variant="VeloVariant.Outline" Color="neutral" OnClick="() => open = false">Annuler</VeloButton>
+                <VeloButton OnClick="Save">Enregistrer</VeloButton>
+            </Footer>
+        </VeloDialog>
+        """;
+
+    private const string ConfirmCode = """
+        <VeloDialog @bind-Open="confirm" Title="Supprimer le projet ?" Width="420px">
+            <ChildContent>Cette action est définitive.</ChildContent>
+            <Footer>
+                <VeloButton Variant="VeloVariant.Ghost" Color="neutral" OnClick="() => confirm = false">Annuler</VeloButton>
+                <VeloButton Color="danger" OnClick="Delete">Supprimer</VeloButton>
+            </Footer>
+        </VeloDialog>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Open", "bool", null, "Visibilité (@bind-Open)."),
+        new("Title / Description", "string", null, "En-tête."),
+        new("ChildContent / Footer", "RenderFragment", null, "Corps et pied."),
+        new("CloseOnBackdrop / CloseOnEscape", "bool", null, "Fermeture par clic sur le fond / Échap (true)."),
+        new("ShowClose", "bool", null, "Croix de fermeture (true)."),
+        new("Width", "string", "--velo-dialog-width", "Largeur maximale (480px)."),
+        new("Radius", "string", "--velo-dialog-radius", "Arrondi."),
+        new("—", "", "--velo-overlay", "Couleur du fond assombri."),
+    ];
+}

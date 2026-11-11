@@ -1,0 +1,137 @@
+@page "/components/dashboard"
+@using System.Globalization
+@using System.Text.Json
+@inject IJSRuntime JS
+@inject VeloToastService Toasts
+
+<DemoPage Title="Dashboard" Description="Un tableau de bord que chaque utilisateur arrange : glisser les tuiles, changer leur largeur, les masquer et les rappeler. La disposition est un simple objet à sauvegarder où vous voulez ; ici dans le navigateur (localStorage), elle survit au rechargement.">
+    <section class="demo-section">
+        <VeloDashboard Title="Exploitation du jour" Columns="4" Layout="_layout" LayoutChanged="SaveLayout" @bind-Editing="_editing">
+            <Toolbar>
+                <VeloBadge Color="success" Dot="true">Données en direct</VeloBadge>
+            </Toolbar>
+            <ChildContent>
+                <VeloDashboardTile Id="imbalance" Plain="true">
+                    <VeloStat Label="Déséquilibre actuel" Value="182" Unit="MW" Delta="-24" DeltaLabel="vs il y a 1 h" HigherIsBetter="false"
+                              Trend="DemoData.Trend(1, 14, 260, -6)" Icon="zap" Culture="French" />
+                </VeloDashboardTile>
+                <VeloDashboardTile Id="reserve" Plain="true">
+                    <VeloStat Label="Réserve activée" Value="350" Unit="MW" Delta="50" DeltaLabel="vs hier" Trend="DemoData.Trend(2, 14, 280, 5)" TrendColor="#1baf7a" Icon="trending-up" Culture="French" />
+                </VeloDashboardTile>
+                <VeloDashboardTile Id="price" Plain="true">
+                    <VeloStat Label="Prix moyen" Value="91.4" Format="0.0" Unit="€/MWh" Delta="3.2" DeltaFormat="+0.0 '%';-0.0 '%'" DeltaLabel="vs hier" HigherIsBetter="false"
+                              Trend="DemoData.Trend(3, 14, 84, 0.6)" TrendColor="#eb6834" Icon="star" Culture="French" />
+                </VeloDashboardTile>
+                <VeloDashboardTile Id="rejected" Plain="true">
+                    <VeloStat Label="Demandes rejetées" Value="3" Delta="0" DeltaLabel="stable" HigherIsBetter="false" Trend="DemoData.Trend(4, 14, 4, -0.05)" TrendColor="var(--velo-text-subtle)" Icon="danger" Culture="French" />
+                </VeloDashboardTile>
+
+                <VeloDashboardTile Id="chart" Title="Équilibrage" DefaultSpan="3" MinSpan="2">
+                    <Actions><VeloBadge>MW</VeloBadge></Actions>
+                    <ChildContent>
+                        <VeloChart Height="240px" Unit="MW" YFormat="N0" ShowNow="true" ShowTableToggle="false" Culture="French">
+                            <VeloChartSeries Name="Déséquilibre" Points="_imbalance" Type="VeloSeriesType.Area" />
+                            <VeloChartSeries Name="Prévision" Points="_forecast" Dashed="true" />
+                        </VeloChart>
+                    </ChildContent>
+                </VeloDashboardTile>
+
+                <VeloDashboardTile Id="priorities" Title="Priorités de l'équipe">
+                    <VeloSortableList TItem="Priority" Items="_priorities" ItemsChanged="p => _priorities = p.ToList()" ItemKey="p => p.Id">
+                        <ItemTemplate>
+                            <div class="prio">
+                                <span class="prio__title">@context.Title</span>
+                                <span class="prio__owner">@context.Owner</span>
+                            </div>
+                        </ItemTemplate>
+                    </VeloSortableList>
+                </VeloDashboardTile>
+
+                <VeloDashboardTile Id="heatmap" Title="Déséquilibre moyen par heure" DefaultSpan="4" MinSpan="2">
+                    <VeloHeatmap Cells="_weekly" Diverging="true" Unit="MW" Format="N0" ColumnLabelEvery="3" CellHeight="24px" CellMinWidth="18px" Culture="French" />
+                </VeloDashboardTile>
+            </ChildContent>
+        </VeloDashboard>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Disposition enregistrée</h2>
+        <p class="demo-section__text">Ce que reçoit <code>LayoutChanged</code> : l'ordre, la largeur et la visibilité de chaque tuile. Rechargez la page, elle est conservée.</p>
+        <CodeBlock Language="json" Code="@LayoutJson" />
+        <CodeBlock Code="@Code" />
+    </section>
+
+    <ApiTable Title="VeloDashboard et VeloDashboardTile" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string StorageKey = "velo-demo-dashboard";
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+    private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
+
+    private readonly IReadOnlyList<VeloPoint> _imbalance = EnergyData.Imbalance(DateTime.Now);
+    private readonly IReadOnlyList<VeloPoint> _forecast = EnergyData.Forecast(DateTime.Now);
+    private readonly IReadOnlyList<VeloHeatCell> _weekly = DemoData.WeeklyImbalance();
+    private List<Priority> _priorities = DemoData.Priorities();
+    private IReadOnlyList<VeloTileState>? _layout;
+    private bool _editing;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var json = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try
+            {
+                _layout = JsonSerializer.Deserialize<List<VeloTileState>>(json);
+                StateHasChanged();
+            }
+            catch (JsonException)
+            {
+                // Corrupted value: ignore it and keep the default layout.
+            }
+        }
+    }
+
+    private async Task SaveLayout(IReadOnlyList<VeloTileState> layout)
+    {
+        _layout = layout;
+        await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, JsonSerializer.Serialize(layout));
+    }
+
+    private string LayoutJson => _layout is null ? "// Disposition par défaut : cliquez sur « Personnaliser »." : JsonSerializer.Serialize(_layout, Json);
+
+    private const string Code = """
+        <VeloDashboard Title="Exploitation du jour" Columns="4" Layout="layout" LayoutChanged="Save">
+            <VeloDashboardTile Id="imbalance" Plain>
+                <VeloStat Label="Déséquilibre actuel" Value="182" Unit="MW" Delta="-24" HigherIsBetter="false" Trend="trend" />
+            </VeloDashboardTile>
+            <VeloDashboardTile Id="chart" Title="Équilibrage" DefaultSpan="3" MinSpan="2">
+                <VeloChart …>…</VeloChart>
+            </VeloDashboardTile>
+        </VeloDashboard>
+
+        @code {
+            private IReadOnlyList<VeloTileState>? layout;   // chargé depuis votre base, localStorage…
+
+            private Task Save(IReadOnlyList<VeloTileState> l) => store.SaveAsync(userId, l);
+        }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Columns", "int", "--velo-dashboard-cols", "Colonnes de la grille (4). Passe à 2 puis 1 sur petit écran."),
+        new("Layout / LayoutChanged", "IReadOnlyList<VeloTileState>", null, "Disposition à restaurer / à sauvegarder (Id, Span, Hidden)."),
+        new("Editing", "bool", null, "Mode personnalisation (@bind-Editing), sinon via le bouton « Personnaliser »."),
+        new("Title / Toolbar / ShowToolbar", "string / RenderFragment / bool", null, "Barre au-dessus de la grille."),
+        new("Gap", "string", "--velo-dashboard-gap", "Espace entre les tuiles (16px)."),
+        new("Tile Id / Title / Actions", "string / string / RenderFragment", null, "Identifiant stable (pour la sauvegarde), titre, actions."),
+        new("Tile DefaultSpan / MinSpan / MaxSpan", "int", null, "Largeur par défaut et bornes autorisées."),
+        new("Tile CanHide / Plain / MinHeight", "bool / bool / string", null, "Peut être masquée ; sans cadre (pour une VeloStat) ; hauteur minimale."),
+    ];
+}

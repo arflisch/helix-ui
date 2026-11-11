@@ -1,0 +1,54 @@
+@page "/components/badge"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Badge" Description="Petites étiquettes de statut, de catégorie ou de compteur.">
+    <Playground Code="@Code">
+        <Preview>
+            <VeloBadge Variant="_variant" Color="@_color" Dot="_dot" Square="_square">@_text</VeloBadge>
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Texte" @bind-Value="_text" />
+            <Choice TEnum="VeloBadgeVariant" Label="Variant" @bind-Value="_variant" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <VeloSwitch Label="Dot" @bind-Checked="_dot" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Square" @bind-Checked="_square" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Toutes les combinaisons">
+        <div class="stack">
+            @foreach (var variant in Enum.GetValues<VeloBadgeVariant>())
+            {
+                <div class="row">
+                    @foreach (var color in Colors)
+                    {
+                        <VeloBadge Variant="variant" Color="@color" Dot="@(color == "success")">@color</VeloBadge>
+                    }
+                </div>
+            }
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly string[] Colors = ["neutral", "primary", "success", "warning", "danger", "info", "#8b5cf6"];
+
+    private string? _text = "En ligne";
+    private VeloBadgeVariant _variant;
+    private string? _color = "success";
+    private bool _dot = true, _square;
+
+    private string Code =>
+        $"<VeloBadge{A("Variant", _variant, VeloBadgeVariant.Soft)}{A("Color", _color)}{B("Dot", _dot)}{B("Square", _square)}>{_text}</VeloBadge>";
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Variant", "VeloBadgeVariant", null, "Soft, Solid ou Outline."),
+        new("Color", "string", "--velo-badge-color", "Neutral par défaut."),
+        new("Dot", "bool", null, "Point coloré avant le texte."),
+        new("Icon", "string", null, "Icône avant le texte."),
+        new("Square", "bool", "--velo-badge-radius", "Coins carrés au lieu d'une pilule."),
+    ];
+}

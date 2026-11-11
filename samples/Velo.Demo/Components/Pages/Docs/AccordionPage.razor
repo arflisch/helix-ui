@@ -1,0 +1,55 @@
+@page "/components/accordion"
+
+<DemoPage Title="Accordion" Description="Sections repliables pour une FAQ, des réglages avancés ou un détail optionnel. Animation de hauteur fluide ; le contenu fermé n'est pas atteignable au clavier.">
+    <Example Title="FAQ" Code="@Code">
+        <div class="grid-2">
+            <VeloAccordion>
+                <VeloAccordionItem Title="Comment est calculé le déséquilibre ?" Icon="info" Expanded="true">
+                    C'est l'écart entre la production et la consommation sur chaque quart d'heure, mesuré par le gestionnaire de réseau.
+                </VeloAccordionItem>
+                <VeloAccordionItem Title="Quand une demande est-elle rejetée ?" Icon="warning">
+                    Lorsqu'elle arrive après l'heure limite de dépôt, dépasse la capacité disponible ou sort des bornes de prix.
+                </VeloAccordionItem>
+                <VeloAccordionItem Title="Puis-je exporter les données ?" Icon="download">
+                    Oui, depuis chaque tableau : menu Actions, puis « Exporter en CSV ».
+                </VeloAccordionItem>
+                <VeloAccordionItem Title="Fonction réservée aux administrateurs" Disabled="true" />
+            </VeloAccordion>
+            <VeloAccordion Multiple="true" Flush="true">
+                <VeloAccordionItem Title="Notifications" Subtitle="E-mail, push, SMS">
+                    <ChildContent>
+                        <div class="stack">
+                            <VeloSwitch Label="E-mail" Checked="true" />
+                            <VeloSwitch Label="Push" />
+                        </div>
+                    </ChildContent>
+                    <Extra><VeloBadge Color="success">2 actives</VeloBadge></Extra>
+                </VeloAccordionItem>
+                <VeloAccordionItem Title="Réglages avancés" Subtitle="Pour les utilisateurs expérimentés">
+                    <VeloNumberField Label="Délai de relance" Value="15" Unit="min" Min="5" Max="60" Step="5" />
+                </VeloAccordionItem>
+            </VeloAccordion>
+        </div>
+    </Example>
+
+    <ApiTable Title="VeloAccordion et VeloAccordionItem" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Code = """
+        <VeloAccordion>
+            <VeloAccordionItem Title="Comment est calculé le déséquilibre ?" Icon="info" Expanded>…</VeloAccordionItem>
+            <VeloAccordionItem Title="Quand une demande est-elle rejetée ?">…</VeloAccordionItem>
+        </VeloAccordion>
+
+        <VeloAccordion Multiple Flush>…</VeloAccordion>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Multiple", "bool", null, "Plusieurs sections ouvertes à la fois (sinon une seule)."),
+        new("Flush", "bool", null, "Sans cadre, seulement des séparateurs."),
+        new("Item Title / Subtitle / Icon / Extra", "string / string / string / RenderFragment", null, "En-tête de la section, contenu à droite (badge…)."),
+        new("Item Expanded / Disabled", "bool", null, "Ouverte au départ ; désactivée."),
+    ];
+}

@@ -1,0 +1,100 @@
+@page "/components/card"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Card" Description="Conteneur avec titre, sous-titre, zone d'actions et pied. Bordure ou ombre, effet au survol.">
+    <Playground Code="@Code">
+        <Preview>
+            <VeloCard Title="@_title" Subtitle="@_subtitle" Elevated="_elevated" Hoverable="_hoverable" Padding="@Padding"
+                      Background="@_bg" Style="width:100%;max-width:380px">
+                <Actions>
+                    @if (_actions)
+                    {
+                        <VeloBadge Color="success" Dot="true">Actif</VeloBadge>
+                    }
+                </Actions>
+                <ChildContent>Le contenu de la carte. Tout ce que vous voulez : texte, formulaires, listes…</ChildContent>
+                <Footer>
+                    @if (_footer)
+                    {
+                        <VeloButton Variant="VeloVariant.Ghost" Color="neutral" Size="VeloSize.Sm">Annuler</VeloButton>
+                        <VeloButton Size="VeloSize.Sm">Valider</VeloButton>
+                    }
+                </Footer>
+            </VeloCard>
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Title" @bind-Value="_title" />
+            <VeloTextField Label="Subtitle" @bind-Value="_subtitle" />
+            <VeloSlider Label="Padding" @bind-Value="_padding" Min="8" Max="36" Format="@(v => $"{v} px")" />
+            <ColorPicker Label="Background" @bind-Value="_bg" Colors="@(["#fafaf9", "#eef2ff", "#ecfdf5", "#18181b"])" />
+            <VeloSwitch Label="Elevated" @bind-Checked="_elevated" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Hoverable" @bind-Checked="_hoverable" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Actions" @bind-Checked="_actions" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Footer" @bind-Checked="_footer" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Statistiques" Code="@StatsCode">
+        <div class="grid-3">
+            @foreach (var (label, value, delta, up) in Stats)
+            {
+                <VeloCard Hoverable="true">
+                    <p class="muted" style="margin:0 0 8px;font-size:13px">@label</p>
+                    <div class="row" style="justify-content:space-between">
+                        <span style="font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--velo-text)">@value</span>
+                        <VeloBadge Color="@(up ? "success" : "danger")">@delta</VeloBadge>
+                    </div>
+                </VeloCard>
+            }
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly (string, string, string, bool)[] Stats =
+        [("Revenus", "48 290 €", "+12,4 %", true), ("Clients", "1 284", "+3,1 %", true), ("Désabonnements", "2,4 %", "+0,3 %", false)];
+
+    private string? _title = "Abonnement Pro";
+    private string? _subtitle = "Renouvelé le 1er de chaque mois";
+    private string? _bg;
+    private double _padding = 20;
+    private bool _elevated, _hoverable, _actions = true, _footer = true;
+
+    private string? Padding => _padding == 20 ? null : $"{N(_padding)}px";
+
+    private string Code
+    {
+        get
+        {
+            var actions = _actions ? "\n    <Actions><VeloBadge Color=\"success\" Dot>Actif</VeloBadge></Actions>" : "";
+            var footer = _footer ? "\n    <Footer>\n        <VeloButton Variant=\"VeloVariant.Ghost\">Annuler</VeloButton>\n        <VeloButton>Valider</VeloButton>\n    </Footer>" : "";
+            var content = actions.Length + footer.Length > 0 ? "\n    <ChildContent>Le contenu…</ChildContent>" : "Le contenu…";
+            var close = actions.Length + footer.Length > 0 ? "\n" : "";
+            return $"<VeloCard{A("Title", _title)}{A("Subtitle", _subtitle)}{A("Padding", Padding)}{A("Background", _bg)}{B("Elevated", _elevated)}{B("Hoverable", _hoverable)}>{actions}{content}{footer}{close}</VeloCard>";
+        }
+    }
+
+    private const string StatsCode = """
+        <VeloCard Hoverable>
+            <p>Revenus</p>
+            <strong>48 290 €</strong>
+            <VeloBadge Color="success">+12,4 %</VeloBadge>
+        </VeloCard>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Title / Subtitle", "string", null, "En-tête simple."),
+        new("Actions", "RenderFragment", null, "Contenu à droite du titre."),
+        new("Header", "RenderFragment", null, "Remplace tout l'en-tête."),
+        new("Footer", "RenderFragment", null, "Pied avec fond légèrement teinté."),
+        new("Elevated", "bool", null, "Ombre à la place de la bordure."),
+        new("Hoverable", "bool", null, "Se soulève au survol."),
+        new("Padding", "string", "--velo-card-padding", "Espacement intérieur."),
+        new("Radius", "string", "--velo-card-radius", "Arrondi."),
+        new("Background", "string", "--velo-card-bg", "Fond."),
+        new("BorderColor", "string", "--velo-card-border", "Bordure."),
+    ];
+}

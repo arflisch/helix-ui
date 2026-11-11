@@ -1,0 +1,111 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@using System.Globalization
+
+<div class="@(new CssBuilder("velo-field").Add("is-invalid", !string.IsNullOrEmpty(Error)).Add("is-disabled", Disabled).Add(Class).Build())" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="velo-field__label" for="@_id">@Label</label>
+    }
+    <div class="velo-input velo-number">
+        @if (ShowSteppers)
+        {
+            <button type="button" class="velo-number__step" tabindex="-1" aria-label="Diminuer" disabled="@(Disabled || AtMin)" @onclick="() => StepBy(-1)">
+                <VeloIcon Name="minus" Size="14" />
+            </button>
+        }
+        <input @attributes="Attributes"
+               id="@_id"
+               type="number"
+               inputmode="decimal"
+               class="velo-input__control velo-number__control"
+               value="@Raw"
+               min="@Inv(Min)"
+               max="@Inv(Max)"
+               step="@Inv(Step)"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")"
+               @onchange="OnChange" />
+        @if (!string.IsNullOrEmpty(Unit))
+        {
+            <span class="velo-input__affix velo-number__unit">@Unit</span>
+        }
+        @if (ShowSteppers)
+        {
+            <button type="button" class="velo-number__step" tabindex="-1" aria-label="Augmenter" disabled="@(Disabled || AtMax)" @onclick="() => StepBy(1)">
+                <VeloIcon Name="plus" Size="14" />
+            </button>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p class="velo-field__error">@Error</p>
+    }
+    else if (!string.IsNullOrEmpty(Hint))
+    {
+        <p class="velo-field__hint">@Hint</p>
+    }
+</div>
+
+@code {
+    [Parameter] public double? Value { get; set; }
+    [Parameter] public EventCallback<double?> ValueChanged { get; set; }
+    [Parameter] public double? Min { get; set; }
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Increment of the − / + buttons and arrow keys.</summary>
+    [Parameter] public double Step { get; set; } = 1;
+
+    /// <summary>Decimals kept (rounding), e.g. 0 for whole numbers.</summary>
+    [Parameter] public int? Decimals { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool ShowSteppers { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Color { get; set; }
+
+    private readonly string _id = VeloId.Next("number");
+
+    private bool AtMin => Min is { } min && Value is { } v && v <= min;
+    private bool AtMax => Max is { } max && Value is { } v && v >= max;
+
+    private string? Raw => Value?.ToString(CultureInfo.InvariantCulture);
+
+    private string? StyleValue => new StyleBuilder().Color("input", Color).Raw(Style).Build();
+
+    private static string? Inv(double? value) => value?.ToString(CultureInfo.InvariantCulture);
+
+    private double Normalize(double value)
+    {
+        if (Min is { } min) value = Math.Max(min, value);
+        if (Max is { } max) value = Math.Min(max, value);
+        return Decimals is { } d ? Math.Round(value, d) : value;
+    }
+
+    private Task Set(double? value)
+    {
+        Value = value is { } v ? Normalize(v) : null;
+        return ValueChanged.InvokeAsync(Value);
+    }
+
+    private Task StepBy(int direction) => Set((Value ?? Min ?? 0) + direction * Step);
+
+    private Task OnChange(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return Set(null);
+        }
+
+        // type=number always reports an invariant number ("12.5"), whatever the culture.
+        return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            ? Set(value)
+            : Task.CompletedTask;
+    }
+}

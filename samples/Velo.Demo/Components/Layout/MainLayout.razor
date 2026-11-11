@@ -1,0 +1,81 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject DemoThemeState ThemeState
+@inject NavigationManager Nav
+
+<VeloProvider Theme="ThemeState.Theme" Class="demo">
+    <aside class="@(new CssBuilder("demo-sidebar").Add("is-open", _menuOpen).Build())">
+        <a class="demo-logo" href="">
+            <span class="demo-logo__mark"></span>
+            Velo<span class="demo-logo__ui">UI</span>
+        </a>
+
+        <nav class="demo-nav" @onclick="() => _menuOpen = false">
+            @foreach (var group in DemoNav.Groups)
+            {
+                <p class="demo-nav__group">@group.Title</p>
+                @foreach (var item in group.Items)
+                {
+                    <NavLink class="demo-nav__link" href="@item.Href" Match="@(item.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+                        @item.Title
+                    </NavLink>
+                }
+            }
+        </nav>
+    </aside>
+
+    <div class="demo-main">
+        <header class="demo-topbar">
+            <button class="velo-close demo-menu-btn" aria-label="Menu" @onclick="() => _menuOpen = !_menuOpen">
+                <VeloIcon Svg="<path d='M4 7h16M4 12h16M4 17h16'/>" Size="18" />
+            </button>
+            <div class="demo-topbar__spacer"></div>
+            <div class="demo-swatches" role="group" aria-label="Couleur principale">
+                @foreach (var color in TopColors)
+                {
+                    <button class="@(new CssBuilder("demo-swatch").Add("is-active", (ThemeState.Theme.Primary ?? TopColors[0]) == color).Build())"
+                            style="background:@color" aria-label="@color" @onclick="() => SetPrimary(color)"></button>
+                }
+            </div>
+            <VeloTooltip Text="@(IsDark ? "Mode clair" : "Mode sombre")" Placement="VeloPlacement.Left">
+                <VeloButton Variant="VeloVariant.Ghost" Color="neutral" Icon="@(IsDark ? "sun" : "moon")" OnClick="ToggleDark" aria-label="Changer de thème" />
+            </VeloTooltip>
+        </header>
+
+        <main class="demo-content">
+            @Body
+        </main>
+    </div>
+</VeloProvider>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Une erreur inattendue est survenue.
+    <a href="." class="reload">Recharger</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private static readonly string[] TopColors = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#e11d48", "#8b5cf6", "#18181b"];
+
+    private bool _menuOpen;
+
+    private bool IsDark => ThemeState.Theme.Mode == VeloThemeMode.Dark;
+
+    protected override void OnInitialized() => ThemeState.Changed += OnThemeChanged;
+
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void SetPrimary(string color)
+    {
+        ThemeState.Theme.Primary = color == TopColors[0] ? null : color;
+        ThemeState.Notify();
+    }
+
+    private void ToggleDark()
+    {
+        ThemeState.Theme.Mode = IsDark ? VeloThemeMode.Light : VeloThemeMode.Dark;
+        ThemeState.Notify();
+    }
+
+    public void Dispose() => ThemeState.Changed -= OnThemeChanged;
+}

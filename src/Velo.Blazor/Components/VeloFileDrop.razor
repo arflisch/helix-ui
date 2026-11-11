@@ -1,0 +1,94 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@using Microsoft.AspNetCore.Components.Forms
+
+<div @attributes="Attributes" class="@(new CssBuilder("velo-filedrop").Add("is-over", _over).Add("is-disabled", Disabled).Add("is-compact", Compact).Add(Class).Build())" style="@StyleValue">
+    <label class="velo-filedrop__zone" @ondragenter="() => _over = true" @ondragleave="() => _over = false" @ondrop="() => _over = false">
+        <InputFile class="velo-filedrop__input" OnChange="OnChange" multiple="@Multiple" accept="@Accept" disabled="@Disabled" />
+        <span class="velo-filedrop__icon" aria-hidden="true"><VeloIcon Name="upload" Size="20" /></span>
+        <span class="velo-filedrop__title">@(_over ? "Relâchez pour ajouter" : Title)</span>
+        <span class="velo-filedrop__subtitle">ou <span class="velo-filedrop__link">cliquez pour parcourir</span></span>
+        @if (!string.IsNullOrEmpty(HintText))
+        {
+            <span class="velo-filedrop__hint">@HintText</span>
+        }
+    </label>
+
+    @if (ShowList && _files.Count > 0)
+    {
+        <ul class="velo-filedrop__list">
+            @foreach (var entry in _files)
+            {
+                <li class="@(new CssBuilder("velo-filedrop__file").Add("is-error", entry.Error is not null).Build())">
+                    <span class="velo-filedrop__file-icon" aria-hidden="true"><VeloIcon Name="@(entry.Error is null ? "copy" : "danger")" Size="16" /></span>
+                    <span class="velo-filedrop__file-text">
+                        <span class="velo-filedrop__file-name">@entry.File.Name</span>
+                        <span class="velo-filedrop__file-meta">@(entry.Error ?? VeloPaging.FileSize(entry.File.Size))</span>
+                    </span>
+                    <button type="button" class="velo-close" aria-label="Retirer @entry.File.Name" @onclick="() => Remove(entry)">
+                        <VeloIcon Name="x" Size="14" />
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    /// <summary>Accepted types, e.g. ".csv,.xlsx" or "image/*".</summary>
+    [Parameter] public string? Accept { get; set; }
+    [Parameter] public bool Multiple { get; set; } = true;
+
+    /// <summary>Maximum size of one file in bytes (refused files are listed with the reason).</summary>
+    [Parameter] public long MaxFileSize { get; set; } = 10 * 1024 * 1024;
+    [Parameter] public int MaxFiles { get; set; } = 10;
+    [Parameter] public string Title { get; set; } = "Glissez vos fichiers ici";
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public bool ShowList { get; set; } = true;
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>The valid files currently selected. Read them right away with file.OpenReadStream(MaxFileSize).</summary>
+    [Parameter] public EventCallback<IReadOnlyList<IBrowserFile>> OnFilesChanged { get; set; }
+
+    private readonly List<Entry> _files = [];
+    private bool _over;
+
+    private sealed record Entry(IBrowserFile File, string? Error);
+
+    private string? HintText => Hint ?? string.Join(" · ", new[]
+    {
+        Accept is null ? null : Accept.Replace(",", ", "),
+        $"{VeloPaging.FileSize(MaxFileSize)} max{(Multiple ? " par fichier" : "")}",
+    }.Where(s => s is not null));
+
+    private string? StyleValue => new StyleBuilder().Color("filedrop", Color).Raw(Style).Build();
+
+    private async Task OnChange(InputFileChangeEventArgs e)
+    {
+        _over = false;
+        if (!Multiple)
+        {
+            _files.Clear();
+        }
+
+        foreach (var file in e.GetMultipleFiles(MaxFiles))
+        {
+            var error = file.Size > MaxFileSize ? $"Trop volumineux ({VeloPaging.FileSize(file.Size)} > {VeloPaging.FileSize(MaxFileSize)})"
+                : _files.Count(f => f.Error is null) >= MaxFiles ? $"Limite de {MaxFiles} fichiers atteinte"
+                : null;
+            _files.Add(new Entry(file, error));
+        }
+
+        await Notify();
+    }
+
+    private async Task Remove(Entry entry)
+    {
+        _files.Remove(entry);
+        await Notify();
+    }
+
+    private Task Notify() => OnFilesChanged.InvokeAsync(_files.Where(f => f.Error is null).Select(f => f.File).ToList());
+}

@@ -1,0 +1,32 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<span @attributes="Attributes" class="@ClassValue" style="@StyleValue">
+    @ChildContent
+    <span class="velo-tooltip__bubble" role="tooltip">@Text@Content</span>
+</span>
+
+@code {
+    /// <summary>The element that triggers the tooltip.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Rich content inside the bubble.</summary>
+    [Parameter] public RenderFragment? Content { get; set; }
+
+    [Parameter] public VeloPlacement Placement { get; set; } = VeloPlacement.Top;
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? TextColor { get; set; }
+
+    /// <summary>Delay before showing, e.g. "0ms" or "500ms".</summary>
+    [Parameter] public string? Delay { get; set; }
+
+    private string ClassValue => new CssBuilder("velo-tooltip").Add($"velo-tooltip--{Placement.Css()}").Add(Class).Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--velo-tooltip-bg", Background)
+        .Var("--velo-tooltip-text", TextColor)
+        .Var("--velo-tooltip-delay", Delay)
+        .Raw(Style)
+        .Build();
+}

@@ -1,0 +1,15 @@
+<section class="demo-section">
+    <h2 class="demo-section__title">Playground</h2>
+    <div class="pg">
+        <div class="pg__stage" style="@StageStyle">@Preview</div>
+        <aside class="pg__controls">@Controls</aside>
+    </div>
+    <CodeBlock Code="@Code" />
+</section>
+
+@code {
+    [Parameter] public RenderFragment? Preview { get; set; }
+    [Parameter] public RenderFragment? Controls { get; set; }
+    [Parameter] public string Code { get; set; } = "";
+    [Parameter] public string? StageStyle { get; set; }
+}

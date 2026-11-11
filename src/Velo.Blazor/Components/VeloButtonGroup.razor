@@ -1,0 +1,16 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+@* Attached buttons: put VeloButtons (or a VeloMenu) inside. *@
+<div @attributes="Attributes" role="group" aria-label="@Label"
+     class="@(new CssBuilder("velo-btn-group").Add("velo-btn-group--vertical", Vertical).Add(Class).Build())" style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Accessible name of the group, e.g. "Alignement du texte".</summary>
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Vertical { get; set; }
+}

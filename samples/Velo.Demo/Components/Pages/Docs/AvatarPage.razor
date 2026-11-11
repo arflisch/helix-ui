@@ -1,0 +1,70 @@
+@page "/components/avatar"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Avatar" Description="Initiales calculées depuis le nom, avec une couleur stable par personne. Image, statut et forme au choix.">
+    <Playground Code="@Code">
+        <Preview>
+            <VeloAvatar Name="@_name" Size="_size" Status="_status" Color="@_color" Radius="@(_square ? "10px" : null)" />
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Name" @bind-Value="_name" />
+            <Choice TEnum="VeloSize" Label="Size" @bind-Value="_size" />
+            <Choice TEnum="VeloAvatarStatus" Label="Status" @bind-Value="_status" />
+            <ColorPicker Label="Color (auto par défaut)" @bind-Value="_color" />
+            <VeloSwitch Label="Carré arrondi" @bind-Checked="_square" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Couleur automatique" Description="Chaque nom donne toujours la même couleur, sans rien configurer." Code="@AutoCode">
+        <div class="row">
+            @foreach (var name in Names)
+            {
+                <VeloTooltip Text="@name"><VeloAvatar Name="@name" /></VeloTooltip>
+            }
+        </div>
+    </Example>
+
+    <Example Title="Groupe" Code="@GroupCode">
+        <VeloAvatarGroup>
+            @foreach (var name in Names.Take(5))
+            {
+                <VeloAvatar Name="@name" Size="VeloSize.Lg" />
+            }
+        </VeloAvatarGroup>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly string[] Names = ["Ada Lovelace", "Alan Turing", "Grace Hopper", "Linus Torvalds", "Margaret Hamilton", "Dennis Ritchie", "Barbara Liskov", "Ken Thompson"];
+
+    private string? _name = "Grace Hopper";
+    private VeloSize _size = VeloSize.Lg;
+    private VeloAvatarStatus _status = VeloAvatarStatus.Online;
+    private string? _color;
+    private bool _square;
+
+    private string Code =>
+        $"<VeloAvatar{A("Name", _name)}{A("Size", _size, VeloSize.Md)}{A("Status", _status, VeloAvatarStatus.None)}{A("Color", _color)}{A("Radius", _square ? "10px" : null)} />";
+
+    private const string AutoCode = """<VeloAvatar Name="Ada Lovelace" />""";
+
+    private const string GroupCode = """
+        <VeloAvatarGroup>
+            <VeloAvatar Name="Ada Lovelace" Size="VeloSize.Lg" />
+            <VeloAvatar Name="Alan Turing" Size="VeloSize.Lg" />
+            <VeloAvatar Src="/img/grace.jpg" Name="Grace Hopper" Size="VeloSize.Lg" />
+        </VeloAvatarGroup>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Name", "string", null, "Nom complet : initiales, infobulle et couleur automatique."),
+        new("Src", "string", null, "Image (remplace les initiales)."),
+        new("Size", "VeloSize", null, "Sm, Md ou Lg."),
+        new("Status", "VeloAvatarStatus", null, "Online, Away, Busy, Offline."),
+        new("Color", "string", "--velo-avatar-color", "Remplace la couleur automatique."),
+        new("Radius", "string", "--velo-avatar-radius", "Arrondi (rond par défaut)."),
+    ];
+}

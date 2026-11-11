@@ -1,0 +1,51 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<div @attributes="Attributes" class="@(new CssBuilder("velo-accordion").Add("velo-accordion--flush", Flush).Add(Class).Build())" style="@Style">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Several sections open at once (otherwise opening one closes the others).</summary>
+    [Parameter] public bool Multiple { get; set; }
+
+    /// <summary>No outer frame, only separators.</summary>
+    [Parameter] public bool Flush { get; set; }
+
+    private readonly List<VeloAccordionItem> _items = [];
+    private readonly HashSet<VeloAccordionItem> _open = [];
+
+    internal void Add(VeloAccordionItem item, bool expanded)
+    {
+        _items.Add(item);
+        if (expanded && (Multiple || _open.Count == 0))
+        {
+            _open.Add(item);
+        }
+    }
+
+    internal void Remove(VeloAccordionItem item)
+    {
+        _items.Remove(item);
+        _open.Remove(item);
+    }
+
+    internal bool IsOpen(VeloAccordionItem item) => _open.Contains(item);
+
+    internal void Toggle(VeloAccordionItem item)
+    {
+        if (!_open.Remove(item))
+        {
+            if (!Multiple)
+            {
+                _open.Clear();
+            }
+
+            _open.Add(item);
+        }
+
+        StateHasChanged();
+    }
+}

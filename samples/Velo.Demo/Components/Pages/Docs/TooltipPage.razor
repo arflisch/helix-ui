@@ -1,0 +1,55 @@
+@page "/components/tooltip"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Tooltip" Description="Infobulle en pur CSS : aucun JavaScript, aucun aller-retour serveur. Apparaît au survol et au focus clavier.">
+    <Playground Code="@Code">
+        <Preview>
+            <VeloTooltip Text="@_text" Placement="_placement" Background="@_bg" Delay="@(_instant ? "0ms" : null)">
+                <VeloButton Variant="VeloVariant.Outline" Color="neutral">Survolez-moi</VeloButton>
+            </VeloTooltip>
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Text" @bind-Value="_text" />
+            <Choice TEnum="VeloPlacement" Label="Placement" @bind-Value="_placement" />
+            <ColorPicker Label="Background" @bind-Value="_bg" Colors="@(["primary", "#18181b", "#0ea5e9", "danger"])" />
+            <VeloSwitch Label="Sans délai" @bind-Checked="_instant" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Contenu riche" Code="@RichCode">
+        <div class="row">
+            <VeloTooltip Placement="VeloPlacement.Right">
+                <ChildContent><VeloAvatar Name="Grace Hopper" Status="VeloAvatarStatus.Online" /></ChildContent>
+                <Content><strong>Grace Hopper</strong><br />En ligne · Paris</Content>
+            </VeloTooltip>
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private string? _text = "Copier dans le presse-papiers";
+    private VeloPlacement _placement;
+    private string? _bg;
+    private bool _instant;
+
+    private string Code =>
+        $"<VeloTooltip{A("Text", _text)}{A("Placement", _placement, VeloPlacement.Top)}{A("Background", _bg)}{A("Delay", _instant ? "0ms" : null)}>\n    <VeloButton>Survolez-moi</VeloButton>\n</VeloTooltip>";
+
+    private const string RichCode = """
+        <VeloTooltip Placement="VeloPlacement.Right">
+            <ChildContent><VeloAvatar Name="Grace Hopper" /></ChildContent>
+            <Content><strong>Grace Hopper</strong><br />En ligne · Paris</Content>
+        </VeloTooltip>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Text / Content", "string / RenderFragment", null, "Contenu de la bulle."),
+        new("Placement", "VeloPlacement", null, "Top, Bottom, Left ou Right."),
+        new("Background", "string", "--velo-tooltip-bg", "Fond de la bulle."),
+        new("TextColor", "string", "--velo-tooltip-text", "Texte de la bulle."),
+        new("Delay", "string", "--velo-tooltip-delay", "Délai d'apparition (200ms)."),
+    ];
+}

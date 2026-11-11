@@ -1,0 +1,35 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@inject IServiceProvider Services
+
+@* Wrap your layout once: theme + dark mode + toasts. *@
+<div @attributes="Attributes"
+     class="@(new CssBuilder("velo-root").Add(Class).Build())"
+     data-velo-theme="@(Theme.Mode == VeloThemeMode.Dark ? "dark" : null)"
+     style="@(new StyleBuilder().Raw(Theme.ToStyle()).Raw(Style).Build())">
+    @ChildContent
+
+    @if (_hasToasts)
+    {
+        <VeloToastHost Position="ToastPosition" />
+    }
+    @if (_hasConfirm)
+    {
+        <VeloConfirmHost />
+    }
+</div>
+
+@code {
+    [Parameter] public VeloTheme Theme { get; set; } = new();
+    [Parameter] public VeloToastPosition ToastPosition { get; set; } = VeloToastPosition.BottomRight;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool _hasToasts;
+    private bool _hasConfirm;
+
+    protected override void OnInitialized()
+    {
+        _hasToasts = Services.GetService(typeof(VeloToastService)) is not null;
+        _hasConfirm = Services.GetService(typeof(VeloConfirmService)) is not null;
+    }
+}

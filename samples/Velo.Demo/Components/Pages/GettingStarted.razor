@@ -1,0 +1,63 @@
+@page "/getting-started"
+
+<DemoPage Title="Installation" Eyebrow="Guide" Description="Trois étapes, et tous les composants sont disponibles dans votre application Blazor.">
+    <div class="steps">
+        <div class="step">
+            <p class="step__title">Référencer la librairie</p>
+            <p class="step__text">Ajoutez le projet (ou, plus tard, le package NuGet) à votre application.</p>
+            <CodeBlock Language="bash" Code="dotnet add reference ../Velo.Blazor/Velo.Blazor.csproj" />
+        </div>
+        <div class="step">
+            <p class="step__title">Enregistrer les services</p>
+            <p class="step__text">Une ligne dans <code>Program.cs</code> (nécessaire pour les toasts).</p>
+            <CodeBlock Language="c#" Code="@ProgramCode" />
+        </div>
+        <div class="step">
+            <p class="step__title">Ajouter la feuille de style et le using</p>
+            <p class="step__text">Dans <code>App.razor</code> et <code>_Imports.razor</code>.</p>
+            <CodeBlock Language="razor" Code="@ImportsCode" />
+        </div>
+        <div class="step">
+            <p class="step__title">Envelopper la mise en page</p>
+            <p class="step__text"><code>VeloProvider</code> applique le thème, le mode sombre et affiche les toasts.</p>
+            <CodeBlock Language="razor" Code="@LayoutCode" />
+        </div>
+        <div class="step">
+            <p class="step__title">Utiliser les composants</p>
+            <p class="step__text">C'est prêt.</p>
+            <CodeBlock Language="razor" Code="@UsageCode" />
+        </div>
+    </div>
+</DemoPage>
+
+@code {
+    private const string ProgramCode = """
+        builder.Services.AddVelo();
+        """;
+
+    private const string ImportsCode = """
+        <!-- App.razor, dans <head> -->
+        <link rel="stylesheet" href="_content/Velo.Blazor/velo.css" />
+
+        @* _Imports.razor *@
+        @using Velo.Blazor
+        """;
+
+    private const string LayoutCode = """
+        @inherits LayoutComponentBase
+
+        <VeloProvider Theme="_theme">
+            @Body
+        </VeloProvider>
+
+        @code {
+            private readonly VeloTheme _theme = new() { Primary = "#4f46e5" };
+        }
+        """;
+
+    private const string UsageCode = """
+        <VeloTextField Label="Email" @bind-Value="email" Icon="mail" Clearable />
+        <VeloSwitch Label="Notifications" @bind-Checked="enabled" />
+        <VeloButton OnClick="Save">Enregistrer</VeloButton>
+        """;
+}

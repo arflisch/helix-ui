@@ -1,0 +1,27 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+@if (Lines > 1)
+{
+    <div @attributes="Attributes" class="@(new CssBuilder("velo-skeleton-lines").Add(Class).Build())" style="@Style" aria-hidden="true">
+        @for (var i = 0; i < Lines; i++)
+        {
+            <span class="velo-skeleton" style="width:@(i == Lines - 1 ? "62%" : "100%");height:@(Height ?? "12px")"></span>
+        }
+    </div>
+}
+else
+{
+    <span @attributes="Attributes" aria-hidden="true"
+          class="@(new CssBuilder("velo-skeleton").Add("is-circle", Circle).Add(Class).Build())"
+          style="@(new StyleBuilder().Var("width", Width ?? (Circle ? Height ?? "40px" : "100%")).Var("height", Height ?? (Circle ? Width ?? "40px" : "12px")).Var("border-radius", Radius).Raw(Style).Build())"></span>
+}
+
+@code {
+    /// <summary>Several text lines (the last one shorter).</summary>
+    [Parameter] public int Lines { get; set; } = 1;
+    [Parameter] public bool Circle { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public string? Radius { get; set; }
+}

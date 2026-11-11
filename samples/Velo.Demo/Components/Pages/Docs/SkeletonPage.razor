@@ -1,0 +1,51 @@
+@page "/components/skeleton"
+
+<DemoPage Title="Skeleton" Description="Silhouettes animées pendant le chargement : la mise en page ne saute pas quand les données arrivent.">
+    <Example Title="Carte en chargement" Code="@Code">
+        <div class="stack">
+            <VeloSwitch Label="Chargement" @bind-Checked="_loading" />
+            <div class="grid-2">
+                <VeloCard>
+                    @if (_loading)
+                    {
+                        <div class="row" style="flex-wrap:nowrap">
+                            <VeloSkeleton Circle="true" Width="44px" />
+                            <div style="flex:1"><VeloSkeleton Lines="2" /></div>
+                        </div>
+                        <div style="margin-top:18px"><VeloSkeleton Height="120px" Radius="10px" /></div>
+                    }
+                    else
+                    {
+                        <div class="row" style="flex-wrap:nowrap">
+                            <VeloAvatar Name="Grace Hopper" Size="VeloSize.Lg" />
+                            <div><strong>Grace Hopper</strong><div class="muted" style="font-size:13px">Responsable dispatching</div></div>
+                        </div>
+                        <div style="margin-top:18px"><VeloStat Bare="true" Label="Demandes ce mois" Value="128" Delta="12" DeltaLabel="vs mois dernier" Trend="DemoData.Trend(9)" /></div>
+                    }
+                </VeloCard>
+                <VeloCard>
+                    <VeloSkeleton Lines="5" />
+                </VeloCard>
+            </div>
+        </div>
+    </Example>
+
+    <ApiTable Title="VeloSkeleton" Rows="Api" />
+</DemoPage>
+
+@code {
+    private bool _loading = true;
+
+    private const string Code = """
+        <VeloSkeleton Circle Width="44px" />
+        <VeloSkeleton Lines="2" />
+        <VeloSkeleton Height="120px" Radius="10px" />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Lines", "int", null, "Plusieurs lignes de texte (la dernière plus courte)."),
+        new("Circle", "bool", null, "Forme ronde (avatar)."),
+        new("Width / Height / Radius", "string", null, "Dimensions et arrondi."),
+    ];
+}

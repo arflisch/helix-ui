@@ -1,0 +1,59 @@
+@page "/components/buttongroup"
+@inject VeloToastService Toasts
+
+<DemoPage Title="ButtonGroup" Description="Boutons accolés pour des actions liées : barre d'outils, bouton principal + menu (split button), choix d'affichage.">
+    <Example Title="Barre d'outils et split button" Code="@Code">
+        <div class="row" style="gap:20px">
+            <VeloButtonGroup Label="Alignement">
+                <VeloButton Variant="VeloVariant.Outline" Color="neutral" Icon="chevron-left" aria-label="Précédent" />
+                <VeloButton Variant="VeloVariant.Outline" Color="neutral">Aujourd'hui</VeloButton>
+                <VeloButton Variant="VeloVariant.Outline" Color="neutral" Icon="chevron-right" aria-label="Suivant" />
+            </VeloButtonGroup>
+
+            <VeloButtonGroup Label="Enregistrer">
+                <VeloButton Icon="check" OnClick="@(() => Toasts.Success("Enregistré"))">Enregistrer</VeloButton>
+                <VeloMenu Align="VeloAlign.End">
+                    <Trigger><VeloButton Icon="chevron-down" aria-label="Autres options d'enregistrement" /></Trigger>
+                    <ChildContent>
+                        <VeloMenuItem Icon="copy">Enregistrer une copie</VeloMenuItem>
+                        <VeloMenuItem Icon="download">Enregistrer et exporter</VeloMenuItem>
+                    </ChildContent>
+                </VeloMenu>
+            </VeloButtonGroup>
+
+            <VeloButtonGroup Label="Période">
+                @foreach (var p in Periods)
+                {
+                    <VeloButton Variant="@(p == _period ? VeloVariant.Soft : VeloVariant.Outline)" Color="@(p == _period ? "primary" : "neutral")"
+                                aria-pressed="@(p == _period ? "true" : "false")" OnClick="() => _period = p">@p</VeloButton>
+                }
+            </VeloButtonGroup>
+        </div>
+    </Example>
+
+    <ApiTable Title="VeloButtonGroup" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly string[] Periods = ["Jour", "Semaine", "Mois"];
+    private string _period = "Semaine";
+
+    private const string Code = """
+        <VeloButtonGroup Label="Enregistrer">
+            <VeloButton Icon="check" OnClick="Save">Enregistrer</VeloButton>
+            <VeloMenu Align="VeloAlign.End">
+                <Trigger><VeloButton Icon="chevron-down" aria-label="Autres options" /></Trigger>
+                <ChildContent>
+                    <VeloMenuItem Icon="copy">Enregistrer une copie</VeloMenuItem>
+                </ChildContent>
+            </VeloMenu>
+        </VeloButtonGroup>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("ChildContent", "RenderFragment", null, "Des VeloButton (ou un VeloMenu) : les bords se rejoignent."),
+        new("Label", "string", null, "Nom accessible du groupe (role=group)."),
+        new("Vertical", "bool", null, "Boutons empilés."),
+    ];
+}

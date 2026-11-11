@@ -1,0 +1,66 @@
+@page "/components/alert"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Alert" Description="Message contextuel dans la page. La sévérité choisit l'icône et la couleur ; les deux restent modifiables.">
+    <Playground Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:520px">
+                <VeloAlert @key="_key" Severity="_severity" Title="@_title" Closable="_closable" Color="@_color" OnClose="Reopen">@_text</VeloAlert>
+            </div>
+        </Preview>
+        <Controls>
+            <Choice TEnum="VeloSeverity" Label="Severity" @bind-Value="_severity" />
+            <VeloTextField Label="Title" @bind-Value="_title" />
+            <VeloTextField Label="Texte" @bind-Value="_text" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <VeloSwitch Label="Closable" @bind-Checked="_closable" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Sévérités" Code="@AllCode">
+        <div class="stack">
+            <VeloAlert Title="Nouvelle version">Velo 0.2 est disponible avec le DataGrid.</VeloAlert>
+            <VeloAlert Severity="VeloSeverity.Success" Title="Paiement reçu">Merci, votre facture est disponible.</VeloAlert>
+            <VeloAlert Severity="VeloSeverity.Warning" Title="Stockage presque plein">Il vous reste 5 % d'espace.</VeloAlert>
+            <VeloAlert Severity="VeloSeverity.Danger" Title="Échec de la synchronisation" Closable="true">Vérifiez votre connexion puis réessayez.</VeloAlert>
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private VeloSeverity _severity = VeloSeverity.Info;
+    private string? _title = "Mise à jour disponible";
+    private string? _text = "Une nouvelle version est prête. Elle sera installée au prochain redémarrage.";
+    private string? _color;
+    private bool _closable = true;
+    private int _key;
+
+    private async Task Reopen()
+    {
+        await Task.Delay(800);
+        _key++;
+    }
+
+    private string Code =>
+        $"<VeloAlert{A("Severity", _severity, VeloSeverity.Info)}{A("Title", _title)}{A("Color", _color)}{B("Closable", _closable)}>\n    {_text}\n</VeloAlert>";
+
+    private const string AllCode = """
+        <VeloAlert Title="Nouvelle version">Velo 0.2 est disponible.</VeloAlert>
+        <VeloAlert Severity="VeloSeverity.Success" Title="Paiement reçu">…</VeloAlert>
+        <VeloAlert Severity="VeloSeverity.Warning" Title="Stockage presque plein">…</VeloAlert>
+        <VeloAlert Severity="VeloSeverity.Danger" Title="Échec" Closable>…</VeloAlert>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Severity", "VeloSeverity", null, "Info, Success, Warning ou Danger."),
+        new("Title / ChildContent", "string / RenderFragment", null, "Titre et message."),
+        new("Closable / OnClose", "bool / EventCallback", null, "Bouton de fermeture."),
+        new("Icon / IconContent", "string / RenderFragment", null, "Remplace l'icône de sévérité."),
+        new("ShowIcon", "bool", null, "Masque l'icône (true)."),
+        new("Color", "string", "--velo-alert-color", "Remplace la couleur de sévérité."),
+        new("—", "", "--velo-alert-radius", "Arrondi."),
+    ];
+}

@@ -1,0 +1,76 @@
+@page "/components/textfield"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="TextField" Description="Champ de saisie avec label, aide, message d'erreur, icône, préfixe/suffixe et bouton d'effacement.">
+    <Playground Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:340px">
+                <VeloTextField @bind-Value="_value" Label="@_label" Placeholder="@_placeholder" Hint="@_hint"
+                               Error="@(_error ? "Ce champ est obligatoire" : null)" Icon="@(_icon ? "mail" : null)"
+                               Clearable="_clearable" Disabled="_disabled" Required="_required" Color="@_color" Radius="@Radius" />
+            </div>
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Label" @bind-Value="_label" />
+            <VeloTextField Label="Placeholder" @bind-Value="_placeholder" />
+            <VeloTextField Label="Hint" @bind-Value="_hint" />
+            <ColorPicker Label="Color (focus)" @bind-Value="_color" />
+            <VeloSlider Label="Radius" @bind-Value="_radius" Min="0" Max="20" Format="@(v => $"{v} px")" />
+            <VeloSwitch Label="Icône" @bind-Checked="_icon" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Clearable" @bind-Checked="_clearable" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Required" @bind-Checked="_required" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Erreur" @bind-Checked="_error" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Disabled" @bind-Checked="_disabled" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Préfixe, suffixe et types" Code="@AffixCode">
+        <div class="grid-3">
+            <VeloTextField Label="Recherche" Icon="search" Placeholder="Rechercher…" Clearable="true" @bind-Value="_search" />
+            <VeloTextField Label="Mot de passe" Icon="lock" Type="password" Value="secret123" />
+            <VeloTextField Label="Prix" Type="number" Value="49">
+                <Suffix><span class="muted">EUR</span></Suffix>
+            </VeloTextField>
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private string? _value;
+    private string? _search;
+    private string? _label = "Email";
+    private string? _placeholder = "vous@exemple.fr";
+    private string? _hint = "Nous ne partagerons jamais votre email.";
+    private string? _color;
+    private double _radius = 10;
+    private bool _icon = true, _clearable = true, _required, _error, _disabled;
+
+    private string? Radius => _radius == 10 ? null : $"{N(_radius)}px";
+
+    private string Code =>
+        $"<VeloTextField @bind-Value=\"email\"{A("Label", _label)}{A("Placeholder", _placeholder)}{A("Hint", _hint)}{A("Icon", _icon ? "mail" : null)}{A("Error", _error ? "Ce champ est obligatoire" : null)}{A("Color", _color)}{A("Radius", Radius)}{B("Clearable", _clearable)}{B("Required", _required)}{B("Disabled", _disabled)} />";
+
+    private const string AffixCode = """
+        <VeloTextField Label="Recherche" Icon="search" Placeholder="Rechercher…" Clearable @bind-Value="search" />
+        <VeloTextField Label="Mot de passe" Icon="lock" Type="password" @bind-Value="password" />
+        <VeloTextField Label="Prix" Type="number" @bind-Value="price">
+            <Suffix><span>EUR</span></Suffix>
+        </VeloTextField>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Value", "string?", null, "Valeur, à utiliser avec @bind-Value (mise à jour à chaque frappe)."),
+        new("Label / Placeholder / Hint", "string", null, "Textes du champ."),
+        new("Error", "string", null, "Passe le champ en erreur avec ce message."),
+        new("Icon", "string", null, "Icône au début du champ."),
+        new("Prefix / Suffix", "RenderFragment", null, "Contenu libre avant / après la saisie."),
+        new("Clearable", "bool", null, "Bouton pour vider le champ."),
+        new("Color", "string", "--velo-input-color", "Couleur de la bordure et de l'anneau au focus."),
+        new("Radius", "string", "--velo-input-radius", "Arrondi."),
+        new("Background", "string", "--velo-input-bg", "Fond du champ."),
+        new("BorderColor", "string", "--velo-input-border", "Bordure au repos."),
+    ];
+}

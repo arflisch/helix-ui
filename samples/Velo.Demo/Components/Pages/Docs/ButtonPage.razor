@@ -1,0 +1,102 @@
+@page "/components/button"
+@using static Velo.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Button" Description="Le bouton : quatre variantes, toutes les couleurs (sémantiques ou libres), trois tailles, icônes et état de chargement.">
+    <Playground Code="@Code">
+        <Preview>
+            <VeloButton Variant="_variant" Color="@_color" Size="_size" Radius="@Radius" Loading="_loading" Disabled="_disabled"
+                        Icon="@(_icon ? "sparkles" : null)">@_label</VeloButton>
+        </Preview>
+        <Controls>
+            <VeloTextField Label="Texte" @bind-Value="_label" />
+            <Choice TEnum="VeloVariant" Label="Variant" @bind-Value="_variant" />
+            <Choice TEnum="VeloSize" Label="Size" @bind-Value="_size" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <VeloSlider Label="Radius" @bind-Value="_radius" Min="0" Max="24" Format="@(v => $"{v} px")" />
+            <VeloSwitch Label="Icône" @bind-Checked="_icon" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Loading" @bind-Checked="_loading" Size="VeloSize.Sm" />
+            <VeloSwitch Label="Disabled" @bind-Checked="_disabled" Size="VeloSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Variantes" Code="@VariantsCode">
+        <div class="row">
+            <VeloButton>Solid</VeloButton>
+            <VeloButton Variant="VeloVariant.Soft">Soft</VeloButton>
+            <VeloButton Variant="VeloVariant.Outline">Outline</VeloButton>
+            <VeloButton Variant="VeloVariant.Ghost">Ghost</VeloButton>
+        </div>
+    </Example>
+
+    <Example Title="Couleurs" Description="Un nom sémantique ou n'importe quelle couleur CSS. Les états hover, focus et le texte sont calculés automatiquement.">
+        <div class="stack">
+            @foreach (var variant in Enum.GetValues<VeloVariant>())
+            {
+                <div class="row">
+                    @foreach (var color in Colors)
+                    {
+                        <VeloButton Variant="variant" Color="@color">@color</VeloButton>
+                    }
+                </div>
+            }
+        </div>
+    </Example>
+
+    <Example Title="Icônes, tailles et chargement" Code="@IconsCode">
+        <div class="row">
+            <VeloButton Icon="download" Size="VeloSize.Sm">Télécharger</VeloButton>
+            <VeloButton Variant="VeloVariant.Outline" Color="neutral" IconEnd="arrow-right">Continuer</VeloButton>
+            <VeloButton Size="VeloSize.Lg" Color="danger" Icon="trash">Supprimer</VeloButton>
+            <VeloButton Variant="VeloVariant.Soft" Icon="heart" aria-label="J'aime" />
+            <VeloButton Loading="true">Enregistrement</VeloButton>
+            <VeloButton Radius="999px" Color="#18181b">Pilule</VeloButton>
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly string[] Colors = ["primary", "neutral", "success", "warning", "danger", "#8b5cf6"];
+
+    private string? _label = "Enregistrer";
+    private VeloVariant _variant;
+    private VeloSize _size = VeloSize.Md;
+    private string? _color;
+    private double _radius = 10;
+    private bool _icon, _loading, _disabled;
+
+    private string? Radius => _radius == 10 ? null : $"{N(_radius)}px";
+
+    private string Code =>
+        $"<VeloButton{A("Variant", _variant, VeloVariant.Solid)}{A("Color", _color)}{A("Size", _size, VeloSize.Md)}{A("Radius", Radius)}{A("Icon", _icon ? "sparkles" : null)}{B("Loading", _loading)}{B("Disabled", _disabled)} OnClick=\"Save\">{_label}</VeloButton>";
+
+    private const string VariantsCode = """
+        <VeloButton>Solid</VeloButton>
+        <VeloButton Variant="VeloVariant.Soft">Soft</VeloButton>
+        <VeloButton Variant="VeloVariant.Outline">Outline</VeloButton>
+        <VeloButton Variant="VeloVariant.Ghost">Ghost</VeloButton>
+        """;
+
+    private const string IconsCode = """
+        <VeloButton Icon="download" Size="VeloSize.Sm">Télécharger</VeloButton>
+        <VeloButton Variant="VeloVariant.Outline" Color="neutral" IconEnd="arrow-right">Continuer</VeloButton>
+        <VeloButton Size="VeloSize.Lg" Color="danger" Icon="trash">Supprimer</VeloButton>
+        <VeloButton Variant="VeloVariant.Soft" Icon="heart" aria-label="J'aime" />
+        <VeloButton Loading="true">Enregistrement</VeloButton>
+        <VeloButton Radius="999px" Color="#18181b">Pilule</VeloButton>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Variant", "VeloVariant", null, "Solid, Soft, Outline ou Ghost."),
+        new("Color", "string", "--velo-btn-color", "Nom sémantique (primary, danger…) ou couleur CSS."),
+        new("TextColor", "string", "--velo-btn-text", "Force la couleur du texte."),
+        new("Radius", "string", "--velo-btn-radius", "Arrondi, ex. \"999px\" pour une pilule."),
+        new("Size", "VeloSize", "--velo-btn-height", "Sm, Md ou Lg."),
+        new("Icon / IconEnd", "string", null, "Nom d'icône avant / après le texte. Sans texte, le bouton devient carré."),
+        new("Loading", "bool", null, "Affiche un spinner et désactive le bouton."),
+        new("Block", "bool", null, "Prend toute la largeur."),
+        new("OnClick", "EventCallback", null, "Clic."),
+    ];
+}

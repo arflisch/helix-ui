@@ -1,0 +1,71 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<div @attributes="Attributes" class="@ClassValue" style="@StyleValue">
+    @if (Header is not null)
+    {
+        <div class="velo-card__header">@Header</div>
+    }
+    else if (!string.IsNullOrEmpty(Title) || Actions is not null)
+    {
+        <div class="velo-card__header">
+            <div>
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h3 class="velo-card__title">@Title</h3>
+                }
+                @if (!string.IsNullOrEmpty(Subtitle))
+                {
+                    <p class="velo-card__subtitle">@Subtitle</p>
+                }
+            </div>
+            @Actions
+        </div>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="velo-card__body">@ChildContent</div>
+    }
+    @if (Footer is not null)
+    {
+        <div class="velo-card__footer">@Footer</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Content on the right of the title (buttons, badge…).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>Replaces the whole header.</summary>
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Shadow instead of border.</summary>
+    [Parameter] public bool Elevated { get; set; }
+
+    /// <summary>Lifts on hover.</summary>
+    [Parameter] public bool Hoverable { get; set; }
+
+    [Parameter] public string? Padding { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private string ClassValue => new CssBuilder("velo-card")
+        .Add("velo-card--elevated", Elevated)
+        .Add("is-hoverable", Hoverable)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--velo-card-padding", Padding)
+        .Var("--velo-card-radius", Radius)
+        .Var("--velo-card-bg", Background)
+        .Var("--velo-card-border", BorderColor)
+        .Raw(Style)
+        .Build();
+}

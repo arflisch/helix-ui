@@ -1,0 +1,17 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<span @attributes="Attributes"
+      class="@(new CssBuilder("velo-spinner").Add(Class).Build())"
+      style="@(new StyleBuilder().Color("spinner", Color).Var("--velo-spinner-size", Size).Var("--velo-spinner-thickness", Thickness).Raw(Style).Build())"
+      role="status"
+      aria-label="@Label"></span>
+
+@code {
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>e.g. "32px".</summary>
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public string? Thickness { get; set; }
+    [Parameter] public string Label { get; set; } = "Chargement";
+}

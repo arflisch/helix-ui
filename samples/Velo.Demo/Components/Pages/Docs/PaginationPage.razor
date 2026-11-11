@@ -1,0 +1,31 @@
+@page "/components/pagination"
+
+<DemoPage Title="Pagination" Description="Navigation entre pages, autonome : pour une liste de cartes, des résultats de recherche ou une galerie. Pages longues repliées autour de la page courante.">
+    <Example Title="Variantes" Code="@Code">
+        <div class="stack" style="gap:22px">
+            <VeloPagination @bind-Page="_page" TotalItems="243" PageSize="10" ShowInfo="true" />
+            <VeloPagination @bind-Page="_page" Count="25" ShowLabels="true" />
+            <VeloPagination @bind-Page="_page" Count="25" Compact="true" />
+        </div>
+    </Example>
+
+    <ApiTable Title="VeloPagination" Rows="Api" />
+</DemoPage>
+
+@code {
+    private int _page = 4;
+
+    private const string Code = """
+        <VeloPagination @bind-Page="page" TotalItems="243" PageSize="10" ShowInfo />
+        <VeloPagination @bind-Page="page" Count="25" ShowLabels />
+        <VeloPagination @bind-Page="page" Count="25" Compact />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Page", "int", null, "Page courante, à partir de 1 (@bind-Page)."),
+        new("Count · TotalItems + PageSize", "int", null, "Nombre de pages, ou calculé depuis le total."),
+        new("ShowInfo / ShowLabels / Compact", "bool", null, "« 31–40 sur 243 » ; textes Précédent/Suivant ; version réduite."),
+        new("Color", "string", "--velo-pagination-color", "Couleur de la page courante."),
+    ];
+}

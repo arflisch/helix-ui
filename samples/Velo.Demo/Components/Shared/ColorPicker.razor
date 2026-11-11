@@ -1,0 +1,38 @@
+@* Playground control: semantic colors, a few swatches and a free color input. *@
+<div class="ctl">
+    <span class="ctl__label">@Label</span>
+    <div class="ctl-colors">
+        <button class="@Swatch(null)" title="Par défaut" @onclick="() => Set(null)">
+            <VeloIcon Svg="<path d='M5 19 19 5'/>" Size="12" />
+        </button>
+        @foreach (var color in Colors)
+        {
+            <button class="@Swatch(color)" title="@color" style="background:@Css(color)" @onclick="() => Set(color)"></button>
+        }
+        <label class="@Swatch(IsCustom ? Value : "__none")" title="Couleur libre">
+            <input type="color" value="@(IsCustom ? Value : "#8b5cf6")" @onchange="OnPick" />
+            <VeloIcon Name="plus" Size="12" />
+        </label>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Color";
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string[] Colors { get; set; } = ["primary", "success", "warning", "danger", "neutral", "#8b5cf6", "#ec4899", "#0ea5e9"];
+
+    private bool IsCustom => Value is not null && Value.StartsWith('#') && !Colors.Contains(Value);
+
+    private static string Css(string color) => color.StartsWith('#') ? color : $"var(--velo-{color})";
+
+    private string Swatch(string? color) => new CssBuilder("ctl-swatch").Add("is-active", color == Value).Add("ctl-swatch--none", color is null || color == "__none").Build();
+
+    private Task Set(string? color)
+    {
+        Value = color;
+        return ValueChanged.InvokeAsync(color);
+    }
+
+    private Task OnPick(ChangeEventArgs e) => Set(e.Value?.ToString());
+}

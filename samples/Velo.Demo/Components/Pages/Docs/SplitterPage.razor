@@ -1,0 +1,56 @@
+@page "/components/splitter"
+
+<DemoPage Title="Splitter" Description="Deux panneaux redimensionnables : glissez la séparation, ou utilisez les flèches (Début / Fin pour les bornes) une fois la séparation sélectionnée au clavier. Double-clic pour revenir à la taille initiale.">
+    <Example Title="Liste + détail" Code="@Code">
+        <VeloSplitter @bind-Size="_size" Min="20" Max="70" Height="300px">
+            <First>
+                <ul class="split-list">
+                    @foreach (var name in Names)
+                    {
+                        <li class="@(name == _selected ? "is-active" : null)" @onclick="() => _selected = name">
+                            <VeloAvatar Name="@name" Size="VeloSize.Sm" /> @name
+                        </li>
+                    }
+                </ul>
+            </First>
+            <Second>
+                <div style="padding:20px">
+                    <div class="row"><VeloAvatar Name="@_selected" Size="VeloSize.Lg" /><strong style="font-size:16px">@_selected</strong></div>
+                    <p class="muted" style="margin:14px 0 0;line-height:1.6">Panneau de détail. La séparation est à <strong>@_size.ToString("0") %</strong> ; la valeur est liée par <code>@@bind-Size</code>, vous pouvez la sauvegarder comme préférence.</p>
+                </div>
+            </Second>
+        </VeloSplitter>
+    </Example>
+
+    <Example Title="Vertical" Code="@VerticalCode">
+        <VeloSplitter Vertical="true" Size="60" Height="260px">
+            <First><div style="padding:16px" class="muted">Éditeur (haut)</div></First>
+            <Second><div style="padding:16px" class="muted">Console (bas)</div></Second>
+        </VeloSplitter>
+    </Example>
+
+    <ApiTable Title="VeloSplitter" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly string[] Names = ["Ada Lovelace", "Alan Turing", "Grace Hopper", "Linus Torvalds", "Margaret Hamilton"];
+    private double _size = 35;
+    private string _selected = Names[0];
+
+    private const string Code = """
+        <VeloSplitter @bind-Size="size" Min="20" Max="70" Height="300px">
+            <First>…liste…</First>
+            <Second>…détail…</Second>
+        </VeloSplitter>
+        """;
+
+    private const string VerticalCode = """<VeloSplitter Vertical Size="60" Height="260px">…</VeloSplitter>""";
+
+    private static readonly ApiRow[] Api =
+    [
+        new("First / Second", "RenderFragment", null, "Les deux panneaux."),
+        new("Size", "double", "--_size", "Taille du premier panneau en % (@bind-Size)."),
+        new("Min / Max / KeyboardStep", "double", null, "Bornes (15–85) et pas des flèches (5)."),
+        new("Vertical / Height", "bool / string", null, "Panneaux empilés ; hauteur du conteneur."),
+    ];
+}

@@ -1,0 +1,102 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+
+<div class="@ClassValue" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="velo-field__label" for="@_id">
+            @Label@if (Required) { <span class="velo-field__required">*</span> }
+        </label>
+    }
+    <div class="velo-input">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="velo-input__affix"><VeloIcon Name="@Icon" /></span>
+        }
+        @Prefix
+        <input @attributes="Attributes"
+               id="@_id"
+               class="velo-input__control"
+               type="@Type"
+               value="@Value"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               required="@Required"
+               aria-invalid="@(HasError ? "true" : null)"
+               @oninput="OnInput" />
+        @if (Clearable && !string.IsNullOrEmpty(Value) && !Disabled && !ReadOnly)
+        {
+            <button type="button" class="velo-close velo-input__clear" aria-label="Effacer" @onclick="Clear">
+                <VeloIcon Name="x" Size="14" />
+            </button>
+        }
+        @Suffix
+    </div>
+    @if (HasError)
+    {
+        <p class="velo-field__error">@Error</p>
+    }
+    else if (!string.IsNullOrEmpty(Hint))
+    {
+        <p class="velo-field__hint">@Hint</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Shows the field in error state with this message.</summary>
+    [Parameter] public string? Error { get; set; }
+
+    /// <summary>Built-in icon name displayed at the start.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    [Parameter] public RenderFragment? Prefix { get; set; }
+    [Parameter] public RenderFragment? Suffix { get; set; }
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public bool Clearable { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool Required { get; set; }
+
+    /// <summary>Focus color.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private readonly string _id = VeloId.Next("input");
+    private bool HasError => !string.IsNullOrEmpty(Error);
+
+    private string ClassValue => new CssBuilder("velo-field")
+        .Add("is-invalid", HasError)
+        .Add("is-disabled", Disabled)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("input", Color)
+        .Var("--velo-input-radius", Radius)
+        .Var("--velo-input-bg", Background)
+        .Var("--velo-input-border", BorderColor)
+        .Raw(Style)
+        .Build();
+
+    private Task OnInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        return ValueChanged.InvokeAsync(Value);
+    }
+
+    private Task Clear()
+    {
+        Value = string.Empty;
+        return ValueChanged.InvokeAsync(Value);
+    }
+}

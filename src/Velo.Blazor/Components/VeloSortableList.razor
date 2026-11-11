@@ -1,0 +1,174 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@implements IAsyncDisposable
+@typeparam TItem
+@inject IJSRuntime JS
+
+<ul @attributes="Attributes" class="@(new CssBuilder("velo-sortable").Add("is-dragging", _dragIndex is not null).Add(Class).Build())" style="@Style"
+    aria-label="@AriaLabel">
+    @for (var i = 0; i < Items.Count; i++)
+    {
+        var index = i;
+        var item = Items[i];
+        <li @key="KeyOf(item)"
+            class="@ItemClass(index)"
+            draggable="@(Disabled ? "false" : "true")"
+            data-velo-drag
+            tabindex="0"
+            aria-roledescription="élément déplaçable"
+            aria-pressed="@(_grabbed == index ? "true" : "false")"
+            @ondragstart="() => DragStart(index)"
+            @ondragenter="() => DragEnter(index)"
+            @ondragover:preventDefault="true"
+            @ondrop="Drop"
+            @ondragend="DragEnd"
+            @onkeydown="e => OnKey(e, index)"
+            @onkeydown:preventDefault="_grabbed is not null">
+            @if (ShowHandle)
+            {
+                <span class="velo-sortable__handle" aria-hidden="true"><VeloIcon Name="grip" Size="16" /></span>
+            }
+            <div class="velo-sortable__content">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(item)
+                }
+                else
+                {
+                    @item
+                }
+            </div>
+        </li>
+    }
+</ul>
+<div class="velo-sr-only" aria-live="assertive">@_announcement</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    /// <summary>The reordered list, for @bind-Items.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> ItemsChanged { get; set; }
+
+    /// <summary>(from, to) indexes of the last move.</summary>
+    [Parameter] public EventCallback<(int From, int To)> OnReorder { get; set; }
+
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public Func<TItem, object>? ItemKey { get; set; }
+    [Parameter] public bool ShowHandle { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string AriaLabel { get; set; } = "Liste réordonnable. Entrée pour saisir, flèches pour déplacer, Entrée pour déposer.";
+
+    private int? _dragIndex;
+    private int? _dropIndex;
+    private int? _grabbed;
+    private IReadOnlyList<TItem>? _beforeGrab;
+    private string? _announcement;
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await VeloJs.EnableDndAsync(JS);
+        }
+    }
+
+    private object KeyOf(TItem item) => ItemKey?.Invoke(item) ?? item!;
+
+    private string ItemClass(int index) => new CssBuilder("velo-sortable__item")
+        .Add("is-dragged", index == _dragIndex)
+        .Add("is-grabbed", index == _grabbed)
+        .Add("is-drop-before", _dragIndex is { } from && index == _dropIndex && index < from)
+        .Add("is-drop-after", _dragIndex is { } from2 && index == _dropIndex && index > from2)
+        .Build();
+
+    private void DragStart(int index)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        _dragIndex = index;
+        _dropIndex = index;
+    }
+
+    private void DragEnter(int index)
+    {
+        if (_dragIndex is not null)
+        {
+            _dropIndex = index;
+        }
+    }
+
+    private async Task Drop()
+    {
+        if (_dragIndex is { } from && _dropIndex is { } to && from != to)
+        {
+            await Move(from, to);
+        }
+
+        DragEnd();
+    }
+
+    private void DragEnd()
+    {
+        _dragIndex = null;
+        _dropIndex = null;
+    }
+
+    private async Task Move(int from, int to)
+    {
+        var list = Items.ToList();
+        var item = list[from];
+        list.RemoveAt(from);
+        list.Insert(to, item);
+        Items = list;
+        await ItemsChanged.InvokeAsync(list);
+        await OnReorder.InvokeAsync((from, to));
+    }
+
+    private async Task OnKey(KeyboardEventArgs e, int index)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case "Enter" when _grabbed is null:
+                _grabbed = index;
+                _beforeGrab = Items.ToList();
+                _announcement = $"Élément {index + 1} saisi. Flèches pour déplacer, Entrée pour déposer, Échap pour annuler.";
+                break;
+            case "Enter" or " ":
+                _announcement = $"Déposé en position {_grabbed + 1}.";
+                _grabbed = null;
+                _beforeGrab = null;
+                break;
+            case "Escape" when _grabbed is not null:
+                if (_beforeGrab is not null)
+                {
+                    Items = _beforeGrab;
+                    await ItemsChanged.InvokeAsync(_beforeGrab);
+                }
+
+                _announcement = "Déplacement annulé.";
+                _grabbed = null;
+                break;
+            case "ArrowUp" or "ArrowDown" when _grabbed is { } grabbed:
+                var target = Math.Clamp(grabbed + (e.Key == "ArrowUp" ? -1 : 1), 0, Items.Count - 1);
+                if (target != grabbed)
+                {
+                    await Move(grabbed, target);
+                    _grabbed = target;
+                    _announcement = $"Position {target + 1} sur {Items.Count}.";
+                }
+
+                break;
+        }
+    }
+
+    public ValueTask DisposeAsync() => VeloJs.DisposeQuietlyAsync(_module);
+}

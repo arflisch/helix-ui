@@ -1,0 +1,433 @@
+@namespace Velo.Blazor
+@inherits VeloComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@using System.Globalization
+
+@{
+    var model = BuildLayout();
+}
+
+<section @attributes="Attributes" @ref="_root" class="@(new CssBuilder("velo-timeline").Add("is-collapsed", _collapsed).Add("is-editable", Editable).Add(Class).Build())" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Title) || Collapsible || (ShowLegend && Statuses.Count > 0))
+    {
+        <header class="velo-timeline__header">
+            <div class="velo-timeline__head-row">
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h3 class="velo-timeline__title">@Title</h3>
+                }
+                @HeaderContent
+                @if (Collapsible)
+                {
+                    <button type="button" class="velo-close velo-timeline__toggle" aria-expanded="@(_collapsed ? "false" : "true")"
+                            aria-label="@(_collapsed ? "Déplier" : "Replier")" @onclick="ToggleCollapsed">
+                        <VeloIcon Name="chevron-down" />
+                    </button>
+                }
+            </div>
+            @if (ShowLegend && Statuses.Count > 0)
+            {
+                <ul class="velo-timeline__legend">
+                    @foreach (var status in Statuses)
+                    {
+                        <li>
+                            <span class="velo-timeline__swatch is-@status.Appearance.Css()" style="--_c:@ColorValue(status.Color)"></span>
+                            @status.Label
+                        </li>
+                    }
+                </ul>
+            }
+        </header>
+    }
+
+    @if (!_collapsed)
+    {
+        <div class="velo-timeline__scroll">
+            <div class="velo-timeline__canvas" style="--_lane:@(model.HasLanes ? LaneWidth : "0px");min-width:calc(@model.Slots.Count * @SlotMinWidth + var(--_lane))">
+                @* Background: slot lines and past shading, under the items. *@
+                <div class="velo-timeline__backdrop" aria-hidden="true">
+                    @if (ShadePast && model.NowPct is { } shade)
+                    {
+                        <span class="velo-timeline__past" style="width:@VeloScale.Pct(shade)"></span>
+                    }
+                    @foreach (var slot in model.Slots.Skip(1))
+                    {
+                        <span class="velo-timeline__gridline" style="left:@VeloScale.Pct(slot.Left)"></span>
+                    }
+                </div>
+
+                <div class="velo-timeline__scale">
+                    @if (model.HasLanes)
+                    {
+                        <div class="velo-timeline__lane-head">@LaneHeader</div>
+                    }
+                    <div class="velo-timeline__ticks">
+                        @if (model.Major.Count > 0)
+                        {
+                            <div class="velo-timeline__major">
+                                @foreach (var (left, label) in model.Major)
+                                {
+                                    <span style="left:@VeloScale.Pct(left)">@label</span>
+                                }
+                            </div>
+                        }
+                        <div class="velo-timeline__minor">
+                            @foreach (var slot in model.Slots)
+                            {
+                                <span style="left:@VeloScale.Pct(slot.Left);width:@VeloScale.Pct(slot.Width)">@slot.Label</span>
+                            }
+                        </div>
+                        @if (model.NowPct is { } badge)
+                        {
+                            <span class="velo-timeline__now-badge" style="left:@VeloScale.Pct(badge)">@_now.ToString("HH:mm", EffectiveCulture)</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="velo-timeline__body">
+                    @if (model.Lanes.Count == 0)
+                    {
+                        <div class="velo-timeline__empty">@EmptyText</div>
+                    }
+                    @foreach (var lane in model.Lanes)
+                    {
+                        <div class="velo-timeline__lane">
+                            @if (model.HasLanes)
+                            {
+                                <div class="velo-timeline__lane-label">@lane.Name</div>
+                            }
+                            <div class="velo-timeline__track" data-lane="@lane.Name" style="height:@(lane.Rows * RowHeight)px">
+                                @foreach (var placed in lane.Items)
+                                {
+                                    var item = placed.Item;
+                                    var status = StatusOf(item);
+                                    var editable = Editable && (CanEdit?.Invoke(item) ?? true);
+                                    <button type="button" @key="item.Id" data-id="@item.Id" data-editable="@(editable ? "true" : null)"
+                                            aria-description="@(editable ? "Glisser pour déplacer, flèches pour décaler, Maj + flèches pour allonger" : null)"
+                                            class="@(new CssBuilder("velo-timeline__item").Add($"is-{(status?.Appearance ?? VeloTimelineAppearance.Filled).Css()}").Add("is-cut-start", placed.CutStart).Add("is-cut-end", placed.CutEnd).Add("is-clickable", OnItemClick.HasDelegate).Add("is-movable", editable).Build())"
+                                            style="left:@VeloScale.Pct(placed.Left);width:@VeloScale.Pct(placed.Width);top:@(placed.Row * RowHeight)px;--_c:@ColorValue(item.Color ?? status?.Color)"
+                                            title="@Describe(item, status)"
+                                            @onclick="() => OnItemClick.InvokeAsync(item)">
+                                        @if (editable)
+                                        {
+                                            <span class="velo-timeline__handle is-start" data-handle="start" aria-hidden="true"></span>
+                                            <span class="velo-timeline__handle is-end" data-handle="end" aria-hidden="true"></span>
+                                        }
+                                        <span class="velo-timeline__item-label">
+                                            @if (ItemTemplate is not null)
+                                            {
+                                                @ItemTemplate(item)
+                                            }
+                                            else
+                                            {
+                                                @item.Label
+                                            }
+                                        </span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (model.NowPct is { } now)
+                {
+                    <div class="velo-timeline__now-layer" aria-hidden="true">
+                        <span class="velo-timeline__now" style="left:@VeloScale.Pct(now)"></span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Extra content in the header, next to the title (filters, buttons…).</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    [Parameter, EditorRequired] public DateTime Start { get; set; }
+    [Parameter, EditorRequired] public DateTime End { get; set; }
+
+    /// <summary>Width of a column in the time scale, e.g. 15 minutes.</summary>
+    [Parameter] public TimeSpan SlotDuration { get; set; } = TimeSpan.FromMinutes(15);
+
+    [Parameter] public IEnumerable<VeloTimelineItem>? Items { get; set; }
+
+    /// <summary>Statuses: legend + how items are drawn (filled, outline, dashed).</summary>
+    [Parameter] public IReadOnlyList<VeloTimelineStatus> Statuses { get; set; } = [];
+
+    [Parameter] public VeloTimelineLayout Layout { get; set; } = VeloTimelineLayout.Packed;
+
+    [Parameter] public RenderFragment<VeloTimelineItem>? ItemTemplate { get; set; }
+    [Parameter] public EventCallback<VeloTimelineItem> OnItemClick { get; set; }
+
+    /// <summary>Live vertical line at the current time, refreshed every <see cref="NowRefresh"/>.</summary>
+    [Parameter] public bool ShowNow { get; set; } = true;
+    [Parameter] public string? NowColor { get; set; }
+    [Parameter] public TimeSpan NowRefresh { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Dims the part of the window that is already in the past.</summary>
+    [Parameter] public bool ShadePast { get; set; } = true;
+
+    [Parameter] public bool ShowLegend { get; set; } = true;
+    [Parameter] public bool Collapsible { get; set; }
+    [Parameter] public bool Collapsed { get; set; }
+    [Parameter] public EventCallback<bool> CollapsedChanged { get; set; }
+
+    /// <summary>Minimum width of a slot; below it the timeline scrolls horizontally.</summary>
+    [Parameter] public string SlotMinWidth { get; set; } = "96px";
+
+    [Parameter] public int RowHeight { get; set; } = 34;
+    [Parameter] public string LaneWidth { get; set; } = "140px";
+    [Parameter] public string? LaneHeader { get; set; }
+
+    /// <summary>Slot label, e.g. (start, end) => $"{start:HH:mm}".</summary>
+    [Parameter] public Func<DateTime, DateTime, string>? SlotLabel { get; set; }
+
+    [Parameter] public string EmptyText { get; set; } = "Rien de planifié sur cette période";
+
+    /// <summary>Items can be dragged (move, change lane) and resized from their edges, or moved with the arrow keys.</summary>
+    [Parameter] public bool Editable { get; set; }
+
+    /// <summary>Drag precision, defaults to <see cref="SlotDuration"/>.</summary>
+    [Parameter] public TimeSpan? SnapTo { get; set; }
+
+    /// <summary>Which items may be edited, e.g. i => i.Start > DateTime.Now. All of them by default.</summary>
+    [Parameter] public Func<VeloTimelineItem, bool>? CanEdit { get; set; }
+
+    /// <summary>Allows dragging an item to another lane.</summary>
+    [Parameter] public bool AllowLaneChange { get; set; } = true;
+
+    /// <summary>Raised on drop with the proposed new times and lane. Apply it to your data (or ignore it to refuse).</summary>
+    [Parameter] public EventCallback<VeloTimelineChange> OnItemChanged { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    private readonly VeloTicker _ticker = new();
+    private ElementReference _root;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _editor;
+    private DotNetObjectReference<VeloTimeline>? _self;
+    private bool _collapsed;
+    private bool? _lastCollapsedParam;
+    private DateTime _now;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private TimeProvider Clock => TimeProvider ?? TimeProvider.System;
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--velo-timeline-now", NowColor is null ? null : ColorValue(NowColor))
+        .Var("--velo-timeline-lane-w", LaneWidth)
+        .Var("--velo-timeline-row-h", $"{RowHeight}px")
+        .Raw(Style)
+        .Build();
+
+    protected override void OnParametersSet()
+    {
+        if (Collapsed != _lastCollapsedParam)
+        {
+            _lastCollapsedParam = Collapsed;
+            _collapsed = Collapsed;
+        }
+
+        _now = Clock.GetLocalNow().DateTime;
+    }
+
+    private TimeSpan Snap => SnapTo is { } snap && snap > TimeSpan.Zero ? snap : SlotDuration > TimeSpan.Zero ? SlotDuration : TimeSpan.FromMinutes(15);
+
+    private (DateTime, DateTime, TimeSpan, bool) EditorKey => (Start, End, Snap, AllowLaneChange);
+    private (DateTime, DateTime, TimeSpan, bool)? _lastEditorKey;
+
+    private object EditorOptions => new
+    {
+        spanMs = (End - Start).TotalMilliseconds,
+        snapMs = Snap.TotalMilliseconds,
+        lanes = AllowLaneChange,
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ShowNow)
+        {
+            _ticker.Start(NowRefresh, Clock, () => InvokeAsync(() =>
+            {
+                _now = Clock.GetLocalNow().DateTime;
+                StateHasChanged();
+            }));
+        }
+
+        if (Editable && _editor is null)
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Velo.Blazor/velo.js");
+            _self ??= DotNetObjectReference.Create(this);
+            _editor = await _module.InvokeAsync<IJSObjectReference>("attachTimeline", _root, _self, EditorOptions);
+        }
+        else if (_editor is not null && !Equals(EditorKey, _lastEditorKey))
+        {
+            // The window or the snap changed since the last render.
+            await _editor.InvokeVoidAsync("update", EditorOptions);
+        }
+
+        _lastEditorKey = EditorKey;
+    }
+
+    /// <summary>Called by velo.js on drop (or arrow key): turns the pixel delta into a proposed change.</summary>
+    [JSInvokable]
+    public async Task OnItemDragged(string id, string mode, double deltaMs, string? lane)
+    {
+        var item = Items?.FirstOrDefault(i => i.Id == id);
+        if (item is null || !Editable || CanEdit?.Invoke(item) == false)
+        {
+            return;
+        }
+
+        var delta = TimeSpan.FromMilliseconds(deltaMs);
+        var (start, end) = mode switch
+        {
+            "start" => (item.Start + delta, item.End),
+            "end" => (item.Start, item.End + delta),
+            _ => (item.Start + delta, item.End + delta),
+        };
+
+        if (end - start < Snap)
+        {
+            if (mode == "start") start = end - Snap; else end = start + Snap;
+        }
+
+        var newLane = lane is null || !AllowLaneChange ? item.Lane : lane.Length == 0 ? null : lane;
+        await OnItemChanged.InvokeAsync(new VeloTimelineChange(item, start, end, newLane));
+    }
+
+    private async Task ToggleCollapsed()
+    {
+        _collapsed = !_collapsed;
+        await CollapsedChanged.InvokeAsync(_collapsed);
+    }
+
+    private VeloTimelineStatus? StatusOf(VeloTimelineItem item) =>
+        item.Status is null ? null : Statuses.FirstOrDefault(s => s.Key == item.Status);
+
+    private static string ColorValue(string? color) =>
+        string.IsNullOrEmpty(color) ? "var(--velo-primary)" : VeloColor.Resolve(color).Value;
+
+    private string Describe(VeloTimelineItem item, VeloTimelineStatus? status) =>
+        $"{item.Label} · {item.Start.ToString("HH:mm", EffectiveCulture)}–{item.End.ToString("HH:mm", EffectiveCulture)}{(status is null ? "" : $" · {status.Label}")}";
+
+    // ----- Layout --------------------------------------------------------------------------------
+
+    private sealed record Slot(double Left, double Width, string Label);
+
+    private sealed record Placed(VeloTimelineItem Item, double Left, double Width, int Row, bool CutStart, bool CutEnd);
+
+    private sealed record Lane(string Name, int Rows, List<Placed> Items);
+
+    private sealed record LayoutModel(List<Slot> Slots, List<(double Left, string Label)> Major, List<Lane> Lanes, bool HasLanes, double? NowPct);
+
+    private LayoutModel BuildLayout()
+    {
+        var span = (End - Start).TotalMilliseconds;
+        if (span <= 0)
+        {
+            return new LayoutModel([], [], [], false, null);
+        }
+
+        double Pct(DateTime t) => (t - Start).TotalMilliseconds / span * 100;
+
+        // Minor tier: one column per slot.
+        var slots = new List<Slot>();
+        var step = SlotDuration > TimeSpan.Zero ? SlotDuration : TimeSpan.FromMinutes(15);
+        for (var t = Start; t < End; t += step)
+        {
+            var end = t + step > End ? End : t + step;
+            var label = SlotLabel?.Invoke(t, end)
+                ?? (step < TimeSpan.FromHours(1)
+                    ? $"{t.ToString("HH:mm", EffectiveCulture)} – {end.ToString("HH:mm", EffectiveCulture)}"
+                    : t.ToString(step >= TimeSpan.FromDays(1) ? "ddd d" : "HH:mm", EffectiveCulture));
+            slots.Add(new Slot(Pct(t), Pct(end) - Pct(t), label));
+        }
+
+        // Major tier: hours above sub-hour slots, days above hourly slots.
+        var major = new List<(double, string)>();
+        var majorStep = step < TimeSpan.FromHours(1) ? TimeSpan.FromHours(1) : step < TimeSpan.FromDays(1) ? TimeSpan.FromDays(1) : TimeSpan.Zero;
+        if (majorStep > TimeSpan.Zero)
+        {
+            var first = majorStep == TimeSpan.FromHours(1) ? Start.Date.AddHours(Start.Hour) : Start.Date;
+            for (var t = first; t < End; t += majorStep)
+            {
+                var at = t < Start ? Start : t;
+                major.Add((Pct(at), majorStep == TimeSpan.FromHours(1)
+                    ? t.ToString("HH:mm", EffectiveCulture)
+                    : t.ToString("dddd d MMMM", EffectiveCulture)));
+            }
+        }
+
+        // Items: lanes in order of appearance, rows per lane.
+        var items = (Items ?? []).Where(i => i.End > Start && i.Start < End && i.End > i.Start).OrderBy(i => i.Start).ToList();
+        var hasLanes = items.Any(i => !string.IsNullOrEmpty(i.Lane));
+        var lanes = new List<Lane>();
+        // Lanes keep the order in which you passed them, not the order of their first item.
+        var laneOrder = (Items ?? []).Select(i => i.Lane ?? "").Distinct().ToList();
+        foreach (var group in items.GroupBy(i => i.Lane ?? "").OrderBy(g => laneOrder.IndexOf(g.Key)))
+        {
+            var placed = new List<Placed>();
+            var rowEnds = new List<DateTime>();
+            foreach (var item in group)
+            {
+                int row;
+                if (Layout == VeloTimelineLayout.Staircase)
+                {
+                    row = placed.Count;
+                }
+                else
+                {
+                    row = rowEnds.FindIndex(end => end <= item.Start);
+                    if (row < 0)
+                    {
+                        row = rowEnds.Count;
+                        rowEnds.Add(item.End);
+                    }
+                    else
+                    {
+                        rowEnds[row] = item.End;
+                    }
+                }
+
+                var from = item.Start < Start ? Start : item.Start;
+                var to = item.End > End ? End : item.End;
+                placed.Add(new Placed(item, Pct(from), Pct(to) - Pct(from), row, item.Start < Start, item.End > End));
+            }
+
+            lanes.Add(new Lane(group.Key, Math.Max(1, placed.Max(p => p.Row) + 1), placed));
+        }
+
+        double? nowPct = ShowNow && _now >= Start && _now <= End ? Pct(_now) : null;
+        return new LayoutModel(slots, major, lanes, hasLanes, nowPct);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _ticker.Dispose();
+        try
+        {
+            if (_editor is not null)
+            {
+                await _editor.InvokeVoidAsync("dispose");
+                await _editor.DisposeAsync();
+            }
+
+            if (_module is not null)
+            {
+                await _module.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone: nothing left to clean up in the browser.
+        }
+
+        _self?.Dispose();
+    }
+}

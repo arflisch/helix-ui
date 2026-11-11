@@ -1,0 +1,24 @@
+@typeparam TEnum where TEnum : struct, Enum
+
+@* Playground control: segmented choice over an enum. *@
+<div class="ctl">
+    <span class="ctl__label">@Label</span>
+    <div class="ctl-seg">
+        @foreach (var option in Enum.GetValues<TEnum>())
+        {
+            <button class="@(new CssBuilder("ctl-seg__btn").Add("is-active", option.Equals(Value)).Build())" @onclick="() => Set(option)">@option</button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public TEnum Value { get; set; }
+    [Parameter] public EventCallback<TEnum> ValueChanged { get; set; }
+
+    private Task Set(TEnum value)
+    {
+        Value = value;
+        return ValueChanged.InvokeAsync(value);
+    }
+}
