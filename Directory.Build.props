@@ -1,0 +1,26 @@
+<Project>
+
+  <!-- Shared package metadata for Velo.Blazor and Velo.Wpf. -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Authors>arflisch</Authors>
+    <Copyright>Copyright © 2026 arflisch</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Missing XML comments are not errors. -->
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+    <!-- Projects opt in with IsPackable=true (the two libraries). -->
+    <IsPackable>false</IsPackable>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!-- Reproducible builds on the CI server. -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>

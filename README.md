@@ -126,3 +126,23 @@ La galerie WPF ne s'exécute que sous Windows ; la librairie se compile aussi su
 
 Chaque partie visuelle est une propriété (`Accent`, `TrackBrush`, `ThumbBrush`, `CornerRadius`…). Pour changer une valeur par défaut
 dans toute l'application, un style implicite `BasedOn="{StaticResource {x:Type velo:VeloSwitch}}"` suffit : le template reste celui de Velo.
+
+## Packages NuGet
+
+| Package | Installation |
+|---|---|
+| `Velo.Blazor` | `dotnet add package Velo.Blazor` |
+| `Velo.Wpf` | `dotnet add package Velo.Wpf` |
+
+Créer les packages en local :
+
+```bash
+dotnet pack src/Velo.Blazor -c Release -o artifacts
+dotnet pack src/Velo.Wpf -c Release -o artifacts
+```
+
+Publier une version : pousser un tag `vX.Y.Z` (par exemple `git tag v0.1.0 && git push origin v0.1.0`).
+Le workflow `.github/workflows/publish.yml` compile, crée les deux packages avec ce numéro de version et les envoie
+sur nuget.org. Il faut une fois ajouter la clé d'API nuget.org dans le secret `NUGET_API_KEY` du dépôt.
+
+Licence MIT.
