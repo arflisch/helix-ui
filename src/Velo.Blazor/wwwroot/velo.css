@@ -68,7 +68,7 @@
 
 :where([data-velo-theme="dark"]) {
     color-scheme: dark;
-    --velo-primary: #6d6ff7;
+    --velo-primary: #5b5ef4;
     --velo-on-primary: #ffffff;
     --velo-neutral: #f4f4f5;
     --velo-on-neutral: #18181b;
@@ -111,6 +111,56 @@
     --velo-shadow-sm: 0 1px 3px rgb(0 0 0 / .5);
     --velo-shadow-md: 0 8px 20px -6px rgb(0 0 0 / .6);
     --velo-shadow-lg: 0 24px 56px -12px rgb(0 0 0 / .75), 0 0 0 1px rgb(255 255 255 / .04);
+}
+
+/* System mode: follow the operating system (same values as the dark block above). */
+@media (prefers-color-scheme: dark) {
+    :where([data-velo-theme="system"]) {
+        color-scheme: dark;
+        --velo-primary: #5b5ef4;
+        --velo-on-primary: #ffffff;
+        --velo-neutral: #f4f4f5;
+        --velo-on-neutral: #18181b;
+        --velo-success: #22c55e;
+        --velo-on-success: #052e16;
+        --velo-warning: #f59e0b;
+        --velo-on-warning: #1c1003;
+        --velo-danger: #f43f5e;
+        --velo-on-danger: #ffffff;
+        --velo-info: #38bdf8;
+        --velo-on-info: #04121a;
+
+        --velo-bg: #09090b;
+        --velo-surface: #111114;
+        --velo-surface-2: #19191d;
+        --velo-surface-3: #27272d;
+        --velo-border: #232328;
+        --velo-border-strong: #34343b;
+        --velo-text: #fafafa;
+        --velo-text-muted: #a1a1aa;
+        --velo-text-subtle: #71717a;
+        --velo-overlay: rgb(0 0 0 / .6);
+
+        --velo-series-1: #3987e5;
+        --velo-series-2: #d95926;
+        --velo-series-3: #199e70;
+        --velo-series-4: #c98500;
+        --velo-series-5: #d55181;
+        --velo-series-6: #008300;
+        --velo-series-7: #9085e9;
+        --velo-series-8: #e66767;
+
+        --velo-heat-lo: #172235;
+        --velo-heat-hi: #9ec5f4;
+        --velo-heat-neg: #3987e5;
+        --velo-heat-pos: #e66767;
+        --velo-heat-mid: #383835;
+
+        --velo-shadow-xs: 0 1px 2px rgb(0 0 0 / .4);
+        --velo-shadow-sm: 0 1px 3px rgb(0 0 0 / .5);
+        --velo-shadow-md: 0 8px 20px -6px rgb(0 0 0 / .6);
+        --velo-shadow-lg: 0 24px 56px -12px rgb(0 0 0 / .75), 0 0 0 1px rgb(255 255 255 / .04);
+    }
 }
 
 /* ---------- Base --------------------------------------------------------- */

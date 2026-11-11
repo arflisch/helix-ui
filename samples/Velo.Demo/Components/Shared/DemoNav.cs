@@ -13,6 +13,7 @@ public static class DemoNav
             new("Introduction", ""),
             new("Installation", "getting-started"),
             new("Personnalisation", "customization"),
+            new("Thèmes clair et sombre", "themes"),
         ]),
         new("Actions",
         [

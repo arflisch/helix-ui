@@ -39,6 +39,26 @@ builder.Services.AddVelo();
 <VeloProvider Theme="theme">@Body</VeloProvider>
 ```
 
+## Thèmes clair et sombre
+
+Un `VeloTheme` contient une palette par mode, et le mode peut suivre le réglage de l'ordinateur :
+
+```csharp
+var theme = new VeloTheme
+{
+    Mode = VeloThemeMode.System,            // Light, Dark ou System (suit l'OS, en direct)
+    Radius = "12px",                        // réglages communs aux deux modes
+    Light = new VeloPalette { Primary = "#0369a1", Background = "#f5f9fc" },
+    Dark  = new VeloPalette { Primary = "#38bdf8", OnPrimary = "#04121a", Background = "#06111c", Surface = "#0b1a28" },
+};
+
+var ocean = VeloThemes.Ocean();             // ou un thème prêt à l'emploi : Indigo, Ocean, Forest, Sunset, Graphite
+```
+
+Une couleur non renseignée garde la valeur Velo du mode. `VeloTheme` se sérialise en JSON (sauvegarde par utilisateur).
+La page « Thèmes clair et sombre » de la démo permet de composer un thème, avec aperçu des deux modes,
+contrôle des contrastes et code C# généré.
+
 ## Personnalisation, trois niveaux
 
 1. **Paramètre** sur un composant : `<VeloSwitch ThumbColor="#f59e0b" />`
@@ -70,5 +90,7 @@ Ajouter une option de personnalisation = un `[Parameter]` + une ligne `StyleBuil
   La timeline utilise les événements pointeur (souris, stylet, tactile).
 - `VeloDashboard` : largeur réglable (colonnes), pas encore la hauteur ; l'ordre visuel (CSS `order`) peut différer
   de l'ordre de tabulation après réorganisation.
+- Thème restauré côté navigateur (démo) : au rechargement, le thème par défaut s'affiche un instant avant le thème
+  sauvegardé. Pour l'éviter dans une application, lisez la préférence côté serveur (cookie, profil) avant le rendu.
 - Pas encore de tests (bUnit) ni de package NuGet.
 - La partie WPF n'est pas commencée.

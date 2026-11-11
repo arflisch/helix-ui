@@ -1,0 +1,235 @@
+@page "/themes"
+@using System.Globalization
+@using System.Text
+@inject DemoThemeState ThemeState
+
+<DemoPage Title="Thèmes clair et sombre" Eyebrow="Guide"
+          Description="Un thème Velo a deux palettes : une pour le mode clair, une pour le mode sombre. Partez d'un thème prêt à l'emploi, ajustez chaque couleur, et l'application suit le mode choisi par l'utilisateur, y compris « Système » qui suit le réglage de l'ordinateur en direct. Tout ce que vous changez ici s'applique à ce site et est gardé dans votre navigateur.">
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">1. Point de départ</h2>
+        <div class="presets">
+            @foreach (var (name, create) in VeloThemes.All)
+            {
+                var preset = create();
+                <button type="button" class="@(new CssBuilder("preset").Add("is-active", ThemeState.Preset == name).Build())"
+                        aria-pressed="@(ThemeState.Preset == name ? "true" : "false")" @onclick="() => ThemeState.Apply(create(), name)">
+                    <span class="preset__swatches">
+                        <span style="background:@(preset.Light.Background ?? LightDefaults["bg"])"><i style="background:@(preset.Light.Primary ?? LightDefaults["primary"])"></i></span>
+                        <span style="background:@(preset.Dark.Background ?? DarkDefaults["bg"])"><i style="background:@(preset.Dark.Primary ?? DarkDefaults["primary"])"></i></span>
+                    </span>
+                    <span class="preset__name">@name</span>
+                </button>
+            }
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">2. Mode de l'application</h2>
+        <VeloRadioGroup TValue="VeloThemeMode" Items="Modes" Value="Theme.Mode" ValueChanged="SetMode" ItemText="ModeText" Appearance="VeloRadioAppearance.Segmented" />
+        <p class="demo-section__text" style="margin-top:10px">« Système » écrit les deux palettes ; le navigateur choisit selon le réglage de l'ordinateur, sans aller-retour serveur.</p>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">3. Les deux palettes</h2>
+        <div class="palettes">
+            @foreach (var mode in new[] { VeloThemeMode.Light, VeloThemeMode.Dark })
+            {
+                var palette = mode == VeloThemeMode.Light ? Theme.Light : Theme.Dark;
+                var defaults = mode == VeloThemeMode.Light ? LightDefaults : DarkDefaults;
+                <div class="palette">
+                    <div class="palette__tokens">
+                        <h3 class="palette__title"><VeloIcon Name="@(mode == VeloThemeMode.Light ? "sun" : "moon")" Size="15" /> @(mode == VeloThemeMode.Light ? "Mode clair" : "Mode sombre")</h3>
+                        @foreach (var token in Tokens)
+                        {
+                            <ColorToken Label="@token.Label" Value="@token.Get(palette)" Default="@defaults[token.Key]"
+                                        ValueChanged="v => Edit(() => token.Set(palette, v))" />
+                        }
+                        <div class="contrast">
+                            @Contrast("Texte sur fond", token: "text", on: "bg", palette, defaults, 4.5)
+                            @Contrast("Texte secondaire", token: "muted", on: "surface", palette, defaults, 4.5)
+                            @Contrast("Bouton principal", token: "onPrimary", on: "primary", palette, defaults, 4.5)
+                        </div>
+                    </div>
+                    <ThemePreview Theme="Theme" Mode="mode" />
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">4. Réglages communs aux deux modes</h2>
+        <div class="grid-3">
+            <VeloSlider Label="Arrondi" Value="RadiusValue" ValueChanged="SetRadius" Min="0" Max="20" Format="@(v => $"{v} px")" />
+            <VeloSlider Label="Hauteur des contrôles" Value="HeightValue" ValueChanged="SetHeight" Min="30" Max="46" Format="@(v => $"{v} px")" />
+            <VeloSelect TValue="string" Label="Police" Items="Fonts.Keys" Value="FontName" ValueChanged="f => Edit(() => Theme.FontFamily = f is null ? null : Fonts[f])" />
+        </div>
+        <div class="row" style="margin-top:16px">
+            <VeloButton Variant="VeloVariant.Outline" Color="neutral" Size="VeloSize.Sm" OnClick="() => ThemeState.Apply(new VeloTheme(), VeloThemes.All[0].Name)">Tout réinitialiser</VeloButton>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">5. Le code de votre thème</h2>
+        <p class="demo-section__text">Copiez-le dans <code>MainLayout.razor</code> (ou chargez-le depuis votre base par utilisateur : <code>VeloTheme</code> se sérialise en JSON).</p>
+        <CodeBlock Language="c#" Code="@Code" />
+    </section>
+</DemoPage>
+
+@code {
+    private static readonly VeloThemeMode[] Modes = [VeloThemeMode.Light, VeloThemeMode.Dark, VeloThemeMode.System];
+
+    private static string ModeText(VeloThemeMode mode) => mode switch
+    {
+        VeloThemeMode.Light => "Clair",
+        VeloThemeMode.Dark => "Sombre",
+        _ => "Système",
+    };
+
+    private sealed record Token(string Key, string Label, Func<VeloPalette, string?> Get, Action<VeloPalette, string?> Set, string Property);
+
+    private static readonly Token[] Tokens =
+    [
+        new("primary", "Couleur principale", p => p.Primary, (p, v) => p.Primary = v, nameof(VeloPalette.Primary)),
+        new("onPrimary", "Texte sur couleur principale", p => p.OnPrimary, (p, v) => p.OnPrimary = v, nameof(VeloPalette.OnPrimary)),
+        new("bg", "Fond de page", p => p.Background, (p, v) => p.Background = v, nameof(VeloPalette.Background)),
+        new("surface", "Surfaces (cartes, champs)", p => p.Surface, (p, v) => p.Surface = v, nameof(VeloPalette.Surface)),
+        new("surface2", "Surfaces discrètes", p => p.Surface2, (p, v) => p.Surface2 = v, nameof(VeloPalette.Surface2)),
+        new("border", "Bordures", p => p.Border, (p, v) => p.Border = v, nameof(VeloPalette.Border)),
+        new("text", "Texte", p => p.Text, (p, v) => p.Text = v, nameof(VeloPalette.Text)),
+        new("muted", "Texte secondaire", p => p.TextMuted, (p, v) => p.TextMuted = v, nameof(VeloPalette.TextMuted)),
+        new("success", "Succès", p => p.Success, (p, v) => p.Success = v, nameof(VeloPalette.Success)),
+        new("danger", "Danger", p => p.Danger, (p, v) => p.Danger = v, nameof(VeloPalette.Danger)),
+    ];
+
+    // Velo's built-in values (velo.css), shown when a palette leaves a color unset.
+    private static readonly Dictionary<string, string> LightDefaults = new()
+    {
+        ["primary"] = "#4f46e5", ["onPrimary"] = "#ffffff", ["bg"] = "#fafafa", ["surface"] = "#ffffff", ["surface2"] = "#f4f4f5",
+        ["border"] = "#e7e7ea", ["text"] = "#18181b", ["muted"] = "#52525b", ["success"] = "#16a34a", ["danger"] = "#e11d48",
+    };
+
+    private static readonly Dictionary<string, string> DarkDefaults = new()
+    {
+        ["primary"] = "#5b5ef4", ["onPrimary"] = "#ffffff", ["bg"] = "#09090b", ["surface"] = "#111114", ["surface2"] = "#19191d",
+        ["border"] = "#232328", ["text"] = "#fafafa", ["muted"] = "#a1a1aa", ["success"] = "#22c55e", ["danger"] = "#f43f5e",
+    };
+
+    private static readonly Dictionary<string, string> Fonts = new()
+    {
+        ["Inter"] = "\"Inter\", ui-sans-serif, system-ui, sans-serif",
+        ["Système"] = "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+        ["Serif"] = "ui-serif, Georgia, \"Times New Roman\", serif",
+        ["Mono"] = "\"JetBrains Mono\", ui-monospace, Menlo, monospace",
+    };
+
+    private VeloTheme Theme => ThemeState.Theme;
+
+    private double RadiusValue => ParsePx(Theme.Radius, 10);
+    private double HeightValue => ParsePx(Theme.ControlHeight, 38);
+    private string? FontName => Theme.FontFamily is null ? "Inter" : Fonts.FirstOrDefault(f => f.Value == Theme.FontFamily).Key;
+
+    private static double ParsePx(string? value, double fallback) =>
+        double.TryParse(value?.Replace("px", ""), NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? v : fallback;
+
+    private void Edit(Action change)
+    {
+        change();
+        ThemeState.Preset = null; // edited by hand
+        ThemeState.Notify();
+    }
+
+    private void SetRadius(double value) => Edit(() => Theme.Radius = $"{value}px");
+
+    private void SetHeight(double value) => Edit(() => Theme.ControlHeight = $"{value}px");
+
+    private void SetMode(VeloThemeMode mode)
+    {
+        Theme.Mode = mode;
+        ThemeState.Notify();
+    }
+
+    // ----- Contrast (WCAG 2) --------------------------------------------------------------------
+
+    private RenderFragment Contrast(string label, string token, string on, VeloPalette palette, Dictionary<string, string> defaults, double min) => __builder =>
+    {
+        var fg = Tokens.First(t => t.Key == token).Get(palette) ?? defaults[token];
+        var bg = Tokens.First(t => t.Key == on).Get(palette) ?? defaults[on];
+        var ratio = Ratio(fg, bg);
+        var ok = ratio is { } r && r >= min;
+        <div class="@(new CssBuilder("contrast__row").Add(ok ? "is-ok" : "is-low").Build())">
+            <span class="contrast__sample" style="background:@bg;color:@fg">Aa</span>
+            <span class="contrast__label">@label</span>
+            <span class="contrast__value">
+                @(ratio is { } value ? $"{value:0.0}:1" : "—")
+                <VeloIcon Name="@(ok ? "success" : "warning")" Size="14" />
+                <span class="velo-sr-only">@(ok ? "lisible" : "contraste insuffisant")</span>
+            </span>
+        </div>
+    };
+
+    private static double? Ratio(string a, string b)
+    {
+        static double? Luminance(string hex)
+        {
+            hex = hex.Trim().TrimStart('#');
+            if (hex.Length == 3)
+            {
+                hex = string.Concat(hex.Select(c => $"{c}{c}"));
+            }
+
+            if (hex.Length != 6 || !int.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var rgb))
+            {
+                return null;
+            }
+
+            static double Channel(int c)
+            {
+                var s = c / 255.0;
+                return s <= 0.03928 ? s / 12.92 : Math.Pow((s + 0.055) / 1.055, 2.4);
+            }
+
+            return 0.2126 * Channel(rgb >> 16 & 255) + 0.7152 * Channel(rgb >> 8 & 255) + 0.0722 * Channel(rgb & 255);
+        }
+
+        if (Luminance(a) is not { } la || Luminance(b) is not { } lb)
+        {
+            return null;
+        }
+
+        var (hi, lo) = la > lb ? (la, lb) : (lb, la);
+        return (hi + 0.05) / (lo + 0.05);
+    }
+
+    // ----- Generated code -----------------------------------------------------------------------
+
+    private string Code
+    {
+        get
+        {
+            var sb = new StringBuilder("var theme = new VeloTheme\n{\n");
+            sb.Append($"    Mode = VeloThemeMode.{Theme.Mode},\n");
+            if (Theme.Radius is not null) sb.Append($"    Radius = \"{Theme.Radius}\",\n");
+            if (Theme.ControlHeight is not null) sb.Append($"    ControlHeight = \"{Theme.ControlHeight}\",\n");
+            if (Theme.FontFamily is not null) sb.Append($"    FontFamily = \"{Theme.FontFamily.Replace("\"", "\\\"")}\",\n");
+            AppendPalette(sb, "Light", Theme.Light);
+            AppendPalette(sb, "Dark", Theme.Dark);
+            sb.Append("};\n\n// MainLayout.razor\n<VeloProvider Theme=\"theme\">@Body</VeloProvider>");
+            return sb.ToString();
+        }
+    }
+
+    private static void AppendPalette(StringBuilder sb, string name, VeloPalette palette)
+    {
+        var props = typeof(VeloPalette).GetProperties()
+            .Where(p => p.PropertyType == typeof(string) && p.GetValue(palette) is string)
+            .Select(p => $"        {p.Name} = \"{p.GetValue(palette)}\",")
+            .ToList();
+        if (props.Count == 0)
+        {
+            return;
+        }
+
+        sb.Append($"    {name} = new VeloPalette\n    {{\n{string.Join("\n", props)}\n    }},\n");
+    }
+}

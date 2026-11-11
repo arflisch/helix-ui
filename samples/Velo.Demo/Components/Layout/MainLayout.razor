@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
 @inject DemoThemeState ThemeState
-@inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <VeloProvider Theme="ThemeState.Theme" Class="demo">
     <aside class="@(new CssBuilder("demo-sidebar").Add("is-open", _menuOpen).Build())">
@@ -30,16 +30,35 @@
                 <VeloIcon Svg="<path d='M4 7h16M4 12h16M4 17h16'/>" Size="18" />
             </button>
             <div class="demo-topbar__spacer"></div>
-            <div class="demo-swatches" role="group" aria-label="Couleur principale">
-                @foreach (var color in TopColors)
-                {
-                    <button class="@(new CssBuilder("demo-swatch").Add("is-active", (ThemeState.Theme.Primary ?? TopColors[0]) == color).Build())"
-                            style="background:@color" aria-label="@color" @onclick="() => SetPrimary(color)"></button>
-                }
-            </div>
-            <VeloTooltip Text="@(IsDark ? "Mode clair" : "Mode sombre")" Placement="VeloPlacement.Left">
-                <VeloButton Variant="VeloVariant.Ghost" Color="neutral" Icon="@(IsDark ? "sun" : "moon")" OnClick="ToggleDark" aria-label="Changer de thème" />
-            </VeloTooltip>
+
+            <VeloMenu Align="VeloAlign.End" MinWidth="230px">
+                <Trigger>
+                    <VeloButton Variant="VeloVariant.Ghost" Color="neutral" Size="VeloSize.Sm" IconEnd="chevron-down">
+                        <span class="demo-theme-dot"></span>
+                        @(ThemeState.Preset ?? "Personnalisé")
+                    </VeloButton>
+                </Trigger>
+                <ChildContent>
+                    <VeloMenuLabel>Thème</VeloMenuLabel>
+                    @foreach (var (name, create) in VeloThemes.All)
+                    {
+                        <VeloMenuItem Checked="@(ThemeState.Preset == name)" OnClick="() => ThemeState.Apply(create(), name)">@name</VeloMenuItem>
+                    }
+                    <VeloMenuItem Icon="settings" Href="themes">Créer un thème…</VeloMenuItem>
+                </ChildContent>
+            </VeloMenu>
+
+            <VeloMenu Align="VeloAlign.End" MinWidth="180px">
+                <Trigger>
+                    <VeloButton Variant="VeloVariant.Ghost" Color="neutral" Icon="@ModeIcon" aria-label="Mode clair, sombre ou système" />
+                </Trigger>
+                <ChildContent>
+                    <VeloMenuLabel>Apparence</VeloMenuLabel>
+                    <VeloMenuItem Icon="sun" Checked="@(Mode == VeloThemeMode.Light)" OnClick="() => SetMode(VeloThemeMode.Light)">Clair</VeloMenuItem>
+                    <VeloMenuItem Icon="moon" Checked="@(Mode == VeloThemeMode.Dark)" OnClick="() => SetMode(VeloThemeMode.Dark)">Sombre</VeloMenuItem>
+                    <VeloMenuItem Icon="settings" Checked="@(Mode == VeloThemeMode.System)" Description="Suit le réglage de l'ordinateur" OnClick="() => SetMode(VeloThemeMode.System)">Système</VeloMenuItem>
+                </ChildContent>
+            </VeloMenu>
         </header>
 
         <main class="demo-content">
@@ -55,25 +74,44 @@
 </div>
 
 @code {
-    private static readonly string[] TopColors = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#e11d48", "#8b5cf6", "#18181b"];
+    private const string StorageKey = "velo-demo-theme";
 
     private bool _menuOpen;
+    private bool _restored;
 
-    private bool IsDark => ThemeState.Theme.Mode == VeloThemeMode.Dark;
+    private VeloThemeMode Mode => ThemeState.Theme.Mode;
+
+    private string ModeIcon => Mode switch
+    {
+        VeloThemeMode.Dark => "moon",
+        VeloThemeMode.System => "settings",
+        _ => "sun",
+    };
 
     protected override void OnInitialized() => ThemeState.Changed += OnThemeChanged;
 
-    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
-
-    private void SetPrimary(string color)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        ThemeState.Theme.Primary = color == TopColors[0] ? null : color;
-        ThemeState.Notify();
+        if (firstRender)
+        {
+            ThemeState.Restore(await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey));
+            _restored = true;
+            StateHasChanged();
+        }
     }
 
-    private void ToggleDark()
+    private void OnThemeChanged() => _ = InvokeAsync(async () =>
     {
-        ThemeState.Theme.Mode = IsDark ? VeloThemeMode.Light : VeloThemeMode.Dark;
+        StateHasChanged();
+        if (_restored)
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, ThemeState.Serialize());
+        }
+    });
+
+    private void SetMode(VeloThemeMode mode)
+    {
+        ThemeState.Theme.Mode = mode;
         ThemeState.Notify();
     }
 

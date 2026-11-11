@@ -18,4 +18,5 @@ public enum VeloAvatarStatus { None, Online, Away, Busy, Offline }
 
 public enum VeloToastPosition { TopRight, TopCenter, TopLeft, BottomRight, BottomCenter, BottomLeft }
 
-public enum VeloThemeMode { Light, Dark }
+/// <summary>System follows the operating system setting (and its changes, live).</summary>
+public enum VeloThemeMode { Light, Dark, System }

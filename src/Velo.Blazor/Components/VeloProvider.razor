@@ -2,18 +2,27 @@
 @inherits VeloComponentBase
 @inject IServiceProvider Services
 
-@* Wrap your layout once: theme + dark mode + toasts. *@
+@* Wrap your layout once: theme (light, dark or system), toasts and confirmations. *@
+@{
+    var sheet = Theme.ToStyleSheet($"[data-velo-root=\"{_id}\"]");
+}
+@if (sheet.Length > 0)
+{
+    @* Values are sanitized by VeloTheme (no braces, semicolons or angle brackets): safe to write raw. *@
+    <style>@((MarkupString)sheet)</style>
+}
 <div @attributes="Attributes"
+     data-velo-root="@_id"
      class="@(new CssBuilder("velo-root").Add(Class).Build())"
-     data-velo-theme="@(Theme.Mode == VeloThemeMode.Dark ? "dark" : null)"
-     style="@(new StyleBuilder().Raw(Theme.ToStyle()).Raw(Style).Build())">
+     data-velo-theme="@ModeAttribute"
+     style="@Style">
     @ChildContent
 
-    @if (_hasToasts)
+    @if (ShowHosts && _hasToasts)
     {
         <VeloToastHost Position="ToastPosition" />
     }
-    @if (_hasConfirm)
+    @if (ShowHosts && _hasConfirm)
     {
         <VeloConfirmHost />
     }
@@ -24,8 +33,21 @@
     [Parameter] public VeloToastPosition ToastPosition { get; set; } = VeloToastPosition.BottomRight;
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Renders the toast and confirmation hosts (true). Set false for a nested provider, e.g. a theme preview.
+    /// </summary>
+    [Parameter] public bool ShowHosts { get; set; } = true;
+
+    private readonly string _id = Guid.NewGuid().ToString("N")[..8];
     private bool _hasToasts;
     private bool _hasConfirm;
+
+    private string ModeAttribute => Theme.Mode switch
+    {
+        VeloThemeMode.Dark => "dark",
+        VeloThemeMode.System => "system",
+        _ => "light",
+    };
 
     protected override void OnInitialized()
     {

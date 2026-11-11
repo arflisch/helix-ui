@@ -1,0 +1,32 @@
+@* A small, representative screen rendered with a theme forced to one mode. *@
+<VeloProvider Theme="Theme.Clone(Mode)" ShowHosts="false" Class="theme-preview">
+    <div class="theme-preview__head">
+        <span class="theme-preview__mode"><VeloIcon Name="@(Mode == VeloThemeMode.Dark ? "moon" : "sun")" Size="14" /> @(Mode == VeloThemeMode.Dark ? "Sombre" : "Clair")</span>
+        <VeloBadge Color="success" Dot="true">En ligne</VeloBadge>
+    </div>
+    <VeloCard Title="Demande de réserve" Subtitle="Envoi avant 14:00">
+        <ChildContent>
+            <div class="stack">
+                <VeloTextField Label="Site" Value="Usine de Lyon" Icon="search" />
+                <div class="grid-2">
+                    <VeloNumberField Label="Puissance" Value="120" Unit="MW" />
+                    <VeloSelect TValue="string" Label="Type" Items="Types" Value="@("Planifiée")" />
+                </div>
+                <VeloSwitch Label="Confirmer automatiquement" Checked="true" />
+                <VeloProgress Label="Capacité utilisée" Value="68" ShowValue="true" />
+            </div>
+        </ChildContent>
+        <Footer>
+            <VeloButton Variant="VeloVariant.Ghost" Color="neutral" Size="VeloSize.Sm">Annuler</VeloButton>
+            <VeloButton Size="VeloSize.Sm" Icon="check">Envoyer</VeloButton>
+        </Footer>
+    </VeloCard>
+    <VeloAlert Severity="VeloSeverity.Warning" Title="Seuil proche">Le déséquilibre approche 300 MW.</VeloAlert>
+</VeloProvider>
+
+@code {
+    private static readonly string[] Types = ["Directe", "Planifiée"];
+
+    [Parameter, EditorRequired] public VeloTheme Theme { get; set; } = new();
+    [Parameter] public VeloThemeMode Mode { get; set; } = VeloThemeMode.Light;
+}
