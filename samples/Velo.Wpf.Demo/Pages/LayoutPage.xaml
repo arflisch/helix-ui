@@ -48,5 +48,86 @@
                 </velo:VeloEmptyState.Actions>
             </velo:VeloEmptyState>
         </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Avatar et Skeleton" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <WrapPanel Margin="0,0,0,20">
+                    <velo:VeloAvatar DisplayName="Camille Martin" Size="Sm" Margin="0,0,10,0" />
+                    <velo:VeloAvatar DisplayName="Léo Bernard" Status="Online" Margin="0,0,10,0" />
+                    <velo:VeloAvatar DisplayName="Inès Petit" Size="Lg" Status="Busy" Margin="0,0,10,0" />
+                    <velo:VeloAvatar DisplayName="Hugo Robert" Size="Lg" CornerRadius="10" Accent="#18181B" Margin="0,0,24,0" />
+                    <velo:VeloAvatarGroup Max="3">
+                        <velo:VeloAvatar DisplayName="Chloé Richard" />
+                        <velo:VeloAvatar DisplayName="Nathan Durand" />
+                        <velo:VeloAvatar DisplayName="Emma Moreau" />
+                        <velo:VeloAvatar DisplayName="Lucas Simon" />
+                        <velo:VeloAvatar DisplayName="Jade Michel" />
+                    </velo:VeloAvatarGroup>
+                </WrapPanel>
+                <DockPanel MaxWidth="420" HorizontalAlignment="Left">
+                    <velo:VeloSkeleton DockPanel.Dock="Left" IsCircle="True" Width="44" Height="44" Margin="0,0,14,0" VerticalAlignment="Top" />
+                    <velo:VeloSkeleton Lines="3" />
+                </DockPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Splitter" />
+        <Border Style="{StaticResource Stage}" Padding="0" Height="180">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220" MinWidth="120" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" MinWidth="120" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Panneau gauche" Margin="20" Foreground="{DynamicResource Velo.TextMuted}" />
+                <velo:VeloSplitter Grid.Column="1" />
+                <TextBlock Grid.Column="2" Text="Panneau droit : glissez la poignée." Margin="20" Foreground="{DynamicResource Velo.TextMuted}" />
+            </Grid>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Carousel" />
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloCarousel SlidesPerView="2" Autoplay="True">
+                <Border Height="140" CornerRadius="12" Background="{DynamicResource Velo.Series1}">
+                    <TextBlock Text="Lyon" FontSize="22" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Border Height="140" CornerRadius="12" Background="{DynamicResource Velo.Series2}">
+                    <TextBlock Text="Grenoble" FontSize="22" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Border Height="140" CornerRadius="12" Background="{DynamicResource Velo.Series3}">
+                    <TextBlock Text="Marseille" FontSize="22" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Border Height="140" CornerRadius="12" Background="{DynamicResource Velo.Series7}">
+                    <TextBlock Text="Lille" FontSize="22" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </velo:VeloCarousel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Drawer" />
+        <Border Style="{StaticResource Stage}">
+            <WrapPanel>
+                <velo:VeloButton Content="Ouvrir à droite" Variant="Outline" Tone="Neutral" Click="OnOpenRight" Margin="0,0,10,0" />
+                <velo:VeloButton Content="Ouvrir en bas" Variant="Outline" Tone="Neutral" Click="OnOpenBottom" />
+            </WrapPanel>
+        </Border>
+
+        <velo:VeloDrawer x:Name="Filters" Title="Filtres" Description="Affinez la liste des sites.">
+            <StackPanel>
+                <velo:VeloSelect Label="Région" SelectedIndex="0" Margin="0,0,0,16">
+                    <ComboBoxItem Content="Toutes" />
+                    <ComboBoxItem Content="Auvergne-Rhône-Alpes" />
+                    <ComboBoxItem Content="Occitanie" />
+                </velo:VeloSelect>
+                <velo:VeloSwitch Content="Seulement les sites actifs" IsChecked="True" Margin="0,0,0,16" />
+                <velo:VeloSlider Minimum="0" Maximum="500" Value="120" />
+            </StackPanel>
+            <velo:VeloDrawer.Footer>
+                <StackPanel Orientation="Horizontal">
+                    <velo:VeloButton Content="Réinitialiser" Variant="Ghost" Tone="Neutral" />
+                    <velo:VeloButton Content="Appliquer" Margin="8,0,0,0" Click="OnApply" />
+                </StackPanel>
+            </velo:VeloDrawer.Footer>
+        </velo:VeloDrawer>
     </StackPanel>
 </UserControl>

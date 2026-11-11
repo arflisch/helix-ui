@@ -4,6 +4,8 @@ namespace Velo.Wpf.Demo.Pages;
 
 public partial class FieldsPage : UserControl
 {
+    public static string[] RatingLabels { get; } = ["Mauvais", "Moyen", "Bien", "Très bien", "Excellent"];
+
     public FieldsPage()
     {
         InitializeComponent();

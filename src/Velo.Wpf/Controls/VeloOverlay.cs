@@ -95,6 +95,10 @@ public class VeloHost : ContentControl
                 slot.Dialog.SetCurrentValue(VeloDialog.IsOpenProperty, false);
                 e.Handled = true;
                 break;
+            case VeloDrawerSlot { Dialog.CloseOnEscape: true } drawer:
+                drawer.Dialog.SetCurrentValue(VeloDialog.IsOpenProperty, false);
+                e.Handled = true;
+                break;
             case VeloConfirmRequest request:
                 request.Resolve(false);
                 e.Handled = true;
@@ -163,16 +167,19 @@ public class VeloDialog : ContentControl
             return;
         }
 
-        var slot = _host.Overlays.OfType<VeloDialogSlot>().FirstOrDefault(s => s.Dialog == this);
+        var slot = _host.Overlays.FirstOrDefault(s => s is VeloDialogSlot d && d.Dialog == this || s is VeloDrawerSlot r && r.Dialog == this);
         if (IsOpen && slot is null)
         {
-            _host.Overlays.Add(new VeloDialogSlot(this));
+            _host.Overlays.Add(CreateSlot());
         }
         else if (!IsOpen && slot is not null)
         {
             _host.Overlays.Remove(slot);
         }
     }
+
+    /// <summary>What the host shows (a dialog box, a drawer…).</summary>
+    internal virtual object CreateSlot() => new VeloDialogSlot(this);
 
     private void OnFooterChanged(DependencyPropertyChangedEventArgs e)
     {

@@ -32,6 +32,23 @@ public sealed class VeloPalette
     public Color? TextSubtle { get; set; }
     public Color? Overlay { get; set; }
 
+    /// <summary>Data series, in this fixed order (validated for color-vision deficiency on adjacent pairs).</summary>
+    public Color? Series1 { get; set; }
+    public Color? Series2 { get; set; }
+    public Color? Series3 { get; set; }
+    public Color? Series4 { get; set; }
+    public Color? Series5 { get; set; }
+    public Color? Series6 { get; set; }
+    public Color? Series7 { get; set; }
+    public Color? Series8 { get; set; }
+
+    /// <summary>Heatmap: sequential low → high, diverging negative ← mid → positive.</summary>
+    public Color? HeatLow { get; set; }
+    public Color? HeatHigh { get; set; }
+    public Color? HeatNegative { get; set; }
+    public Color? HeatMid { get; set; }
+    public Color? HeatPositive { get; set; }
+
     /// <summary>Built-in light colors.</summary>
     public static VeloPalette DefaultLight => new()
     {
@@ -45,6 +62,9 @@ public sealed class VeloPalette
         Border = C("#e7e7ea"), BorderStrong = C("#d4d4d8"),
         Text = C("#18181b"), TextMuted = C("#52525b"), TextSubtle = C("#a1a1aa"),
         Overlay = C("#6109090b"),
+        Series1 = C("#2a78d6"), Series2 = C("#eb6834"), Series3 = C("#1baf7a"), Series4 = C("#eda100"),
+        Series5 = C("#e87ba4"), Series6 = C("#008300"), Series7 = C("#6250d6"), Series8 = C("#e34948"),
+        HeatLow = C("#e3eefc"), HeatHigh = C("#104281"), HeatNegative = C("#2a78d6"), HeatMid = C("#f0efec"), HeatPositive = C("#e34948"),
     };
 
     /// <summary>Built-in dark colors.</summary>
@@ -60,6 +80,9 @@ public sealed class VeloPalette
         Border = C("#232328"), BorderStrong = C("#34343b"),
         Text = C("#fafafa"), TextMuted = C("#a1a1aa"), TextSubtle = C("#71717a"),
         Overlay = C("#99000000"),
+        Series1 = C("#3987e5"), Series2 = C("#d95926"), Series3 = C("#199e70"), Series4 = C("#c98500"),
+        Series5 = C("#d55181"), Series6 = C("#008300"), Series7 = C("#9085e9"), Series8 = C("#e66767"),
+        HeatLow = C("#172235"), HeatHigh = C("#9ec5f4"), HeatNegative = C("#3987e5"), HeatMid = C("#383835"), HeatPositive = C("#e66767"),
     };
 
     /// <summary>The values of <paramref name="overrides"/> on top of this palette.</summary>
@@ -104,6 +127,19 @@ public sealed class VeloPalette
         yield return (VeloKeys.TextMuted, TextMuted);
         yield return (VeloKeys.TextSubtle, TextSubtle);
         yield return (VeloKeys.Overlay, Overlay);
+        yield return ("Velo.Series1", Series1);
+        yield return ("Velo.Series2", Series2);
+        yield return ("Velo.Series3", Series3);
+        yield return ("Velo.Series4", Series4);
+        yield return ("Velo.Series5", Series5);
+        yield return ("Velo.Series6", Series6);
+        yield return ("Velo.Series7", Series7);
+        yield return ("Velo.Series8", Series8);
+        yield return (VeloKeys.HeatLow, HeatLow);
+        yield return (VeloKeys.HeatHigh, HeatHigh);
+        yield return (VeloKeys.HeatNegative, HeatNegative);
+        yield return (VeloKeys.HeatMid, HeatMid);
+        yield return (VeloKeys.HeatPositive, HeatPositive);
     }
 
     private static Color C(string hex) => (Color)ColorConverter.ConvertFromString(hex);
@@ -134,6 +170,15 @@ public static class VeloKeys
     public const string TextMuted = "Velo.TextMuted";
     public const string TextSubtle = "Velo.TextSubtle";
     public const string Overlay = "Velo.Overlay";
+    public const string PrimarySoft = "Velo.PrimarySoft";
+    public const string HeatLow = "Velo.HeatLow";
+    public const string HeatHigh = "Velo.HeatHigh";
+    public const string HeatNegative = "Velo.HeatNegative";
+    public const string HeatMid = "Velo.HeatMid";
+    public const string HeatPositive = "Velo.HeatPositive";
+
+    /// <summary>Brush key of data series n (1-based, wraps after 8): "Velo.Series1"…</summary>
+    public static string Series(int index) => "Velo.Series" + ((Math.Max(1, index) - 1) % 8 + 1);
 
     public const string Radius = "Velo.Radius";
     public const string RadiusSmall = "Velo.RadiusSmall";

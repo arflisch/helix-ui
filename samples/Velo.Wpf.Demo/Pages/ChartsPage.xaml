@@ -1,0 +1,62 @@
+<UserControl x:Class="Velo.Wpf.Demo.Pages.ChartsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:velo="https://velo-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Graphiques" />
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Un seul axe Y, des couleurs de séries dans un ordre fixe, une légende qui masque les séries, et un survol avec les valeurs exactes. Les couleurs suivent le thème clair ou sombre." />
+
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloChart x:Name="Power" Title="Production et prévision" Subtitle="Aujourd'hui, par heure" Unit="MW" ShowNow="True" PlotHeight="280">
+                <velo:VeloChartSeries x:Name="Actual" Name="Production" Type="Area" />
+                <velo:VeloChartSeries x:Name="Forecast" Name="Prévision" IsDashed="True" />
+                <velo:VeloChart.Lines>
+                    <velo:VeloChartLine Y="400" Label="Contrat" Color="danger" />
+                </velo:VeloChart.Lines>
+            </velo:VeloChart>
+        </Border>
+
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloChart x:Name="Monthly" Title="Ventes par mois" Subtitle="Barres groupées, un ton par année" Unit="k€" PlotHeight="240">
+                <velo:VeloChartSeries x:Name="Y2025" Name="2025" Type="Bar" />
+                <velo:VeloChartSeries x:Name="Y2026" Name="2026" Type="Bar" />
+            </velo:VeloChart>
+        </Border>
+
+        <UniformGrid Columns="2" Margin="0,0,0,32">
+            <Border Style="{StaticResource Stage}" Margin="0,0,12,0">
+                <velo:VeloDonut x:Name="Mix" Title="Mix énergétique" Unit="GWh" />
+            </Border>
+            <Border Style="{StaticResource Stage}" Margin="12,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="Charge du réseau" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Velo.Text}" Margin="0,0,0,12" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <velo:VeloGauge x:Name="Load" Value="72" Unit="%" Label="Charge" Size="170" Margin="0,0,16,0" />
+                        <velo:VeloGauge Value="38" Unit="°C" Label="Température" Maximum="60" Size="170" Accent="#0EA5E9" />
+                    </StackPanel>
+                    <velo:VeloSlider Minimum="0" Maximum="100" Value="{Binding Value, ElementName=Load, Mode=TwoWay}" Margin="0,12,0,0" />
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloDonut x:Name="Share" Title="Part des sources" Shape="SegmentedBar" Unit="%" ValueFormat="0" Thickness="16" />
+        </Border>
+
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloHeatmap x:Name="Heat" Title="Consommation par heure" Unit="MW" ColumnLabelEvery="3" />
+        </Border>
+
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloHeatmap x:Name="Delta" Title="Écart à l'objectif (diverging)" Unit="%" IsDiverging="True" ShowValues="True" />
+        </Border>
+
+        <Border Style="{StaticResource Stage}">
+            <StackPanel MaxWidth="560" HorizontalAlignment="Left">
+                <TextBlock Text="Pages les plus vues" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Velo.Text}" Margin="0,0,0,12" />
+                <velo:VeloBarList x:Name="Pages" Limit="5" LabelHeader="Page" ValueHeader="Vues" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

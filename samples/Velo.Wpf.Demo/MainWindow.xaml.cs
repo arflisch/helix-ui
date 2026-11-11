@@ -28,6 +28,11 @@ public partial class MainWindow : Window
             "Feedback" => new FeedbackPage(),
             "Layout" => new LayoutPage(),
             "Customization" => new CustomizationPage(),
+            "Navigation" => new NavigationPage(),
+            "Data" => new DataPage(),
+            "Charts" => new ChartsPage(),
+            "Planning" => new PlanningPage(),
+            "Board" => new BoardPage(),
             _ => new ButtonsPage(),
         };
         Scroller.ScrollToTop();

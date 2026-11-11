@@ -1,0 +1,100 @@
+<UserControl x:Class="Velo.Wpf.Demo.Pages.NavigationPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:velo="https://velo-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Navigation" />
+        <TextBlock Style="{StaticResource PageLead}" Text="Onglets, sections dépliables, fil d'Ariane, boutons segmentés, pagination, étapes et menus." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Tabs" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <velo:VeloTabs Margin="0,0,0,24">
+                    <velo:VeloTab Header="Aperçu" Icon="layout">
+                        <TextBlock Text="Underline : le style par défaut." Foreground="{DynamicResource Velo.TextMuted}" />
+                    </velo:VeloTab>
+                    <velo:VeloTab Header="Activité" Icon="bell">
+                        <TextBlock Text="Deuxième onglet." Foreground="{DynamicResource Velo.TextMuted}" />
+                    </velo:VeloTab>
+                    <velo:VeloTab Header="Réglages" Icon="settings" />
+                </velo:VeloTabs>
+                <velo:VeloTabs Variant="Pills" Margin="0,0,0,24">
+                    <velo:VeloTab Header="Jour" />
+                    <velo:VeloTab Header="Semaine" />
+                    <velo:VeloTab Header="Mois" />
+                </velo:VeloTabs>
+                <velo:VeloTabs Variant="Segmented">
+                    <velo:VeloTab Header="Liste" Icon="menu" />
+                    <velo:VeloTab Header="Tableau" Icon="columns" />
+                    <velo:VeloTab Header="Calendrier" Icon="calendar" />
+                </velo:VeloTabs>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Accordion" />
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloAccordion MaxWidth="560" HorizontalAlignment="Left">
+                <velo:VeloAccordionItem Header="Livraison" Subtitle="Délais et zones" Icon="download" IsExpanded="True">
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Velo.TextMuted}" Text="Livraison en 48 h partout en France métropolitaine." />
+                </velo:VeloAccordionItem>
+                <velo:VeloAccordionItem Header="Retours" Icon="refresh">
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Velo.TextMuted}" Text="30 jours pour changer d'avis." />
+                </velo:VeloAccordionItem>
+                <velo:VeloAccordionItem Header="Paiement" Icon="lock">
+                    <velo:VeloAccordionItem.Extra>
+                        <velo:VeloBadge Content="Sécurisé" Tone="Success" />
+                    </velo:VeloAccordionItem.Extra>
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Velo.TextMuted}" Text="Carte, virement ou prélèvement." />
+                </velo:VeloAccordionItem>
+            </velo:VeloAccordion>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Breadcrumb, ButtonGroup, Pagination" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <velo:VeloBreadcrumb x:Name="Crumbs" MaxItems="4" Margin="0,0,0,20" />
+                <velo:VeloButtonGroup SelectedIndex="1" Margin="0,0,0,20">
+                    <ListBoxItem Content="Jour" />
+                    <ListBoxItem Content="Semaine" />
+                    <ListBoxItem Content="Mois" />
+                    <ListBoxItem Content="Année" />
+                </velo:VeloButtonGroup>
+                <velo:VeloPagination TotalItems="87" PageSize="10" Page="2" ShowInfo="True" ShowLabels="True" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Stepper" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <velo:VeloStepper x:Name="Steps" ActiveIndex="2" IsClickable="True" Margin="0,0,0,24" />
+                <velo:VeloStepper x:Name="StepsVertical" Orientation="Vertical" ActiveIndex="1" Width="320" HorizontalAlignment="Left" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Menu" />
+        <Border Style="{StaticResource Stage}">
+            <WrapPanel>
+                <velo:VeloMenuButton Content="Actions" IconEnd="chevron-down" Variant="Outline" Tone="Neutral" Margin="0,0,10,0">
+                    <velo:VeloMenuButton.Menu>
+                        <velo:VeloContextMenu>
+                            <velo:VeloMenuItem Header="Modifier" IconName="edit" Shortcut="Ctrl+E" />
+                            <velo:VeloMenuItem Header="Dupliquer" IconName="copy" Shortcut="Ctrl+D" />
+                            <velo:VeloMenuItem Header="Exporter" IconName="download" Description="PDF ou Excel" />
+                            <velo:VeloMenuSeparator />
+                            <velo:VeloMenuItem Header="Supprimer" IconName="trash" IsDanger="True" />
+                        </velo:VeloContextMenu>
+                    </velo:VeloMenuButton.Menu>
+                </velo:VeloMenuButton>
+                <Border Padding="16,10" CornerRadius="10" Background="{DynamicResource Velo.Surface2}">
+                    <Border.ContextMenu>
+                        <velo:VeloContextMenu>
+                            <velo:VeloMenuItem Header="Copier" IconName="copy" />
+                            <velo:VeloMenuItem Header="Épingler" IconName="star" IsCheckable="True" IsChecked="True" />
+                        </velo:VeloContextMenu>
+                    </Border.ContextMenu>
+                    <TextBlock Text="Clic droit ici" Foreground="{DynamicResource Velo.TextMuted}" />
+                </Border>
+            </WrapPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -1495,6 +1495,1694 @@
         </Setter>
     </Style>
 
+    <!-- ===================================================================== Tabs -->
+
+    <Style TargetType="{x:Type local:VeloTabs}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0,18,0,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloTabs}">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top">
+                            <Border x:Name="Line" VerticalAlignment="Bottom" Height="1" Background="{DynamicResource Velo.Border}" />
+                            <Border x:Name="Strip" HorizontalAlignment="Left" CornerRadius="10">
+                                <TabPanel IsItemsHost="True" Background="Transparent" />
+                            </Border>
+                        </Grid>
+                        <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" Margin="{TemplateBinding Padding}" />
+                    </DockPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Variant" Value="Pills">
+                            <Setter TargetName="Line" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Variant" Value="Segmented">
+                            <Setter TargetName="Line" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Strip" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+                            <Setter TargetName="Strip" Property="Padding" Value="3" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloTab}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.TextMuted}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Velo.FocusVisual}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloTab}">
+                    <Grid x:Name="Root" Margin="0,0,4,0" Background="Transparent">
+                        <Border x:Name="Bg" CornerRadius="8" Background="Transparent" />
+                        <Border x:Name="Underline" Height="2" VerticalAlignment="Bottom" CornerRadius="1" Visibility="Hidden"
+                                Background="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" />
+                        <StackPanel Orientation="Horizontal" Margin="12,9">
+                            <local:VeloIcon x:Name="Icon" Icon="{TemplateBinding Icon}" Margin="0,0,7,0" VerticalAlignment="Center" />
+                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </StackPanel>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter TargetName="Underline" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" Value="Pills">
+                            <Setter TargetName="Underline" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Variant, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" Value="Segmented">
+                            <Setter TargetName="Underline" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Root" Property="Margin" Value="0" />
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Variant, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" Value="Pills" />
+                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Bg" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" />
+                            <Setter TargetName="Bg" Property="Opacity" Value="0.12" />
+                            <Setter Property="Foreground" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" />
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Variant, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTabs}}}" Value="Segmented" />
+                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface}" />
+                            <Setter TargetName="Bg" Property="Effect" Value="{StaticResource Velo.ShadowSm}" />
+                        </MultiDataTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Root" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Accordion -->
+
+    <Style TargetType="{x:Type local:VeloAccordion}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Velo.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Velo.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloAccordion}">
+                    <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12" Padding="0,0,0,0">
+                        <ItemsPresenter Margin="0,0,0,-1" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFlush" Value="True">
+                            <Setter TargetName="Root" Property="BorderThickness" Value="0" />
+                            <Setter TargetName="Root" Property="Background" Value="Transparent" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloAccordionItem}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloAccordionItem}">
+                    <Border BorderBrush="{DynamicResource Velo.Border}" BorderThickness="0,0,0,1">
+                        <DockPanel>
+                            <ToggleButton DockPanel.Dock="Top" Cursor="Hand" FocusVisualStyle="{x:Null}"
+                                          IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <Border x:Name="Bg" Background="Transparent" Padding="16,13">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+                                            </Trigger>
+                                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <DockPanel>
+                                    <local:VeloIcon x:Name="Chevron" DockPanel.Dock="Right" Icon="chevron-down" Foreground="{DynamicResource Velo.TextSubtle}"
+                                                    VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" />
+                                    <ContentPresenter x:Name="Extra" DockPanel.Dock="Right" Content="{TemplateBinding Extra}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                    <local:VeloIcon x:Name="Icon" DockPanel.Dock="Left" Icon="{TemplateBinding Icon}" Margin="0,1,12,0" VerticalAlignment="Top"
+                                                    Foreground="{DynamicResource Velo.TextMuted}" />
+                                    <StackPanel>
+                                        <ContentPresenter ContentSource="Header" TextElement.FontWeight="SemiBold" TextElement.Foreground="{DynamicResource Velo.Text}" />
+                                        <TextBlock x:Name="Subtitle" Text="{TemplateBinding Subtitle}" FontSize="12.5" Margin="0,2,0,0" Foreground="{DynamicResource Velo.TextMuted}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="Body" Margin="16,0,16,16" Visibility="Collapsed" />
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="Body" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Chevron" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="180" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Subtitle" Value="{x:Null}">
+                            <Setter TargetName="Subtitle" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Extra" Value="{x:Null}">
+                            <Setter TargetName="Extra" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Breadcrumb, pagination, stepper (built in code) -->
+
+    <Style TargetType="{x:Type local:VeloBreadcrumb}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloBreadcrumb}">
+                    <WrapPanel x:Name="PART_Panel" Margin="-8,0,0,0" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloPagination}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloPagination}">
+                    <StackPanel x:Name="PART_Pages" Orientation="Horizontal" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloStepper}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloStepper}">
+                    <Grid x:Name="PART_Steps" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== ButtonGroup (segmented) -->
+
+    <Style x:Key="Velo.SegmentItem" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.TextMuted}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Velo.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Bg" CornerRadius="8" Background="Transparent" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface}" />
+                            <Setter TargetName="Bg" Property="Effect" Value="{StaticResource Velo.ShadowSm}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloButtonGroup}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource Velo.SegmentItem}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType={x:Type local:VeloButtonGroup}}}" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloButtonGroup}">
+                    <Border Background="{DynamicResource Velo.Surface2}" CornerRadius="{TemplateBinding CornerRadius}" Padding="3">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Avatar -->
+
+    <Style TargetType="{x:Type local:VeloAvatar}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloAvatar}">
+                    <Grid x:Name="Root" Width="36" Height="36">
+                        <Border CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Accent}">
+                            <TextBlock x:Name="Initials" Text="{TemplateBinding Initials}" Foreground="#FFFFFFFF" FontWeight="SemiBold" FontSize="13"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Border x:Name="Photo" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding Source, RelativeSource={RelativeSource TemplatedParent}}" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                        <Ellipse x:Name="Dot" Width="10" Height="10" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                 Stroke="{DynamicResource Velo.Surface}" StrokeThickness="2" Visibility="Collapsed" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Source" Value="{x:Null}">
+                            <Setter TargetName="Photo" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Size" Value="Sm">
+                            <Setter TargetName="Root" Property="Width" Value="28" />
+                            <Setter TargetName="Root" Property="Height" Value="28" />
+                            <Setter TargetName="Initials" Property="FontSize" Value="11" />
+                            <Setter TargetName="Dot" Property="Width" Value="8" />
+                            <Setter TargetName="Dot" Property="Height" Value="8" />
+                        </Trigger>
+                        <Trigger Property="Size" Value="Lg">
+                            <Setter TargetName="Root" Property="Width" Value="48" />
+                            <Setter TargetName="Root" Property="Height" Value="48" />
+                            <Setter TargetName="Initials" Property="FontSize" Value="17" />
+                            <Setter TargetName="Dot" Property="Width" Value="13" />
+                            <Setter TargetName="Dot" Property="Height" Value="13" />
+                        </Trigger>
+                        <Trigger Property="Status" Value="Online">
+                            <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource Velo.Success}" />
+                        </Trigger>
+                        <Trigger Property="Status" Value="Away">
+                            <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource Velo.Warning}" />
+                        </Trigger>
+                        <Trigger Property="Status" Value="Busy">
+                            <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource Velo.Danger}" />
+                        </Trigger>
+                        <Trigger Property="Status" Value="Offline">
+                            <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource Velo.TextSubtle}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloAvatarGroup}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloAvatarGroup}">
+                    <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type local:VeloAvatar}" BasedOn="{StaticResource {x:Type local:VeloAvatar}}">
+                                <Setter Property="Margin" Value="-8,0,0,0" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <ItemsPresenter />
+                        <Border x:Name="Overflow" Margin="-8,0,0,0" MinWidth="36" Height="36" CornerRadius="18" Padding="6,0"
+                                Background="{DynamicResource Velo.Surface3}" BorderBrush="{DynamicResource Velo.Surface}" BorderThickness="2">
+                            <TextBlock Text="{TemplateBinding OverflowText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Velo.TextMuted}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="OverflowText" Value="{x:Null}">
+                            <Setter TargetName="Overflow" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Skeleton -->
+
+    <Style TargetType="{x:Type local:VeloSkeleton}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="12" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloSkeleton}">
+                    <Grid x:Name="Root">
+                        <Border x:Name="Block" CornerRadius="{TemplateBinding CornerRadius}" Background="{DynamicResource Velo.Surface3}" />
+                        <Ellipse x:Name="Circle" Fill="{DynamicResource Velo.Surface3}" Visibility="Collapsed" />
+                        <ItemsControl x:Name="LinesHost" ItemsSource="{TemplateBinding LineItems}" Visibility="Collapsed" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,9">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="{Binding Filled}" />
+                                            <ColumnDefinition Width="{Binding Empty}" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Height="12" CornerRadius="6" Background="{DynamicResource Velo.Surface3}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsCircle" Value="True">
+                            <Setter TargetName="Block" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Circle" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMultiline" Value="True">
+                            <Setter TargetName="Block" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="LinesHost" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity" From="1" To="0.45"
+                                                     Duration="0:0:0.9" AutoReverse="True" RepeatBehavior="Forever" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Splitter -->
+
+    <Style TargetType="{x:Type local:VeloSplitter}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="Width" Value="9" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloSplitter}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Border x:Name="Line" Width="1" Background="{DynamicResource Velo.Border}" />
+                        <Border x:Name="Grip" Width="5" Height="28" CornerRadius="3" Background="{DynamicResource Velo.BorderStrong}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HorizontalAlignment" Value="Stretch">
+                            <Setter TargetName="Line" Property="Width" Value="NaN" />
+                            <Setter TargetName="Line" Property="Height" Value="1" />
+                            <Setter TargetName="Grip" Property="Width" Value="28" />
+                            <Setter TargetName="Grip" Property="Height" Value="5" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Line" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Grip" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Line" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Grip" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="HorizontalAlignment" Value="Stretch">
+                <Setter Property="Width" Value="NaN" />
+                <Setter Property="Height" Value="9" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===================================================================== Menu -->
+
+    <Style TargetType="{x:Type local:VeloContextMenu}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloContextMenu}">
+                    <Border Margin="8" Padding="4" MinWidth="200" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}"
+                            BorderThickness="1" CornerRadius="12" Effect="{StaticResource Velo.ShadowLg}">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloMenuSeparator}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloMenuSeparator}">
+                    <Border Height="1" Margin="6,4" Background="{DynamicResource Velo.Border}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloMenuItem}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloMenuItem}">
+                    <Grid>
+                        <Border x:Name="Bg" CornerRadius="7" Background="Transparent" Padding="10,7">
+                            <DockPanel>
+                                <local:VeloIcon x:Name="Icon" DockPanel.Dock="Left" Icon="{TemplateBinding IconName}" Margin="0,1,10,0" VerticalAlignment="Top"
+                                                Foreground="{DynamicResource Velo.TextMuted}" />
+                                <ContentPresenter x:Name="CustomIcon" DockPanel.Dock="Left" ContentSource="Icon" Margin="0,0,10,0" VerticalAlignment="Top" />
+                                <local:VeloIcon x:Name="Check" DockPanel.Dock="Right" Icon="check" Margin="12,1,0,0" VerticalAlignment="Top"
+                                                Foreground="{DynamicResource Velo.Primary}" Visibility="Collapsed" />
+                                <local:VeloIcon x:Name="Arrow" DockPanel.Dock="Right" Icon="chevron-right" Margin="12,1,0,0" VerticalAlignment="Top"
+                                                Foreground="{DynamicResource Velo.TextSubtle}" Visibility="Collapsed" />
+                                <TextBlock x:Name="Gesture" DockPanel.Dock="Right" Text="{TemplateBinding InputGestureText}" Margin="20,1,0,0" FontSize="12"
+                                           VerticalAlignment="Top" Foreground="{DynamicResource Velo.TextSubtle}" />
+                                <StackPanel>
+                                    <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" />
+                                    <TextBlock x:Name="Description" Text="{TemplateBinding Description}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"
+                                               MaxWidth="260" HorizontalAlignment="Left" Foreground="{DynamicResource Velo.TextMuted}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <Popup x:Name="PART_Popup" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Right"
+                               HorizontalOffset="-4" VerticalOffset="-12" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                            <Border Margin="8" Padding="4" MinWidth="180" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}"
+                                    BorderThickness="1" CornerRadius="12" Effect="{StaticResource Velo.ShadowLg}">
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IconName" Value="{x:Null}">
+                            <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="MenuItem.Icon" Value="{x:Null}">
+                            <Setter TargetName="CustomIcon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Description" Value="{x:Null}">
+                            <Setter TargetName="Description" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="InputGestureText" Value="">
+                            <Setter TargetName="Gesture" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Role" Value="SubmenuHeader">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+                        </Trigger>
+                        <Trigger Property="IsDanger" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Danger}" />
+                            <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource Velo.Danger}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Rating -->
+
+    <Style TargetType="{x:Type local:VeloRating}">
+        <Setter Property="Accent" Value="#FFF5A524" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Velo.FocusVisual}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloRating}">
+                    <StackPanel x:Name="PART_Items" Orientation="Horizontal" Background="Transparent" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="Focusable" Value="False" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===================================================================== ColorPicker -->
+
+    <Style TargetType="{x:Type local:VeloColorPicker}" BasedOn="{StaticResource Velo.FieldBase}">
+        <Setter Property="CornerRadius" Value="{DynamicResource Velo.Radius}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloColorPicker}">
+                    <local:VeloField x:Name="Field" Label="{TemplateBinding Label}" Hint="{TemplateBinding Hint}">
+                        <Grid>
+                            <ToggleButton x:Name="Toggle" Cursor="Hand" FocusVisualStyle="{x:Null}"
+                                          IsChecked="{Binding IsOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <Border x:Name="Chrome" MinHeight="{DynamicResource Velo.ControlHeight}" Background="{DynamicResource Velo.Surface}"
+                                                BorderBrush="{DynamicResource Velo.BorderStrong}" BorderThickness="1"
+                                                CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType={x:Type local:VeloColorPicker}}}">
+                                            <ContentPresenter Margin="8,0,10,0" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Velo.TextSubtle}" />
+                                            </Trigger>
+                                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Velo.Primary}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <DockPanel>
+                                    <local:VeloIcon DockPanel.Dock="Right" Icon="chevron-down" Foreground="{DynamicResource Velo.TextSubtle}" VerticalAlignment="Center" />
+                                    <Border Width="22" Height="22" CornerRadius="6" BorderThickness="1" BorderBrush="#28000000"
+                                            Background="{TemplateBinding SwatchBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <Grid VerticalAlignment="Center">
+                                        <TextBlock x:Name="HexText" Text="{TemplateBinding Hex}" FontFamily="Cascadia Mono, Consolas" Foreground="{DynamicResource Velo.Text}" />
+                                        <TextBlock x:Name="Placeholder" Text="{TemplateBinding Placeholder}" Foreground="{DynamicResource Velo.TextSubtle}" Visibility="Collapsed" />
+                                    </Grid>
+                                </DockPanel>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup" IsOpen="{Binding IsOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" StaysOpen="False"
+                                   Placement="Bottom" PlacementTarget="{Binding ElementName=Toggle}" AllowsTransparency="True" PopupAnimation="Fade"
+                                   VerticalOffset="-4" HorizontalOffset="-8">
+                                <Border x:Name="PART_Panel" Margin="8" Padding="12" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}"
+                                        BorderThickness="1" CornerRadius="14" Effect="{StaticResource Velo.ShadowLg}" />
+                            </Popup>
+                        </Grid>
+                    </local:VeloField>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Hex" Value="{x:Null}">
+                            <Setter TargetName="Placeholder" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Field" Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== FileDrop -->
+
+    <Style TargetType="{x:Type local:VeloFileDrop}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Velo.Surface}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloFileDrop}">
+                    <StackPanel>
+                        <Grid x:Name="Zone">
+                            <Border x:Name="ZoneBg" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Background}" />
+                            <Border x:Name="Tint" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Accent}" Opacity="0" />
+                            <Rectangle x:Name="Dash" RadiusX="14" RadiusY="14" StrokeDashArray="5 4" StrokeThickness="1.5" Stroke="{DynamicResource Velo.BorderStrong}" />
+                            <StackPanel x:Name="Big" Margin="24,28" HorizontalAlignment="Center">
+                                <Grid Width="44" Height="44" HorizontalAlignment="Center">
+                                    <Ellipse Fill="{TemplateBinding Accent}" Opacity="0.1" />
+                                    <local:VeloIcon Icon="upload" Size="20" Foreground="{TemplateBinding Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                                <TextBlock x:Name="Title" Text="{TemplateBinding Title}" FontWeight="SemiBold" Margin="0,12,0,0" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="Hint" Text="{TemplateBinding AutoHint}" FontSize="12.5" Margin="0,3,0,0" HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource Velo.TextMuted}" />
+                                <local:VeloButton x:Name="PART_Browse" Content="{TemplateBinding BrowseText}" Variant="Outline" Tone="Neutral" Size="Sm"
+                                                  Margin="0,14,0,0" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock x:Name="Error" Text="{TemplateBinding Error}" Margin="0,8,0,0" FontSize="12.5" TextWrapping="Wrap" Foreground="{DynamicResource Velo.Danger}" />
+                        <ItemsControl x:Name="List" ItemsSource="{Binding Files, RelativeSource={RelativeSource TemplatedParent}}" Margin="0,10,0,0" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,6" Padding="10,8" CornerRadius="10" Background="{DynamicResource Velo.Surface}"
+                                            BorderBrush="{DynamicResource Velo.Border}" BorderThickness="1">
+                                        <DockPanel>
+                                            <Border DockPanel.Dock="Left" Width="34" Height="34" CornerRadius="8" Background="{DynamicResource Velo.Surface2}" Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding Extension}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Velo.TextMuted}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource Velo.IconButton}" Command="{Binding RemoveCommand}">
+                                                <local:VeloIcon Icon="x" Size="14" />
+                                            </Button>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Velo.Text}" />
+                                                <TextBlock Text="{Binding SizeText}" FontSize="12" Foreground="{DynamicResource Velo.TextMuted}" />
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsCompact" Value="True">
+                            <Setter TargetName="Big" Property="Margin" Value="16,10" />
+                        </Trigger>
+                        <Trigger Property="AutoHint" Value="{x:Null}">
+                            <Setter TargetName="Hint" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Error" Value="{x:Null}">
+                            <Setter TargetName="Error" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="HasFiles" Value="False">
+                            <Setter TargetName="List" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="ShowList" Value="False">
+                            <Setter TargetName="List" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Dash" Property="Stroke" Value="{DynamicResource Velo.TextSubtle}" />
+                        </Trigger>
+                        <Trigger Property="IsDragOver" Value="True">
+                            <Setter TargetName="Dash" Property="Stroke" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Tint" Property="Opacity" Value="0.07" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Charts -->
+
+    <Style x:Key="Velo.ChartTitle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+    </Style>
+    <Style x:Key="Velo.ChartSubtitle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.TextMuted}" />
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloChart}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloChart}">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,10">
+                            <WrapPanel x:Name="PART_Legend" DockPanel.Dock="Right" VerticalAlignment="Top" Margin="12,0,-8,0" />
+                            <StackPanel VerticalAlignment="Top">
+                                <TextBlock x:Name="Title" Text="{TemplateBinding Title}" Style="{StaticResource Velo.ChartTitle}" />
+                                <TextBlock x:Name="Subtitle" Text="{TemplateBinding Subtitle}" Style="{StaticResource Velo.ChartSubtitle}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <local:VeloPlot x:Name="PART_Plot" Height="{TemplateBinding PlotHeight}" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Title" Value="{x:Null}">
+                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Subtitle" Value="{x:Null}">
+                            <Setter TargetName="Subtitle" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloDonut}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloDonut}">
+                    <StackPanel>
+                        <StackPanel x:Name="Header" Margin="0,0,0,14">
+                            <TextBlock x:Name="Title" Text="{TemplateBinding Title}" Style="{StaticResource Velo.ChartTitle}" />
+                            <TextBlock x:Name="Subtitle" Text="{TemplateBinding Subtitle}" Style="{StaticResource Velo.ChartSubtitle}" />
+                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <local:VeloPlot x:Name="PART_Plot" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            <StackPanel x:Name="PART_Legend" Grid.Column="1" Margin="28,0,0,0" VerticalAlignment="Center" MinWidth="180" />
+                        </Grid>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Title" Value="{x:Null}">
+                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Subtitle" Value="{x:Null}">
+                            <Setter TargetName="Subtitle" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Title" Value="{x:Null}" />
+                                <Condition Property="Subtitle" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Header" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                        <Trigger Property="Shape" Value="SegmentedBar">
+                            <Setter TargetName="PART_Plot" Property="Grid.ColumnSpan" Value="2" />
+                            <Setter TargetName="PART_Plot" Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter TargetName="PART_Legend" Property="Grid.Column" Value="0" />
+                            <Setter TargetName="PART_Legend" Property="Grid.Row" Value="1" />
+                            <Setter TargetName="PART_Legend" Property="Grid.ColumnSpan" Value="2" />
+                            <Setter TargetName="PART_Legend" Property="Margin" Value="0,14,0,0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloHeatmap}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloHeatmap}">
+                    <StackPanel>
+                        <TextBlock x:Name="Title" Text="{TemplateBinding Title}" Style="{StaticResource Velo.ChartTitle}" Margin="0,0,0,10" />
+                        <local:VeloPlot x:Name="PART_Plot" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Title" Value="{x:Null}">
+                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloBarList}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloBarList}">
+                    <StackPanel x:Name="PART_Rows" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== DataGrid -->
+
+    <Style x:Key="Velo.HeaderGripper" TargetType="{x:Type Thumb}">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Cursor" Value="SizeWE" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border Background="Transparent" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Velo.GridHeader" TargetType="{x:Type DataGridColumnHeader}">
+        <Setter Property="Background" Value="{DynamicResource Velo.Surface2}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.TextMuted}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                    <Grid>
+                        <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Velo.Border}" BorderThickness="0,0,0,1"
+                                Padding="{TemplateBinding Padding}">
+                            <DockPanel>
+                                <local:VeloIcon x:Name="Sort" DockPanel.Dock="Right" Icon="chevrons-up-down" Size="13" Margin="6,0,0,0" Opacity="0.45" VerticalAlignment="Center" />
+                                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                            </DockPanel>
+                        </Border>
+                        <Thumb x:Name="PART_LeftHeaderGripper" HorizontalAlignment="Left" Style="{StaticResource Velo.HeaderGripper}" />
+                        <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Style="{StaticResource Velo.HeaderGripper}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="CanUserSort" Value="False">
+                            <Setter TargetName="Sort" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                        </Trigger>
+                        <Trigger Property="SortDirection" Value="Ascending">
+                            <Setter TargetName="Sort" Property="Icon" Value="arrow-up" />
+                            <Setter TargetName="Sort" Property="Opacity" Value="1" />
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                        </Trigger>
+                        <Trigger Property="SortDirection" Value="Descending">
+                            <Setter TargetName="Sort" Property="Icon" Value="arrow-down" />
+                            <Setter TargetName="Sort" Property="Opacity" Value="1" />
+                            <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Velo.GridCell" TargetType="{x:Type DataGridCell}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridCell}">
+                    <Border Background="Transparent" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+                <Setter Property="Background" Value="Transparent" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Velo.GridRow" TargetType="{x:Type DataGridRow}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridRow}">
+                    <Border x:Name="DGR_Border" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Velo.Border}" BorderThickness="0,0,0,1">
+                        <SelectiveScrollingGrid>
+                            <SelectiveScrollingGrid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </SelectiveScrollingGrid.ColumnDefinitions>
+                            <SelectiveScrollingGrid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </SelectiveScrollingGrid.RowDefinitions>
+                            <DataGridCellsPresenter Grid.Column="1" ItemsPanel="{TemplateBinding ItemsPanel}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <DataGridDetailsPresenter Grid.Column="1" Grid.Row="1" Visibility="{TemplateBinding DetailsVisibility}"
+                                                      SelectiveScrollingGrid.SelectiveScrollingOrientation="{Binding AreRowDetailsFrozen, ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical}, Converter={x:Static DataGrid.RowDetailsScrollingConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                            <DataGridRowHeader Grid.RowSpan="2" SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                               Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Row}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                        </SelectiveScrollingGrid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource Self}}" Value="1" />
+                    <Condition Binding="{Binding IsStriped, RelativeSource={RelativeSource AncestorType={x:Type local:VeloDataGrid}}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource Velo.Surface2}" />
+            </MultiDataTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Velo.Surface2}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Velo.PrimarySoft}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloDataGrid}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Velo.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Velo.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="RowBackground" Value="Transparent" />
+        <Setter Property="AlternatingRowBackground" Value="Transparent" />
+        <Setter Property="GridLinesVisibility" Value="None" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="CanUserAddRows" Value="False" />
+        <Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="CanUserResizeRows" Value="False" />
+        <Setter Property="RowHeight" Value="40" />
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource Velo.GridHeader}" />
+        <Setter Property="RowStyle" Value="{StaticResource Velo.GridRow}" />
+        <Setter Property="CellStyle" Value="{StaticResource Velo.GridCell}" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloDataGrid}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}" SnapsToDevicePixels="True">
+                        <DockPanel>
+                            <DockPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="12,12,12,12">
+                                <local:VeloButton x:Name="PART_Columns" DockPanel.Dock="Right" Icon="columns" Content="{x:Static local:VeloDataGrid.ColumnsText}"
+                                                  Variant="Outline" Tone="Neutral" Size="Sm" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" />
+                                <local:VeloTextField x:Name="Search" DockPanel.Dock="Right" Width="240" Icon="search" IsClearable="True" Visibility="Collapsed"
+                                                     Placeholder="{TemplateBinding SearchPlaceholder}" VerticalAlignment="Center"
+                                                     Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ContentPresenter Content="{TemplateBinding Toolbar}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <Border x:Name="Footer" DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Velo.Border}" BorderThickness="0,1,0,0" Padding="12,8">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <local:VeloSelect x:Name="Sizes" Width="88" Margin="0,0,10,0" ItemsSource="{TemplateBinding PageSizes}"
+                                                          SelectedItem="{Binding PageSize, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                          ItemStringFormat="{}{0} / page" />
+                                        <local:VeloPagination x:Name="Pager" Page="{Binding Page, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                              TotalItems="{TemplateBinding TotalCount}" PageSize="{TemplateBinding PageSize}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="{TemplateBinding InfoText}" FontSize="12.5" VerticalAlignment="Center" Foreground="{DynamicResource Velo.TextMuted}" />
+                                </DockPanel>
+                            </Border>
+                            <Grid>
+                                <ScrollViewer x:Name="DG_ScrollViewer" Focusable="False">
+                                    <ScrollViewer.Template>
+                                        <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Border Width="{Binding CellsPanelHorizontalOffset, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                        Background="{DynamicResource Velo.Surface2}" />
+                                                <DataGridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter" Grid.Column="1"
+                                                                                Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" CanContentScroll="{TemplateBinding CanContentScroll}" />
+                                                <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="2" Grid.Row="1" Orientation="Vertical"
+                                                           Maximum="{TemplateBinding ScrollableHeight}" ViewportSize="{TemplateBinding ViewportHeight}"
+                                                           Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                           Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+                                                <Grid Grid.Column="1" Grid.Row="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{Binding NonFrozenColumnsViewportHorizontalOffset, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ScrollBar x:Name="PART_HorizontalScrollBar" Grid.Column="1" Orientation="Horizontal"
+                                                               Maximum="{TemplateBinding ScrollableWidth}" ViewportSize="{TemplateBinding ViewportWidth}"
+                                                               Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                               Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
+                                                </Grid>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </ScrollViewer.Template>
+                                    <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </ScrollViewer>
+                                <local:VeloProgress x:Name="Loading" IsIndeterminate="True" BarHeight="3" CornerRadius="0" VerticalAlignment="Top" Visibility="Collapsed" Margin="0,38,0,0" />
+                                <local:VeloEmptyState x:Name="Empty" Icon="search" Title="{TemplateBinding EmptyMessage}" Margin="0,38,0,0" Visibility="Collapsed" />
+                                <StackPanel x:Name="ErrorPanel" Margin="0,38,0,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <local:VeloIcon Icon="danger" Size="22" Foreground="{DynamicResource Velo.Danger}" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{TemplateBinding Error}" Margin="0,8,0,10" HorizontalAlignment="Center" Foreground="{DynamicResource Velo.Text}" />
+                                    <local:VeloButton x:Name="PART_Retry" Content="{x:Static local:VeloDataGrid.RetryText}" Variant="Soft" Tone="Neutral" Size="Sm" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <Popup x:Name="PART_ColumnPopup" PlacementTarget="{Binding ElementName=PART_Columns}" Placement="Bottom" StaysOpen="False"
+                                       AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="-8" VerticalOffset="-4">
+                                    <Border Margin="8" Padding="8" MinWidth="200" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}"
+                                            BorderThickness="1" CornerRadius="12" Effect="{StaticResource Velo.ShadowLg}">
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Static local:VeloDataGrid.VisibleColumnsText}" FontSize="12" FontWeight="SemiBold" Margin="4,2,4,6"
+                                                       Foreground="{DynamicResource Velo.TextSubtle}" />
+                                            <StackPanel x:Name="PART_ColumnList" />
+                                        </StackPanel>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSearchable" Value="True">
+                            <Setter TargetName="Search" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="ShowColumnChooser" Value="True">
+                            <Setter TargetName="PART_Columns" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSearchable" Value="False" />
+                                <Condition Property="ShowColumnChooser" Value="False" />
+                                <Condition Property="Toolbar" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Toolbar" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                        <Trigger Property="HasPager" Value="False">
+                            <Setter TargetName="Pager" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="PageSize" Value="0">
+                            <Setter TargetName="Sizes" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="InfoText" Value="{x:Null}">
+                            <Setter TargetName="Footer" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsLoading" Value="True">
+                            <Setter TargetName="Loading" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEmpty" Value="True" />
+                                <Condition Property="IsLoading" Value="False" />
+                                <Condition Property="Error" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Empty" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                        <Trigger Property="Error" Value="{x:Null}">
+                            <Setter TargetName="ErrorPanel" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Density" Value="Sm">
+                <Setter Property="RowHeight" Value="32" />
+                <Setter Property="FontSize" Value="13" />
+            </Trigger>
+            <Trigger Property="Density" Value="Lg">
+                <Setter Property="RowHeight" Value="48" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===================================================================== Timeline -->
+
+    <Style TargetType="{x:Type local:VeloTimeline}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Velo.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Velo.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloTimeline}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14" SnapsToDevicePixels="True">
+                        <DockPanel>
+                            <DockPanel x:Name="Header" DockPanel.Dock="Top" Margin="16,14,12,10">
+                                <Button x:Name="PART_Toggle" DockPanel.Dock="Right" Style="{StaticResource Velo.IconButton}" Visibility="Collapsed" Focusable="True">
+                                    <local:VeloIcon x:Name="Chevron" Icon="chevron-down" RenderTransformOrigin="0.5,0.5" />
+                                </Button>
+                                <ContentPresenter DockPanel.Dock="Right" Content="{TemplateBinding HeaderContent}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBlock Text="{TemplateBinding Title}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <Grid x:Name="Body">
+                                <DockPanel>
+                                    <WrapPanel x:Name="PART_Legend" DockPanel.Dock="Top" Margin="16,0,16,8" />
+                                    <ScrollViewer x:Name="PART_Scroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Focusable="False">
+                                        <Canvas x:Name="PART_Canvas" ClipToBounds="True" HorizontalAlignment="Left" />
+                                    </ScrollViewer>
+                                </DockPanel>
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsCollapsible" Value="True">
+                            <Setter TargetName="PART_Toggle" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsCollapsed" Value="True">
+                            <Setter TargetName="Body" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Chevron" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="-90" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== SortableList -->
+
+    <Style x:Key="Velo.SortableItem" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Card" Margin="0,0,0,8" Padding="10" CornerRadius="10" Background="{DynamicResource Velo.Surface}"
+                            BorderBrush="{DynamicResource Velo.Border}" BorderThickness="1">
+                        <DockPanel>
+                            <local:VeloIcon x:Name="Grip" DockPanel.Dock="Left" Icon="grip" Foreground="{DynamicResource Velo.TextSubtle}" Margin="0,0,10,0"
+                                            VerticalAlignment="Center" Cursor="SizeAll"
+                                            Visibility="{Binding ShowHandle, RelativeSource={RelativeSource AncestorType={x:Type local:VeloSortableList}}, Converter={StaticResource Velo.BoolToVisibility}}" />
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource Velo.BorderStrong}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource Velo.Primary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloSortableList}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource Velo.SortableItem}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloSortableList}">
+                    <ItemsPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Kanban -->
+
+    <Style TargetType="{x:Type local:VeloKanban}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloKanban}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Focusable="False">
+                        <StackPanel x:Name="PART_Columns" Orientation="Horizontal" VerticalAlignment="Top" />
+                    </ScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== Dashboard -->
+
+    <Style TargetType="{x:Type local:VeloDashboard}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <local:VeloDashboardPanel />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloDashboard}">
+                    <StackPanel>
+                        <DockPanel x:Name="Toolbar" Margin="0,0,0,16">
+                            <local:VeloButton x:Name="EditButton" DockPanel.Dock="Right" Icon="layout" Variant="Outline" Tone="Neutral" Size="Sm"
+                                              Content="{x:Static local:VeloDashboard.EditText}"
+                                              Command="{Binding ToggleEditCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <ContentPresenter DockPanel.Dock="Right" Content="{TemplateBinding Toolbar}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{TemplateBinding Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <WrapPanel x:Name="Hidden" Margin="0,0,0,12" Visibility="Collapsed">
+                            <TextBlock Text="{x:Static local:VeloDashboard.HiddenText}" FontSize="12.5" Margin="0,0,10,0" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource Velo.TextMuted}" />
+                            <ItemsControl ItemsSource="{TemplateBinding HiddenTiles}" Focusable="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <local:VeloButton Content="{Binding Title}" Icon="plus" Variant="Soft" Tone="Neutral" Size="Sm" Margin="0,0,6,0"
+                                                          Command="{Binding RestoreCommand, RelativeSource={RelativeSource AncestorType={x:Type local:VeloDashboard}}}"
+                                                          CommandParameter="{Binding}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </WrapPanel>
+                        <ItemsPresenter />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ShowToolbar" Value="False">
+                            <Setter TargetName="Toolbar" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsEditing" Value="True">
+                            <Setter TargetName="Hidden" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="EditButton" Property="Content" Value="{x:Static local:VeloDashboard.DoneText}" />
+                            <Setter TargetName="EditButton" Property="Variant" Value="Solid" />
+                            <Setter TargetName="EditButton" Property="Tone" Value="Primary" />
+                            <Setter TargetName="EditButton" Property="Icon" Value="check" />
+                        </Trigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsEditing, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding HiddenTiles.Count, RelativeSource={RelativeSource Self}}" Value="0" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Hidden" Property="Visibility" Value="Collapsed" />
+                        </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloDashboardTile}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloDashboardTile}">
+                    <Grid>
+                        <Border x:Name="Card" CornerRadius="14" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}"
+                                BorderThickness="1" Padding="18,16,18,18">
+                            <DockPanel>
+                                <DockPanel x:Name="Head" DockPanel.Dock="Top" Margin="0,0,0,12">
+                                    <StackPanel x:Name="Tools" DockPanel.Dock="Right" Orientation="Horizontal" Visibility="Collapsed">
+                                        <Button Style="{StaticResource Velo.IconButton}" Command="{Binding MoveBeforeCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:VeloDashboardTile.MoveBeforeText}" Focusable="True">
+                                            <local:VeloIcon Icon="chevron-left" Size="14" />
+                                        </Button>
+                                        <Button Style="{StaticResource Velo.IconButton}" Command="{Binding MoveAfterCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:VeloDashboardTile.MoveAfterText}" Focusable="True">
+                                            <local:VeloIcon Icon="chevron-right" Size="14" />
+                                        </Button>
+                                        <Border Width="1" Margin="6,4" Background="{DynamicResource Velo.Border}" />
+                                        <Button Style="{StaticResource Velo.IconButton}" Command="{Binding NarrowerCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:VeloDashboardTile.NarrowerText}" Focusable="True">
+                                            <local:VeloIcon Icon="minus" Size="14" />
+                                        </Button>
+                                        <TextBlock Text="{TemplateBinding SpanText}" FontSize="12" Margin="4,0" VerticalAlignment="Center" Foreground="{DynamicResource Velo.TextMuted}" />
+                                        <Button Style="{StaticResource Velo.IconButton}" Command="{Binding WiderCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:VeloDashboardTile.WiderText}" Focusable="True">
+                                            <local:VeloIcon Icon="plus" Size="14" />
+                                        </Button>
+                                        <Button x:Name="HideButton" Style="{StaticResource Velo.IconButton}" Command="{Binding HideCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:VeloDashboardTile.HideText}" Focusable="True" Margin="6,0,0,0">
+                                            <local:VeloIcon Icon="eye-off" Size="14" />
+                                        </Button>
+                                    </StackPanel>
+                                    <ContentPresenter x:Name="Actions" DockPanel.Dock="Right" Content="{TemplateBinding Actions}" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="Title" Text="{TemplateBinding Title}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <ContentPresenter />
+                            </DockPanel>
+                        </Border>
+                        <Border x:Name="EditRing" CornerRadius="14" BorderThickness="1.5" BorderBrush="{DynamicResource Velo.Primary}" Opacity="0" IsHitTestVisible="False" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Title" Value="{x:Null}">
+                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="CanHide" Value="False">
+                            <Setter TargetName="HideButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsPlain" Value="True">
+                            <Setter TargetName="Card" Property="Background" Value="Transparent" />
+                            <Setter TargetName="Card" Property="BorderThickness" Value="0" />
+                            <Setter TargetName="Card" Property="Padding" Value="0" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Title" Value="{x:Null}" />
+                                <Condition Property="Actions" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Head" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                        <DataTrigger Binding="{Binding IsEditing, RelativeSource={RelativeSource AncestorType={x:Type local:VeloDashboard}}}" Value="True">
+                            <Setter TargetName="Head" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Tools" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Actions" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="EditRing" Property="Opacity" Value="0.6" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== TreeView -->
+
+    <Style x:Key="Velo.TreeToggle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="6">
+                        <local:VeloIcon x:Name="Chevron" Icon="chevron-right" Size="14" Foreground="{DynamicResource Velo.TextSubtle}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface3}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chevron" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="90" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="Velo.TreeItemList" TargetType="{x:Type local:VeloTreeViewItem}">
+        <StackPanel>
+            <Border x:Name="Row" CornerRadius="8" Padding="4,5" Margin="0,1" Background="Transparent">
+                <DockPanel Margin="{TemplateBinding Indent}">
+                    <ToggleButton x:Name="Expander" DockPanel.Dock="Left" Style="{StaticResource Velo.TreeToggle}" Margin="0,0,4,0" VerticalAlignment="Top"
+                                  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                    <ContentPresenter x:Name="PART_Header" ContentSource="Header" VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+            <ItemsPresenter x:Name="ItemsHost" Visibility="Collapsed" />
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <Trigger Property="HasItems" Value="False">
+                <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+            </Trigger>
+            <Trigger Property="IsExpanded" Value="True">
+                <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
+                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Row" Property="Background" Value="{DynamicResource Velo.PrimarySoft}" />
+                <Setter TargetName="PART_Header" Property="TextElement.FontWeight" Value="SemiBold" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Velo.TreeItemDiagram" TargetType="{x:Type local:VeloTreeViewItem}">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top">
+            <Grid x:Name="TopConnector" Height="18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="LeftLine" BorderBrush="{DynamicResource Velo.BorderStrong}" BorderThickness="0,1.5,0,0" />
+                <Border x:Name="RightLine" Grid.Column="1" BorderBrush="{DynamicResource Velo.BorderStrong}" BorderThickness="0,1.5,0,0" />
+                <Border Grid.ColumnSpan="2" Width="1.5" HorizontalAlignment="Center" Background="{DynamicResource Velo.BorderStrong}" />
+            </Grid>
+            <Border x:Name="Node" HorizontalAlignment="Center" Margin="10,0" MinWidth="150" Padding="14,10" CornerRadius="12"
+                    Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}" BorderThickness="1"
+                    Effect="{StaticResource Velo.ShadowSm}" Cursor="Hand">
+                <ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="Center" />
+            </Border>
+            <ToggleButton x:Name="Expander" Width="20" Height="20" Margin="0,-10,0,0" HorizontalAlignment="Center" Focusable="False" Cursor="Hand"
+                          IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                <ToggleButton.Template>
+                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                        <Border Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.BorderStrong}" BorderThickness="1" CornerRadius="10">
+                            <local:VeloIcon x:Name="Sign" Icon="plus" Size="11" StrokeWidth="2.6" Foreground="{DynamicResource Velo.TextMuted}"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Sign" Property="Icon" Value="minus" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
+            <StackPanel x:Name="Below" Visibility="Collapsed">
+                <Border Width="1.5" Height="12" Background="{DynamicResource Velo.BorderStrong}" HorizontalAlignment="Center" />
+                <ItemsPresenter />
+            </StackPanel>
+        </StackPanel>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Level" Value="0">
+                <Setter TargetName="TopConnector" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <Trigger Property="SiblingPosition" Value="first">
+                <Setter TargetName="LeftLine" Property="BorderThickness" Value="0" />
+            </Trigger>
+            <Trigger Property="SiblingPosition" Value="last">
+                <Setter TargetName="RightLine" Property="BorderThickness" Value="0" />
+            </Trigger>
+            <Trigger Property="SiblingPosition" Value="only">
+                <Setter TargetName="LeftLine" Property="BorderThickness" Value="0" />
+                <Setter TargetName="RightLine" Property="BorderThickness" Value="0" />
+            </Trigger>
+            <Trigger Property="HasItems" Value="False">
+                <Setter TargetName="Expander" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsExpanded" Value="True" />
+                    <Condition Property="HasItems" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter TargetName="Below" Property="Visibility" Value="Visible" />
+            </MultiTrigger>
+            <Trigger SourceName="Node" Property="IsMouseOver" Value="True">
+                <Setter TargetName="Node" Property="BorderBrush" Value="{DynamicResource Velo.BorderStrong}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Node" Property="BorderBrush" Value="{DynamicResource Velo.Primary}" />
+                <Setter TargetName="Node" Property="BorderThickness" Value="2" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ItemsPanelTemplate x:Key="Velo.TreeRowPanel">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" />
+    </ItemsPanelTemplate>
+
+    <Style TargetType="{x:Type local:VeloTreeViewItem}">
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template" Value="{StaticResource Velo.TreeItemList}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Layout, RelativeSource={RelativeSource AncestorType={x:Type local:VeloTreeView}}}" Value="Diagram">
+                <Setter Property="Template" Value="{StaticResource Velo.TreeItemDiagram}" />
+                <Setter Property="ItemsPanel" Value="{StaticResource Velo.TreeRowPanel}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloTreeView}">
+        <Setter Property="FontFamily" Value="{DynamicResource Velo.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Velo.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloTreeView}">
+                    <ScrollViewer x:Name="Scroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <ItemsPresenter />
+                    </ScrollViewer>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Layout" Value="Diagram">
+                            <Setter TargetName="Scroll" Property="HorizontalScrollBarVisibility" Value="Auto" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Layout" Value="Diagram">
+                <Setter Property="ItemsPanel" Value="{StaticResource Velo.TreeRowPanel}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ===================================================================== Carousel -->
+
+    <Style x:Key="Velo.CarouselArrow" TargetType="{x:Type Button}">
+        <Setter Property="Width" Value="36" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource Velo.Text}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="Bg" CornerRadius="18" Background="{DynamicResource Velo.Surface}" BorderBrush="{DynamicResource Velo.Border}"
+                            BorderThickness="1" Effect="{StaticResource Velo.ShadowSm}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Velo.Surface2}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:VeloCarousel}">
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <local:VeloCarouselPanel />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:VeloCarousel}">
+                    <StackPanel>
+                        <Grid>
+                            <ItemsPresenter />
+                            <Button x:Name="PART_Prev" Style="{StaticResource Velo.CarouselArrow}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0">
+                                <local:VeloIcon Icon="chevron-left" />
+                            </Button>
+                            <Button x:Name="PART_Next" Style="{StaticResource Velo.CarouselArrow}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0">
+                                <local:VeloIcon Icon="chevron-right" />
+                            </Button>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+                            <Button x:Name="PART_Play" Style="{StaticResource Velo.IconButton}" Margin="0,0,8,0" Visibility="Collapsed" />
+                            <StackPanel x:Name="PART_Dots" Orientation="Horizontal" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ShowArrows" Value="False">
+                            <Setter TargetName="PART_Prev" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_Next" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ===================================================================== Dialog (shown by VeloHost) -->
 
     <Style TargetType="{x:Type local:VeloDialog}">
@@ -1562,6 +3250,52 @@
                                                 <ContentPresenter Grid.Row="1" Margin="24,16,24,20" Content="{Binding Dialog.Content}" />
                                                 <ContentPresenter x:Name="Footer" Grid.Row="2" Margin="24,0,24,20" HorizontalAlignment="Right" Content="{Binding Dialog.Footer}" />
                                             </Grid>
+                                        </Border>
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Dialog.Title}" Value="{x:Null}">
+                                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Dialog.Description}" Value="{x:Null}">
+                                            <Setter TargetName="Description" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Dialog.Footer}" Value="{x:Null}">
+                                            <Setter TargetName="Footer" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+
+                                <DataTemplate DataType="{x:Type local:VeloDrawerSlot}">
+                                    <Grid KeyboardNavigation.TabNavigation="Cycle">
+                                        <Border Background="{DynamicResource Velo.Overlay}">
+                                            <Border.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick" Command="{Binding Dialog.BackdropCommand}" />
+                                            </Border.InputBindings>
+                                        </Border>
+                                        <Border Width="{Binding Width}" Height="{Binding Height}" HorizontalAlignment="{Binding HorizontalAlignment}"
+                                                VerticalAlignment="{Binding VerticalAlignment}" Background="{DynamicResource Velo.Surface}"
+                                                BorderBrush="{DynamicResource Velo.Border}" BorderThickness="1" CornerRadius="{Binding CornerRadius}"
+                                                Effect="{StaticResource Velo.ShadowLg}">
+                                            <DockPanel>
+                                                <DockPanel DockPanel.Dock="Top" Margin="24,22,18,0">
+                                                    <Button DockPanel.Dock="Right" Style="{StaticResource Velo.IconButton}" VerticalAlignment="Top"
+                                                            Command="{Binding Dialog.CloseCommand}" Focusable="True"
+                                                            Visibility="{Binding Dialog.ShowClose, Converter={StaticResource Velo.BoolToVisibility}}">
+                                                        <local:VeloIcon Icon="x" />
+                                                    </Button>
+                                                    <StackPanel>
+                                                        <TextBlock x:Name="Title" Text="{Binding Dialog.Title}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                        <TextBlock x:Name="Description" Text="{Binding Dialog.Description}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                                                   Foreground="{DynamicResource Velo.TextMuted}" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                                <Border x:Name="Footer" DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Velo.Border}" BorderThickness="0,1,0,0" Padding="24,14">
+                                                    <ContentPresenter Content="{Binding Dialog.Footer}" HorizontalAlignment="Right" />
+                                                </Border>
+                                                <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+                                                    <ContentPresenter Margin="24,16,24,20" Content="{Binding Dialog.Content}" />
+                                                </ScrollViewer>
+                                            </DockPanel>
                                         </Border>
                                     </Grid>
                                     <DataTemplate.Triggers>

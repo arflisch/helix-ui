@@ -11,7 +11,7 @@ Velo.slnx
 │  ├─ wwwroot/velo.css    tokens + styles (spécificité zéro)
 │  └─ wwwroot/velo.js     glisser-déposer de la timeline (chargé à la demande)
 ├─ src/Velo.Wpf           la même librairie pour WPF (.NET 10, Windows)
-│  ├─ Controls/           VeloButton, VeloSwitch, VeloTextField, VeloNumberField, VeloSelect, VeloDatePicker, VeloCard, VeloDialog…
+│  ├─ Controls/           champs, boutons, VeloDataGrid, VeloChart, VeloDonut, VeloTimeline, VeloKanban, VeloDashboard, VeloTreeView… (55+ contrôles)
 │  ├─ Core/               VeloResources (thème), VeloPalette, VeloIcon, VeloTexts
 │  └─ Themes/Generic.xaml styles par défaut (couleurs en DynamicResource)
 ├─ samples/Velo.Demo      site de démo Blazor avec un playground par composant

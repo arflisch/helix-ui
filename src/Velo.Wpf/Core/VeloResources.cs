@@ -24,11 +24,26 @@ public class VeloResources : ResourceDictionary
     private FontFamily _fontFamily = new("Inter, Segoe UI Variable Text, Segoe UI");
     private double _fontSize = 14;
     private bool _listening;
+    private bool _styleNative = true;
+    private readonly ResourceDictionary _native = new() { Source = new Uri("pack://application:,,,/Velo.Wpf;component/Themes/Native.xaml", UriKind.Absolute) };
 
     public VeloResources()
     {
         Current = this;
+        MergedDictionaries.Add(_native);
         Refresh();
+    }
+
+    /// <summary>Gives scroll bars and tooltips of the whole app the Velo look (true by default).</summary>
+    public bool StyleNativeControls
+    {
+        get => _styleNative;
+        set
+        {
+            _styleNative = value;
+            if (value && !MergedDictionaries.Contains(_native)) MergedDictionaries.Add(_native);
+            if (!value) MergedDictionaries.Remove(_native);
+        }
     }
 
     /// <summary>The theme added last (normally the one in App.xaml), to change it from code.</summary>
@@ -71,6 +86,12 @@ public class VeloResources : ResourceDictionary
             brush.Freeze();
             this[key] = brush;
         }
+
+        // Soft primary for selected rows and highlighted items.
+        var primary = palette.Primary ?? Colors.SteelBlue;
+        var soft = new SolidColorBrush(Color.FromArgb(IsDark ? (byte)0x33 : (byte)0x1F, primary.R, primary.G, primary.B));
+        soft.Freeze();
+        this[VeloKeys.PrimarySoft] = soft;
 
         this[VeloKeys.Radius] = _radius;
         this[VeloKeys.RadiusSmall] = new CornerRadius(Math.Max(0, _radius.TopLeft - 4));

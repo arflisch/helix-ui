@@ -72,6 +72,11 @@
                         <ListBoxItem Content="Choix" Tag="Choices" />
                         <ListBoxItem Content="Retours" Tag="Feedback" />
                         <ListBoxItem Content="Mise en page" Tag="Layout" />
+                        <ListBoxItem Content="Navigation" Tag="Navigation" />
+                        <ListBoxItem Content="Données" Tag="Data" />
+                        <ListBoxItem Content="Graphiques" Tag="Charts" />
+                        <ListBoxItem Content="Planning" Tag="Planning" />
+                        <ListBoxItem Content="Organisation" Tag="Board" />
                         <ListBoxItem Content="Personnalisation" Tag="Customization" />
                     </ListBox>
                 </DockPanel>
