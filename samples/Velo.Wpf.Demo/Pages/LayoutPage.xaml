@@ -1,0 +1,52 @@
+<UserControl x:Class="Velo.Wpf.Demo.Pages.LayoutPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:velo="https://velo-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Mise en page" />
+        <TextBlock Style="{StaticResource PageLead}" Text="Cartes, chiffres clés et états vides pour composer des écrans propres sans effort." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Card" />
+        <UniformGrid Columns="2" Margin="0,0,0,32">
+            <velo:VeloCard Title="Production du jour" Subtitle="Mise à jour il y a 2 min" Margin="0,0,12,0">
+                <velo:VeloCard.Actions>
+                    <velo:VeloButton Icon="refresh" Variant="Ghost" Tone="Neutral" Padding="0" Width="32" Height="32" ToolTip="Actualiser" />
+                </velo:VeloCard.Actions>
+                <StackPanel>
+                    <velo:VeloProgress Label="Objectif" ShowValue="True" Value="72" Margin="0,0,0,14" />
+                    <velo:VeloProgress Label="Disponibilité" ShowValue="True" Value="96" Tone="Success" />
+                </StackPanel>
+                <velo:VeloCard.Footer>
+                    <StackPanel Orientation="Horizontal">
+                        <velo:VeloButton Content="Détails" Variant="Ghost" Tone="Neutral" Size="Sm" />
+                        <velo:VeloButton Content="Exporter" Icon="download" Size="Sm" Margin="8,0,0,0" />
+                    </StackPanel>
+                </velo:VeloCard.Footer>
+            </velo:VeloCard>
+            <velo:VeloCard Title="Carte en relief" Subtitle="IsElevated : ombre douce, sans bordure." IsElevated="True" Margin="12,0,0,0">
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Velo.TextMuted}"
+                           Text="Padding, CornerRadius, Background et BorderBrush se règlent directement sur la carte." />
+            </velo:VeloCard>
+        </UniformGrid>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Stat" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HigherIsBetter=False pour un coût ou un délai : une hausse s'affiche alors en rouge." />
+        <Border Style="{StaticResource Stage}">
+            <UniformGrid Columns="4">
+                <velo:VeloStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" Icon="zap" Margin="0,0,16,0" />
+                <velo:VeloStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0" Margin="0,0,16,0" />
+                <velo:VeloStat Label="Coût moyen" Value="82" Unit="€/MWh" Delta="4.2" HigherIsBetter="False" Margin="0,0,16,0" />
+                <velo:VeloStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" />
+            </UniformGrid>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="EmptyState" />
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloEmptyState Icon="search" Title="Aucun résultat" Description="Aucun rapport ne correspond à ces filtres. Essayez une autre période.">
+                <velo:VeloEmptyState.Actions>
+                    <velo:VeloButton Content="Effacer les filtres" Variant="Soft" />
+                </velo:VeloEmptyState.Actions>
+            </velo:VeloEmptyState>
+        </Border>
+    </StackPanel>
+</UserControl>

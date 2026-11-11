@@ -1,0 +1,70 @@
+<UserControl x:Class="Velo.Wpf.Demo.Pages.FieldsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:velo="https://velo-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Champs" />
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Texte, nombre, liste et date partagent la même coque : Label, Hint, Error, IsRequired, Prefix, Suffix, Accent et CornerRadius. Ce que vous apprenez sur l'un vaut pour les autres." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="TextField" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <UniformGrid Columns="2">
+                    <velo:VeloTextField Label="Nom du projet" Placeholder="Velo UI" Hint="Visible par toute l'équipe." Margin="0,0,16,20" />
+                    <velo:VeloTextField Label="Recherche" Icon="search" Placeholder="Rechercher…" IsClearable="True" Text="Lyon" Margin="0,0,0,20" />
+                    <velo:VeloTextField x:Name="Email" Label="E-mail" Icon="mail" IsRequired="True" Text="marie@" TextChanged="OnEmailChanged" Margin="0,0,16,0" />
+                    <velo:VeloTextField Label="Montant" Placeholder="0,00" Margin="0">
+                        <velo:VeloTextField.Suffix>
+                            <TextBlock Text="EUR" FontWeight="SemiBold" />
+                        </velo:VeloTextField.Suffix>
+                    </velo:VeloTextField>
+                </UniformGrid>
+                <TextBox Style="{StaticResource Code}" Text="&lt;velo:VeloTextField Label=&quot;E-mail&quot; Icon=&quot;mail&quot; IsRequired=&quot;True&quot; Error=&quot;{Binding EmailError}&quot; /&gt;" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="NumberField" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Value est un double? lié en deux sens. Flèches haut/bas et boutons − / + avancent de Step ; Minimum, Maximum et Decimals sont appliqués à la saisie." />
+        <Border Style="{StaticResource Stage}">
+            <UniformGrid Columns="3">
+                <velo:VeloNumberField Label="Puissance" Value="120" Unit="MW" Step="5" Minimum="0" Maximum="250" Hint="Entre 0 et 250 MW" Margin="0,0,16,0" />
+                <velo:VeloNumberField Label="Prix plafond" Value="95.5" Unit="€/MWh" Decimals="1" Step="0.5" ShowSteppers="False" Margin="0,0,16,0" />
+                <velo:VeloNumberField Label="Volume" Value="-30" Unit="MW" ShowSteppers="False" Accent="#FF8A00">
+                    <velo:VeloNumberField.Prefix>
+                        <velo:VeloIcon Icon="arrow-down" Foreground="{DynamicResource Velo.Danger}" />
+                    </velo:VeloNumberField.Prefix>
+                </velo:VeloNumberField>
+            </UniformGrid>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Select et DatePicker" />
+        <Border Style="{StaticResource Stage}">
+            <UniformGrid Columns="3">
+                <velo:VeloSelect Label="Site" Margin="0,0,16,0">
+                    <ComboBoxItem Content="Lyon" />
+                    <ComboBoxItem Content="Grenoble" />
+                    <ComboBoxItem Content="Marseille" />
+                    <ComboBoxItem Content="Bordeaux" />
+                </velo:VeloSelect>
+                <velo:VeloSelect Label="Statut" Error="Choisissez un statut." Margin="0,0,16,0">
+                    <ComboBoxItem Content="Brouillon" />
+                    <ComboBoxItem Content="Publié" />
+                </velo:VeloSelect>
+                <velo:VeloDatePicker Label="Date de début" Hint="Format jj/mm/aaaa" />
+            </UniformGrid>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="VeloField autour de vos contrôles" />
+        <TextBlock Style="{StaticResource SectionText}" Text="La même coque (libellé, aide, erreur) autour de n'importe quel contenu." />
+        <Border Style="{StaticResource Stage}">
+            <velo:VeloField Label="Fréquence" Hint="Combien de fois par jour ?" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal">
+                    <velo:VeloRadioButton Content="1 fois" GroupName="freq" IsChecked="True" Margin="0,0,16,0" />
+                    <velo:VeloRadioButton Content="4 fois" GroupName="freq" Margin="0,0,16,0" />
+                    <velo:VeloRadioButton Content="Toutes les heures" GroupName="freq" />
+                </StackPanel>
+            </velo:VeloField>
+        </Border>
+    </StackPanel>
+</UserControl>

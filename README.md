@@ -1,6 +1,6 @@
 # Velo UI
 
-Composants Blazor épurés, beaux par défaut et faciles à personnaliser.
+Composants Blazor et WPF épurés, beaux par défaut et faciles à personnaliser.
 
 ```
 Velo.slnx
@@ -10,7 +10,12 @@ Velo.slnx
 │  ├─ Services/           VeloToastService + AddVelo()
 │  ├─ wwwroot/velo.css    tokens + styles (spécificité zéro)
 │  └─ wwwroot/velo.js     glisser-déposer de la timeline (chargé à la demande)
-└─ samples/Velo.Demo      site de démo avec un playground par composant
+├─ src/Velo.Wpf           la même librairie pour WPF (.NET 10, Windows)
+│  ├─ Controls/           VeloButton, VeloSwitch, VeloTextField, VeloNumberField, VeloSelect, VeloDatePicker, VeloCard, VeloDialog…
+│  ├─ Core/               VeloResources (thème), VeloPalette, VeloIcon, VeloTexts
+│  └─ Themes/Generic.xaml styles par défaut (couleurs en DynamicResource)
+├─ samples/Velo.Demo      site de démo Blazor avec un playground par composant
+└─ samples/Velo.Wpf.Demo  galerie WPF
 ```
 
 ## Lancer la démo
@@ -98,3 +103,26 @@ Ajouter une option de personnalisation = un `[Parameter]` + une ligne `StyleBuil
 - `VeloColorPicker` : la pipette (prendre une couleur à l'écran) n'existe que dans Chrome et Edge ; le bouton n'apparaît pas ailleurs.
 - Pas encore de tests (bUnit) ni de package NuGet.
 - La partie WPF n'est pas commencée.
+
+## WPF
+
+```bash
+dotnet run --project samples/Velo.Wpf.Demo
+```
+
+La galerie WPF ne s'exécute que sous Windows ; la librairie se compile aussi sur macOS et Linux (`EnableWindowsTargeting`).
+
+```xml
+<!-- App.xaml : le thème, une ligne -->
+<Application.Resources>
+    <velo:VeloResources Mode="System" />
+</Application.Resources>
+
+<!-- MainWindow.xaml : xmlns:velo="https://velo-ui.dev/wpf" -->
+<velo:VeloHost>   <!-- notifications, dialogues et confirmations -->
+    <velo:VeloSwitch Content="Pilote auto" ThumbBrush="#F59E0B" OnText="AUTO" OffText="MANUEL" />
+</velo:VeloHost>
+```
+
+Chaque partie visuelle est une propriété (`Accent`, `TrackBrush`, `ThumbBrush`, `CornerRadius`…). Pour changer une valeur par défaut
+dans toute l'application, un style implicite `BasedOn="{StaticResource {x:Type velo:VeloSwitch}}"` suffit : le template reste celui de Velo.

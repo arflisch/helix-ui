@@ -1,0 +1,43 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using Velo.Wpf.Demo.Pages;
+
+namespace Velo.Wpf.Demo;
+
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+        ThemePicker.SelectedIndex = 0;
+        Nav.SelectedIndex = 0;
+    }
+
+    private void OnNavigate(object sender, SelectionChangedEventArgs e)
+    {
+        if (Nav.SelectedItem is not ListBoxItem { Tag: string page })
+        {
+            return;
+        }
+
+        PageHost.Content = page switch
+        {
+            "Fields" => new FieldsPage(),
+            "Choices" => new ChoicesPage(),
+            "Feedback" => new FeedbackPage(),
+            "Layout" => new LayoutPage(),
+            "Customization" => new CustomizationPage(),
+            _ => new ButtonsPage(),
+        };
+        Scroller.ScrollToTop();
+    }
+
+    private void OnThemeModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ThemePicker.SelectedItem is ComboBoxItem { Tag: string mode } && VeloResources.Current is { } theme)
+        {
+            theme.Mode = Enum.Parse<VeloThemeMode>(mode);
+        }
+    }
+}
