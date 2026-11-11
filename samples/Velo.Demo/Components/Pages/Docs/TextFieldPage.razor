@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="TextField" Description="Champ de saisie avec label, aide, message d'erreur, icône, préfixe/suffixe et bouton d'effacement.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:340px">
                 <VeloTextField @bind-Value="_value" Label="@_label" Placeholder="@_placeholder" Hint="@_hint"
@@ -24,7 +24,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Préfixe, suffixe et types" Code="@AffixCode">
+    <Example WpfCode="@Wpf2" Title="Préfixe, suffixe et types" Code="@AffixCode">
         <div class="grid-3">
             <VeloTextField Label="Recherche" Icon="search" Placeholder="Rechercher…" Clearable="true" @bind-Value="_search" />
             <VeloTextField Label="Mot de passe" Icon="lock" Type="password" Value="secret123" />
@@ -38,6 +38,27 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloTextField Label="E-mail" Icon="mail" Placeholder="prenom@exemple.fr"
+                            Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                            Hint="Nous n'envoyons jamais de publicité." Error="{Binding EmailError}"
+                            IsRequired="True" IsClearable="True" Accent="#0EA5E9" CornerRadius="10" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloTextField Label="Montant">
+            <velo:VeloTextField.Suffix>
+                <TextBlock Text="EUR" FontWeight="SemiBold" />
+            </velo:VeloTextField.Suffix>
+        </velo:VeloTextField>
+        <velo:VeloTextField Label="Site web">
+            <velo:VeloTextField.Prefix>
+                <TextBlock Text="https://" Foreground="{DynamicResource Velo.TextSubtle}" />
+            </velo:VeloTextField.Prefix>
+        </velo:VeloTextField>
+        <!-- Mot de passe : PasswordBox dans un VeloField pour garder le même libellé et la même aide -->
+        """;
+
     private string? _value;
     private string? _search;
     private string? _label = "Email";

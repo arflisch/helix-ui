@@ -25,13 +25,30 @@
                 </VeloCard>
             </div>
         </div>
-        <CodeBlock Code="@Code" />
+        <CodeBlock Code="@Code" WpfCode="@WpfExample" />
     </section>
 
     <ApiTable Title="VeloSortableList" Rows="Api" />
 </DemoPage>
 
 @code {
+    private const string WpfExample = """
+        <velo:VeloSortableList ItemsSource="{Binding Priorities}" ShowHandle="True" Reordered="OnReordered">
+            <velo:VeloSortableList.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Title}" />
+                </DataTemplate>
+            </velo:VeloSortableList.ItemTemplate>
+        </velo:VeloSortableList>
+
+        // ItemsSource = ObservableCollection<T> : la liste est réordonnée directement (glisser ou Alt + ↑/↓).
+        private void OnReordered(object sender, RoutedEventArgs e)
+        {
+            var (from, to) = ((VeloEventArgs<(int From, int To)>)e).Value;
+            Save();
+        }
+        """;
+
     private IReadOnlyList<Priority> _priorities = DemoData.Priorities();
     private bool _handle = true;
 

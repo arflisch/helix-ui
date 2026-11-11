@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Badge" Description="Petites étiquettes de statut, de catégorie ou de compteur.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloBadge Variant="_variant" Color="@_color" Dot="_dot" Square="_square">@_text</VeloBadge>
         </Preview>
@@ -15,7 +15,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Toutes les combinaisons">
+    <Example WpfCode="@Wpf2" Title="Toutes les combinaisons">
         <div class="stack">
             @foreach (var variant in Enum.GetValues<VeloBadgeVariant>())
             {
@@ -33,6 +33,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloBadge Content="En ligne" Tone="Success" ShowDot="True" />
+        <velo:VeloBadge Content="Attention" Tone="Warning" Icon="warning" />
+        <velo:VeloBadge Content="Solid" Variant="Solid" Tone="Danger" />
+        <velo:VeloBadge Content="#FF8A00" Accent="#FF8A00" Variant="Outline" CornerRadius="4" />
+        """;
+
+    private const string Wpf2 = """
+        <WrapPanel>
+            <velo:VeloBadge Content="Soft" />
+            <velo:VeloBadge Content="Solid" Variant="Solid" />
+            <velo:VeloBadge Content="Outline" Variant="Outline" />
+        </WrapPanel>
+        <!-- Tone : Primary, Neutral, Success, Warning, Danger, Info — ou Accent pour n'importe quelle couleur -->
+        """;
+
     private static readonly string[] Colors = ["neutral", "primary", "success", "warning", "danger", "info", "#8b5cf6"];
 
     private string? _text = "En ligne";

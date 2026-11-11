@@ -41,7 +41,7 @@
         <CodeBlock Code="@Code" />
     </section>
 
-    <Example Title="Deux mesures, deux graphiques"
+    <Example WpfCode="@Wpf1" Title="Deux mesures, deux graphiques"
              Description="Des MW et des €/MWh n'ont pas la même échelle : plutôt qu'un double axe Y (qui fait croire que les courbes se comparent), Velo aligne deux graphiques sur la même période. Les axes temporels tombent exactement l'un sous l'autre."
              Code="@StackedCode">
         <div class="stack" style="gap:28px">
@@ -54,7 +54,7 @@
         </div>
     </Example>
 
-    <Example Title="Axe numérique" Description="Sans dates : un X numérique et un format libre." Code="@NumericCode">
+    <Example WpfCode="@Wpf2" Title="Axe numérique" Description="Sans dates : un X numérique et un format libre." Code="@NumericCode">
         <VeloChart Title="Profil de charge d'une batterie" Unit="%" Height="200px" XFormat="@(x => $"{x:0} min")" XLabel="Temps" Culture="French">
             <VeloChartSeries Name="Charge" Points="_battery" Type="VeloSeriesType.Area" Markers="true" Color="success" />
             <VeloChartLine Y="80" Label="Limite 80 %" />
@@ -66,6 +66,34 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <!-- Deux mesures d'échelles différentes : deux graphiques, jamais deux axes Y -->
+        <velo:VeloChart Title="Puissance" Unit="MW" ShowNow="True" From="{Binding DayStart}" To="{Binding DayEnd}">
+            <velo:VeloChartSeries Name="Production" Type="Area" Points="{Binding Production}" />
+            <velo:VeloChartSeries Name="Prévision" IsDashed="True" Points="{Binding Forecast}" />
+            <velo:VeloChart.Lines>
+                <velo:VeloChartLine Y="400" Label="Contrat" Color="danger" />
+            </velo:VeloChart.Lines>
+        </velo:VeloChart>
+        <velo:VeloChart Title="Prix" Unit="€/MWh" PlotHeight="180">
+            <velo:VeloChartSeries Name="Prix spot" Type="Step" Points="{Binding Prices}" />
+        </velo:VeloChart>
+
+        // ViewModel
+        Production = readings.ToPoints(r => r.Time, r => r.Megawatts);   // VeloPoint.At(...)
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloChart x:Name="Sales" Title="Ventes par mois" Unit="k€">
+            <velo:VeloChartSeries Name="2025" Type="Bar" Points="{Binding Sales2025}" />
+            <velo:VeloChartSeries Name="2026" Type="Bar" Points="{Binding Sales2026}" />
+        </velo:VeloChart>
+
+        // Code-behind : X = index du mois, libellé par XFormat
+        Sales.XFormat = x => months[(int)x];
+        Sales2025 = Enumerable.Range(0, 12).Select(m => new VeloPoint(m, totals[m])).ToList();
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
 
     private readonly IReadOnlyList<VeloPoint> _imbalance = EnergyData.Imbalance(DateTime.Now);

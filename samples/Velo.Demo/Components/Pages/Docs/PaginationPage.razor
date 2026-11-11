@@ -1,7 +1,7 @@
 @page "/components/pagination"
 
 <DemoPage Title="Pagination" Description="Navigation entre pages, autonome : pour une liste de cartes, des résultats de recherche ou une galerie. Pages longues repliées autour de la page courante.">
-    <Example Title="Variantes" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Variantes" Code="@Code">
         <div class="stack" style="gap:22px">
             <VeloPagination @bind-Page="_page" TotalItems="243" PageSize="10" ShowInfo="true" />
             <VeloPagination @bind-Page="_page" Count="25" ShowLabels="true" />
@@ -13,6 +13,12 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloPagination Page="{Binding Page}" TotalItems="87" PageSize="10" ShowInfo="True" />
+        <velo:VeloPagination Page="{Binding Page}" Count="20" ShowLabels="True" />
+        <velo:VeloPagination Page="{Binding Page}" Count="20" IsCompact="True" />
+        """;
+
     private int _page = 4;
 
     private const string Code = """

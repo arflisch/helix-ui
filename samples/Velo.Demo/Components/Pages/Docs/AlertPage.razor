@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Alert" Description="Message contextuel dans la page. La sévérité choisit l'icône et la couleur ; les deux restent modifiables.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:520px">
                 <VeloAlert @key="_key" Severity="_severity" Title="@_title" Closable="_closable" Color="@_color" OnClose="Reopen">@_text</VeloAlert>
@@ -17,7 +17,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Sévérités" Code="@AllCode">
+    <Example WpfCode="@Wpf2" Title="Sévérités" Code="@AllCode">
         <div class="stack">
             <VeloAlert Title="Nouvelle version">Velo 0.2 est disponible avec le DataGrid.</VeloAlert>
             <VeloAlert Severity="VeloSeverity.Success" Title="Paiement reçu">Merci, votre facture est disponible.</VeloAlert>
@@ -30,6 +30,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloAlert Severity="Warning" Title="Quota presque atteint"
+                        Content="Il reste 8 % de l'espace disponible."
+                        IsClosable="True" Closed="OnAlertClosed" />
+
+        <!-- Couleur et icône libres -->
+        <velo:VeloAlert Title="Nouveauté" Content="Les exports PDF arrivent." Accent="#8B5CF6" Icon="sparkles" CornerRadius="16" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloAlert Severity="Info" Title="Information" Content="Une nouvelle version est disponible." />
+        <velo:VeloAlert Severity="Success" Title="Enregistré" Content="Vos réglages ont été appliqués." />
+        <velo:VeloAlert Severity="Warning" Title="Attention" Content="Le certificat expire dans 7 jours." />
+        <velo:VeloAlert Severity="Danger" Title="Erreur" Content="La connexion au serveur a été perdue." />
+        """;
+
     private VeloSeverity _severity = VeloSeverity.Info;
     private string? _title = "Mise à jour disponible";
     private string? _text = "Une nouvelle version est prête. Elle sera installée au prochain redémarrage.";

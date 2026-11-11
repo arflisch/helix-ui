@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Checkbox" Description="Case à cocher animée et accessible (vraie input native). La couleur de la case et celle de la coche sont des paramètres.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloCheckbox @bind-Checked="_checked" Label="@_label" Color="@_color" CheckColor="@_checkColor" Radius="@Radius" Disabled="_disabled" />
         </Preview>
@@ -16,7 +16,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Liste d'options" Code="@ListCode">
+    <Example WpfCode="@Wpf2" Title="Liste d'options" Code="@ListCode">
         <div class="stack">
             @foreach (var option in _options)
             {
@@ -30,6 +30,19 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloCheckBox Content="Rapport hebdomadaire" Description="Envoyé le lundi matin."
+                           IsChecked="{Binding WeeklyReport}" Accent="#10B981" CheckBrush="White" CornerRadius="5" />
+        """;
+
+    private const string Wpf2 = """
+        <StackPanel>
+            <velo:VeloCheckBox Content="Tout sélectionner" IsThreeState="True" IsChecked="{x:Null}" />
+            <velo:VeloCheckBox Content="E-mail" IsChecked="True" Margin="24,8,0,0" />
+            <velo:VeloCheckBox Content="SMS" Margin="24,8,0,0" />
+        </StackPanel>
+        """;
+
     private sealed class Option(string name, bool selected)
     {
         public string Name { get; } = name;

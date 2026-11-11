@@ -4,7 +4,7 @@
         <div class="pg__stage" style="@StageStyle">@Preview</div>
         <aside class="pg__controls">@Controls</aside>
     </div>
-    <CodeBlock Code="@Code" />
+    <CodeBlock Code="@Code" WpfCode="@WpfCode" />
 </section>
 
 @code {
@@ -12,4 +12,7 @@
     [Parameter] public RenderFragment? Controls { get; set; }
     [Parameter] public string Code { get; set; } = "";
     [Parameter] public string? StageStyle { get; set; }
+
+    /// <summary>The same example for WPF.</summary>
+    [Parameter] public string? WpfCode { get; set; }
 }

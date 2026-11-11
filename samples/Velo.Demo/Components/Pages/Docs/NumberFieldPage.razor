@@ -1,7 +1,7 @@
 @page "/components/numberfield"
 
 <DemoPage Title="NumberField" Description="Saisie d'un nombre avec boutons − / +, bornes, pas, arrondi et unité. Les valeurs hors bornes sont ramenées automatiquement ; les flèches du clavier incrémentent.">
-    <Example Title="Exemples" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
         <div class="grid-3">
             <VeloNumberField Label="Puissance demandée" @bind-Value="_power" Min="0" Max="250" Step="5" Unit="MW" Hint="Entre 0 et 250 MW, par pas de 5" />
             <VeloNumberField Label="Prix plafond" @bind-Value="_price" Min="0" Step="0.5" Decimals="2" Unit="€/MWh" />
@@ -15,6 +15,13 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloNumberField Label="Puissance demandée" Value="{Binding Power}" Unit="MW"
+                              Minimum="0" Maximum="250" Step="5" Hint="Entre 0 et 250 MW, par pas de 5" />
+        <velo:VeloNumberField Label="Prix plafond" Value="{Binding Price}" Unit="€/MWh" Decimals="1" ShowSteppers="False" />
+        <!-- Value est un double? lié en deux sens ; flèches ↑/↓ = Step ; virgule ou point acceptés. -->
+        """;
+
     private double? _power = 120, _price = 92.5, _qty = 3;
 
     private const string Code = """

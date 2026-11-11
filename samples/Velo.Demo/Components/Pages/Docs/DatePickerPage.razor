@@ -2,7 +2,7 @@
 @using System.Globalization
 
 <DemoPage Title="DatePicker" Description="Sélecteur de date avec calendrier : semaine qui commence selon la culture (lundi en français), dates interdites, bornes. Au clavier : flèches pour les jours, Page ↑/↓ pour les mois (Maj : années), Début/Fin pour la semaine, Entrée pour choisir.">
-    <Example Title="Exemples" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
         <div class="grid-3">
             <VeloDatePicker Label="Date de livraison" @bind-Value="_delivery" Culture="French" Hint="@($"Choisie : {_delivery?.ToString("dddd d MMMM", French) ?? "aucune"}")" />
             <VeloDatePicker Label="Jour ouvré (14 jours)" @bind-Value="_workday" Culture="French"
@@ -15,6 +15,12 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloDatePicker Label="Date de début" SelectedDate="{Binding Start}" Hint="Format jj/mm/aaaa"
+                             DisplayDateStart="{Binding Today}" IsRequired="True" />
+        <velo:VeloDatePicker Label="Échéance" Error="{Binding DueDateError}" Accent="#FF8A00" />
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
 

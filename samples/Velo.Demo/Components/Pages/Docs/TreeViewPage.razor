@@ -2,7 +2,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="TreeView" Description="Une hiérarchie, en liste (explorateur) ou en diagramme (organigramme). Mêmes données, mêmes options : dépliage, sélection, modèle de nœud. Au clavier : ↑ ↓ pour se déplacer, → pour déplier ou entrer, ← pour replier ou remonter, Entrée pour sélectionner.">
-    <Example Title="Liste (explorateur)" Code="@ListCode">
+    <Example WpfCode="@Wpf1" Title="Liste (explorateur)" Code="@ListCode">
         <div class="grid-2">
             <VeloCard Padding="8px">
                 <VeloTreeView TItem="Node" Items="Sites" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemIcon="n => n.Icon"
@@ -14,7 +14,7 @@
         </div>
     </Example>
 
-    <Example Title="Diagramme (organigramme)" Description="Cliquez sur le badge sous un nœud pour le déplier ou le replier." Code="@DiagramCode">
+    <Example WpfCode="@Wpf2" Title="Diagramme (organigramme)" Description="Cliquez sur le badge sous un nœud pour le déplier ou le replier." Code="@DiagramCode">
         <VeloTreeView TItem="Node" Items="Org" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemDescription="n => n.Role"
                       ItemKey="n => n.Name" Layout="VeloTreeLayout.Diagram" ExpandDepth="2"
                       SelectedItemChanged="n => Toasts.Info(n?.Role ?? string.Empty, n?.Name)" AriaLabel="Organigramme">
@@ -25,6 +25,26 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <!-- Sans template : ChildrenPath + TextPath (et IconPath, DescriptionPath) suffisent -->
+        <velo:VeloTreeView ItemsSource="{Binding Folders}" ChildrenPath="Children" TextPath="Name"
+                           IconPath="Icon" ExpandDepth="2" SelectedItemChanged="OnSelected" />
+
+        <!-- Ou votre HierarchicalDataTemplate habituel -->
+        <velo:VeloTreeView ItemsSource="{Binding Folders}">
+            <velo:VeloTreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding Name}" />
+                </HierarchicalDataTemplate>
+            </velo:VeloTreeView.ItemTemplate>
+        </velo:VeloTreeView>
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloTreeView Layout="Diagram" ItemsSource="{Binding Organization}"
+                           ChildrenPath="Reports" TextPath="Name" DescriptionPath="Role" ExpandDepth="3" />
+        """;
+
     public sealed record Node(string Name, string? Role = null, string? Icon = null, List<Node>? Children = null);
 
     private static readonly Node[] Sites =

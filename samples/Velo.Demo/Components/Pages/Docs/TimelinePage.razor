@@ -26,7 +26,7 @@
         <CodeBlock Code="@Code" />
     </section>
 
-    <Example Title="Plusieurs lignes (Lane), éditable" Description="Donnez un Lane à chaque élément : une ligne par unité. Avec Editable, glissez un élément pour le déplacer (y compris vers une autre unité), tirez ses bords pour changer sa durée, ou utilisez les flèches (Maj + flèches pour la durée). Les éléments confirmés sont verrouillés (CanEdit)." Code="@LanesCode">
+    <Example WpfCode="@Wpf1" Title="Plusieurs lignes (Lane), éditable" Description="Donnez un Lane à chaque élément : une ligne par unité. Avec Editable, glissez un élément pour le déplacer (y compris vers une autre unité), tirez ses bords pour changer sa durée, ou utilisez les flèches (Maj + flèches pour la durée). Les éléments confirmés sont verrouillés (CanEdit)." Code="@LanesCode">
         <VeloTimeline Title="Plan de production" Start="EnergyData.Today" End="EnergyData.Today.AddDays(1)" SlotDuration="TimeSpan.FromHours(1)"
                       Items="_plan" Statuses="EnergyData.Statuses" ShowLegend="false" LaneHeader="Unité" SlotMinWidth="56px" Culture="French"
                       Editable="true" SnapTo="TimeSpan.FromMinutes(30)" CanEdit="@(i => !i.Status!.EndsWith("-ack"))" OnItemChanged="ChangePlan">
@@ -60,6 +60,25 @@
 </VeloDialog>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloTimeline Title="Planning des équipes" Start="{Binding From}" End="{Binding To}" SlotDuration="1:00:00"
+                           Items="{Binding Items}" Statuses="{Binding Statuses}" LaneHeader="ÉQUIPE"
+                           IsEditable="True" AllowLaneChange="True" SnapTo="0:15:00"
+                           ShowNow="True" NowBrush="#F15A24" IsCollapsible="True"
+                           ItemChanged="OnItemChanged" />
+
+        // Code-behind : la timeline propose, votre code applique
+        Statuses = [new VeloTimelineStatus("done", "Terminé", "series-3"),
+                    new VeloTimelineStatus("planned", "Planifié", "series-1", VeloTimelineAppearance.Outline)];
+        Items = [new("1", day.AddHours(7), day.AddHours(10), "Inspection") { Lane = "Équipe A", Status = "done" }];
+
+        private void OnItemChanged(object sender, RoutedEventArgs e)
+        {
+            var change = ((VeloEventArgs<VeloTimelineChange>)e).Value;
+            Items = Items.Select(i => i.Id == change.Item.Id ? change.Applied : i).ToList();
+        }
+        """;
+
     private enum SlotChoice { Min15, Min30, Hour }
 
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");

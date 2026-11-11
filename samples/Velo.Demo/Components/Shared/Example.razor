@@ -8,7 +8,7 @@
         <div class="demo-example__stage" style="@StageStyle">@ChildContent</div>
         @if (!string.IsNullOrEmpty(Code))
         {
-            <CodeBlock Code="@Code" Flush="true" />
+            <CodeBlock Code="@Code" WpfCode="@WpfCode" Flush="true" />
         }
     </div>
 </section>
@@ -18,5 +18,8 @@
     [Parameter] public string? Description { get; set; }
     [Parameter] public string? Code { get; set; }
     [Parameter] public string? StageStyle { get; set; }
+
+    /// <summary>The same example for WPF.</summary>
+    [Parameter] public string? WpfCode { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

@@ -1,7 +1,7 @@
 @page "/components/breadcrumb"
 
 <DemoPage Title="Breadcrumb" Description="Fil d'Ariane : où suis-je, et comment remonter. Les chemins longs se replient en « … » (cliquez pour tout voir).">
-    <Example Title="Exemples" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
         <div class="stack">
             <VeloBreadcrumb Items="Short" />
             <VeloBreadcrumb Items="Long" MaxItems="3" />
@@ -12,6 +12,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloBreadcrumb x:Name="Path" MaxItems="4" ItemClick="OnCrumbClick" />
+
+        // Code-behind
+        Path.ItemsSource = new[]
+        {
+            new VeloBreadcrumbItem("Accueil", "home") { Tag = "/" },
+            new VeloBreadcrumbItem("Projets") { Tag = "/projets" },
+            new VeloBreadcrumbItem("Énergie"),
+            new VeloBreadcrumbItem("Rapport de mars"),   // le dernier = page courante
+        };
+
+        private void OnCrumbClick(object sender, RoutedEventArgs e) =>
+            Navigate(((VeloEventArgs<VeloBreadcrumbItem>)e).Value.Tag);
+        """;
+
     private static readonly VeloBreadcrumbItem[] Short =
     [
         new("Accueil", "", "layout"), new("Composants", "components/button"), new("Breadcrumb"),

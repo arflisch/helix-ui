@@ -25,13 +25,32 @@
                 </div>
             </CardTemplate>
         </VeloKanban>
-        <CodeBlock Code="@Code" />
+        <CodeBlock Code="@Code" WpfCode="@WpfExample" />
     </section>
 
     <ApiTable Title="VeloKanban" Rows="Api" />
 </DemoPage>
 
 @code {
+    private const string WpfExample = """
+        <velo:VeloKanban Columns="{Binding Columns}" ItemsSource="{Binding Tasks}" ColumnPath="Status"
+                         ShowAddButton="True" CardMoved="OnCardMoved" AddRequested="OnAdd">
+            <velo:VeloKanban.CardTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                        <velo:VeloBadge Content="{Binding Tag}" Margin="0,8,0,0" />
+                    </StackPanel>
+                </DataTemplate>
+            </velo:VeloKanban.CardTemplate>
+        </velo:VeloKanban>
+
+        // ViewModel
+        Columns = [new VeloKanbanColumn("todo", "À faire"), new VeloKanbanColumn("review", "En revue", "series-4", limit: 2)];
+        // Sans gestionnaire, la carte change de colonne (propriété Status) et de place toute seule.
+        // Avec CardMoved : e.Item, e.From, e.To, e.Index — mettez e.Handled = true pour refuser ou appliquer vous-même.
+        """;
+
     private const string DoneColumn = "done";
     private const string ReviewColumn = "review";
 

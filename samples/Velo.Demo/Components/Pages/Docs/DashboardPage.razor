@@ -58,13 +58,27 @@
         <h2 class="demo-section__title">Disposition enregistrée</h2>
         <p class="demo-section__text">Ce que reçoit <code>LayoutChanged</code> : l'ordre, la largeur et la visibilité de chaque tuile. Rechargez la page, elle est conservée.</p>
         <CodeBlock Language="json" Code="@LayoutJson" />
-        <CodeBlock Code="@Code" />
+        <CodeBlock Code="@Code" WpfCode="@WpfExample" />
     </section>
 
     <ApiTable Title="VeloDashboard et VeloDashboardTile" Rows="Api" />
 </DemoPage>
 
 @code {
+    private const string WpfExample = """
+        <velo:VeloDashboard Title="Exploitation" ColumnCount="3" IsEditing="{Binding Editing}" Layout="{Binding SavedLayout}">
+            <velo:VeloDashboardTile TileId="kpi" IsPlain="True" DefaultSpan="3" CanHide="False">
+                <UniformGrid Columns="3"> … </UniformGrid>
+            </velo:VeloDashboardTile>
+            <velo:VeloDashboardTile TileId="load" Title="Charge" DefaultSpan="2" MinSpan="1" MaxSpan="3">
+                <velo:VeloChart … />
+            </velo:VeloDashboardTile>
+            <velo:VeloDashboardTile TileId="team" Title="Équipe" />
+        </velo:VeloDashboard>
+
+        // Layout (IReadOnlyList<VeloTileState>) est mis à jour à chaque changement : enregistrez-le.
+        """;
+
     private const string StorageKey = "velo-demo-dashboard";
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };

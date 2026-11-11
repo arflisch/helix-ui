@@ -3,7 +3,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Donut" Description="Répartition d'un tout en quelques parts (6 au maximum ; au-delà, les plus petites sont regroupées dans « Autres »). Survolez une part ou la légende : le centre affiche son détail. Pour comparer des valeurs proches, préférez une BarList, plus précise.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:560px">
                 <VeloDonut Title="Mix de production" Subtitle="Aujourd'hui" Items="Mix" Unit="MWh" ValueFormat="N0" Shape="_shape"
@@ -21,6 +21,15 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloDonut Title="Mix énergétique" Unit="GWh" MaxParts="6" CenterLabel="Total"
+                        Items="{Binding Mix}" ItemClick="OnPartClick" />
+        <velo:VeloDonut Shape="SegmentedBar" Items="{Binding Shares}" Unit="%" ValueFormat="0" />
+
+        // ViewModel
+        Mix = [new VeloPart("Nucléaire", 312), new VeloPart("Hydraulique", 64), new VeloPart("Éolien", 48, "series-3")];
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
 
     private static readonly VeloPart[] Mix =

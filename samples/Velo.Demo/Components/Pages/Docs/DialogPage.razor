@@ -3,7 +3,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Dialog" Description="Fenêtre modale : focus automatique, fermeture par Échap ou clic sur le fond, en-tête, corps et pied.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloButton OnClick="() => _open = true">Ouvrir la fenêtre</VeloButton>
             <VeloDialog @bind-Open="_open" Title="@_title" Description="@_description" Width="@($"{N(_width)}px")"
@@ -26,7 +26,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Confirmation destructive" Code="@ConfirmCode">
+    <Example WpfCode="@Wpf2" Title="Confirmation destructive" Code="@ConfirmCode">
         <VeloButton Color="danger" Variant="VeloVariant.Soft" Icon="trash" OnClick="() => _confirm = true">Supprimer le projet</VeloButton>
         <VeloDialog @bind-Open="_confirm" Title="Supprimer le projet ?" Width="420px">
             <ChildContent>Cette action est définitive. Toutes les données du projet seront perdues.</ChildContent>
@@ -41,6 +41,28 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloDialog IsOpen="{Binding IsInviteOpen}" Title="Inviter un membre"
+                         Description="Il recevra un e-mail pour rejoindre l'équipe." DialogWidth="480">
+            <velo:VeloTextField Label="E-mail" Icon="mail" Text="{Binding Email}" />
+            <velo:VeloDialog.Footer>
+                <StackPanel Orientation="Horizontal">
+                    <velo:VeloButton Content="Annuler" Variant="Ghost" Tone="Neutral" Command="{Binding CancelCommand}" />
+                    <velo:VeloButton Content="Inviter" Margin="8,0,0,0" Command="{Binding InviteCommand}" />
+                </StackPanel>
+            </velo:VeloDialog.Footer>
+        </velo:VeloDialog>
+        <!-- Affiché par le VeloHost de la fenêtre ; Échap et le fond ferment (CloseOnEscape, CloseOnBackdrop). -->
+        """;
+
+    private const string Wpf2 = """
+        // Une confirmation n'a pas besoin de XAML :
+        if (await VeloConfirm.AskAsync("Supprimer 3 fichiers ?", "Ils seront perdus définitivement.", danger: true, confirmText: "Supprimer"))
+        {
+            DeleteSelection();
+        }
+        """;
+
     private bool _open, _confirm, _backdrop = true, _showClose = true;
     private string? _title = "Modifier le projet";
     private string? _description = "Les changements sont visibles par toute l'équipe.";

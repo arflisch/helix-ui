@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Tabs" Description="Onglets en trois styles. Déclarez des VeloTab enfants : c'est tout.">
-    <Playground Code="@Code" StageStyle="align-items:start">
+    <Playground WpfCode="@Wpf1" Code="@Code" StageStyle="align-items:start">
         <Preview>
             <div style="width:100%;max-width:520px">
                 <VeloTabs Variant="_variant" Color="@_color" @bind-ActiveIndex="_active">
@@ -33,6 +33,17 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloTabs Variant="Underline" SelectedIndex="{Binding Tab}" Accent="#8B5CF6">
+            <velo:VeloTab Header="Aperçu" Icon="layout">
+                <TextBlock Text="Contenu de l'aperçu" />
+            </velo:VeloTab>
+            <velo:VeloTab Header="Activité" Icon="bell" />
+            <velo:VeloTab Header="Réglages" Icon="settings" IsEnabled="False" />
+        </velo:VeloTabs>
+        <!-- Variant : Underline, Pills ou Segmented -->
+        """;
+
     private VeloTabsVariant _variant;
     private string? _color;
     private bool _icons = true, _n1 = true, _n2;

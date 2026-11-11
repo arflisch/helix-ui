@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="RadioGroup" Description="Un choix parmi quelques options, toutes visibles. Trois apparences : classique, cartes (avec description) ou segmentée. Vraies cases radio natives : les flèches du clavier fonctionnent.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:560px">
                 <VeloRadioGroup TValue="Plan" Items="Plans" @bind-Value="_plan" ItemText="p => p.Name" ItemDescription="@(_descriptions ? p => p.Description : null)"
@@ -21,6 +21,19 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloField Label="Livraison" Hint="Choisissez un mode">
+            <StackPanel>
+                <velo:VeloRadioButton GroupName="ship" Content="Standard" Description="3 à 5 jours" IsChecked="True" />
+                <velo:VeloRadioButton GroupName="ship" Content="Express" Description="Demain" Margin="0,10,0,0" />
+                <velo:VeloRadioButton GroupName="ship" Content="Retrait" Accent="#EC4899" Margin="0,10,0,0" />
+            </StackPanel>
+        </velo:VeloField>
+
+        <!-- Variante segmentée : VeloButtonGroup -->
+        <velo:VeloButtonGroup SelectedIndex="0"><ListBoxItem Content="Standard" /><ListBoxItem Content="Express" /></velo:VeloButtonGroup>
+        """;
+
     public sealed record Plan(string Name, string Description);
 
     private static readonly Plan[] Plans =

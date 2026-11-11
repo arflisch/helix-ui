@@ -2,7 +2,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Toast" Description="Notifications éphémères. Injectez VeloToastService n'importe où (composant ou service) et appelez une méthode. VeloProvider les affiche.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div class="row">
                 <VeloButton Color="@Color" OnClick="Show">Afficher le toast</VeloButton>
@@ -16,7 +16,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Raccourcis" Code="@ShortcutsCode">
+    <Example WpfCode="@Wpf2" Title="Raccourcis" Code="@ShortcutsCode">
         <div class="row">
             <VeloButton Variant="VeloVariant.Soft" Color="info" OnClick="@(() => Toasts.Info("3 nouveaux messages"))">Info</VeloButton>
             <VeloButton Variant="VeloVariant.Soft" Color="success" OnClick="@(() => Toasts.Success("Modifications enregistrées", "Enregistré"))">Success</VeloButton>
@@ -29,6 +29,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <!-- MainWindow.xaml : le VeloHost affiche les notifications -->
+        <velo:VeloHost ToastHorizontalAlignment="Right" ToastVerticalAlignment="Bottom"> … </velo:VeloHost>
+
+        // Partout dans l'application
+        VeloToasts.Show("Synchronisation terminée.", VeloSeverity.Success, title: "Terminé", duration: TimeSpan.FromSeconds(6));
+        VeloToasts.DefaultDuration = TimeSpan.FromSeconds(5);   // pour toute l'application
+        """;
+
+    private const string Wpf2 = """
+        VeloToasts.Info("Nouvelle version disponible.");
+        VeloToasts.Success("Enregistré.");
+        VeloToasts.Warning("Il reste 8 % d'espace.");
+        VeloToasts.Error("Le serveur ne répond pas.", "Erreur réseau");
+        """;
+
     private VeloSeverity _severity = VeloSeverity.Success;
     private string? _title = "Projet publié";
     private string? _message = "Votre projet est en ligne.";

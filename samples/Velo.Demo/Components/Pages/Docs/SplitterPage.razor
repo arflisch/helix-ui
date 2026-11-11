@@ -1,7 +1,7 @@
 @page "/components/splitter"
 
 <DemoPage Title="Splitter" Description="Deux panneaux redimensionnables : glissez la séparation, ou utilisez les flèches (Début / Fin pour les bornes) une fois la séparation sélectionnée au clavier. Double-clic pour revenir à la taille initiale.">
-    <Example Title="Liste + détail" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Liste + détail" Code="@Code">
         <VeloSplitter @bind-Size="_size" Min="20" Max="70" Height="300px">
             <First>
                 <ul class="split-list">
@@ -22,7 +22,7 @@
         </VeloSplitter>
     </Example>
 
-    <Example Title="Vertical" Code="@VerticalCode">
+    <Example WpfCode="@Wpf2" Title="Vertical" Code="@VerticalCode">
         <VeloSplitter Vertical="true" Size="60" Height="260px">
             <First><div style="padding:16px" class="muted">Éditeur (haut)</div></First>
             <Second><div style="padding:16px" class="muted">Console (bas)</div></Second>
@@ -33,6 +33,32 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260" MinWidth="160" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="200" />
+            </Grid.ColumnDefinitions>
+            <ListBox ItemsSource="{Binding Mails}" />
+            <velo:VeloSplitter Grid.Column="1" />
+            <ContentControl Grid.Column="2" Content="{Binding SelectedMail}" />
+        </Grid>
+        """;
+
+    private const string Wpf2 = """
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="160" />
+            </Grid.RowDefinitions>
+            <TextBox Text="{Binding Query}" />
+            <velo:VeloSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
+            <velo:VeloDataGrid Grid.Row="2" Source="{Binding Results}" />
+        </Grid>
+        """;
+
     private static readonly string[] Names = ["Ada Lovelace", "Alan Turing", "Grace Hopper", "Linus Torvalds", "Margaret Hamilton"];
     private double _size = 35;
     private string _selected = Names[0];

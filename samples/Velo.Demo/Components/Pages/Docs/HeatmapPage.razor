@@ -3,11 +3,11 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Heatmap" Description="Une grille de valeurs colorées : repérez d'un coup d'œil les heures et les jours qui comptent. Échelle simple (une teinte, du clair au foncé) pour une quantité, ou divergente (deux teintes autour d'un point neutre) pour un écart.">
-    <Example Title="Échelle divergente : déficit ou surplus" Description="Bleu = déficit, rouge = surplus, gris = équilibre (Midpoint = 0). L'échelle est symétrique : la même distance donne la même intensité des deux côtés. Les cases hachurées n'ont pas de données." Code="@DivergingCode">
+    <Example WpfCode="@Wpf1" Title="Échelle divergente : déficit ou surplus" Description="Bleu = déficit, rouge = surplus, gris = équilibre (Midpoint = 0). L'échelle est symétrique : la même distance donne la même intensité des deux côtés. Les cases hachurées n'ont pas de données." Code="@DivergingCode">
         <VeloHeatmap Title="Déséquilibre moyen (MW)" Cells="_weekly" Diverging="true" Unit="MW" Format="N0" ColumnLabelEvery="2" Culture="French" OnCellClick="Show" />
     </Example>
 
-    <Example Title="Échelle simple : une quantité" Description="Nombre d'activations de réserve. ShowValues affiche les chiffres dans les cases ; le texte passe en blanc sur les cases foncées." Code="@SequentialCode">
+    <Example WpfCode="@Wpf2" Title="Échelle simple : une quantité" Description="Nombre d'activations de réserve. ShowValues affiche les chiffres dans les cases ; le texte passe en blanc sur les cases foncées." Code="@SequentialCode">
         <VeloHeatmap Title="Activations par heure" Cells="_activations" ShowValues="true" Format="0" CellHeight="30px" CellMinWidth="30px" Culture="French" />
     </Example>
 
@@ -15,6 +15,20 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloHeatmap Title="Écart à l'objectif" Unit="MW" IsDiverging="True" Midpoint="0"
+                          ShowValues="True" Rows="{Binding Units}" Columns="{Binding Hours}" Cells="{Binding Gaps}"
+                          CellClick="OnCellClick" />
+
+        // ViewModel : une cellule par (ligne, colonne), null = pas de donnée
+        Gaps = units.SelectMany(u => hours.Select(h => new VeloHeatCell(u, h, Gap(u, h)))).ToList();
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloHeatmap Title="Consommation par heure" Unit="MW" ColumnLabelEvery="3" CellHeight="24"
+                          Rows="{Binding Days}" Columns="{Binding Hours}" Cells="{Binding Load}" />
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
 
     private readonly IReadOnlyList<VeloHeatCell> _weekly = DemoData.WeeklyImbalance();

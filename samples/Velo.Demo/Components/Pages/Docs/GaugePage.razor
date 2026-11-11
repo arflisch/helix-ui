@@ -2,7 +2,7 @@
 @using System.Globalization
 
 <DemoPage Title="Gauge" Description="Jauge semi-circulaire pour une valeur dans une plage connue (taux de charge, réserve, remplissage). Les seuils changent la couleur et affichent un libellé d'état : l'information ne repose jamais sur la couleur seule.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloGauge Value="_value" Min="0" Max="100" Unit="%" Label="Charge du réseau" Thresholds="_thresholds ? Bands : []" Size="@($"{_size}px")" Culture="French" />
         </Preview>
@@ -13,7 +13,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Plusieurs jauges">
+    <Example WpfCode="@Wpf2" Title="Plusieurs jauges">
         <div class="row" style="justify-content:space-around;gap:24px">
             <VeloGauge Value="38" Unit="%" Label="Batterie" Thresholds="Bands" Size="180px" Culture="French" />
             <VeloGauge Value="72" Unit="%" Label="Réserve engagée" Thresholds="Bands" Size="180px" Culture="French" />
@@ -25,6 +25,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloGauge Value="{Binding Load}" Minimum="0" Maximum="100" Unit="%" Label="Charge"
+                        Format="0" Size="200" Thresholds="{Binding LoadZones}" />
+
+        // ViewModel
+        LoadZones = [new VeloGaugeThreshold(70, "warning", "Élevée"), new VeloGaugeThreshold(90, "danger", "Critique")];
+        """;
+
+    private const string Wpf2 = """
+        <StackPanel Orientation="Horizontal">
+            <velo:VeloGauge Value="72" Unit="%" Label="CPU" Size="150" />
+            <velo:VeloGauge Value="38" Maximum="60" Unit="°C" Label="Température" Size="150" Accent="#0EA5E9" />
+            <velo:VeloGauge Value="5.2" Maximum="8" Unit="Go" Label="Mémoire" Size="150" Format="0.0" />
+        </StackPanel>
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
 
     private static readonly VeloGaugeThreshold[] Bands =

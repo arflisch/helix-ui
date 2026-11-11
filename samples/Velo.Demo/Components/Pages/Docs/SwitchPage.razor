@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Switch" Description="L'interrupteur. Chaque partie a son paramètre : la piste, la pastille, une icône ou un texte dedans, une description, le côté du libellé. Aucun template à copier.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloSwitch @bind-Checked="_checked" Label="@_label" Description="@_description" LabelPosition="_position" Size="_size"
                         Color="@_color" TrackColor="@_track" ThumbColor="@_thumb" ThumbOnColor="@_thumbOn" Radius="@Radius"
@@ -24,7 +24,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Changer la couleur de la pastille" Description="Le cas qui demande un template complet ailleurs : ici c'est un paramètre." Code="@ThumbCode">
+    <Example WpfCode="@Wpf2" Title="Changer la couleur de la pastille" Description="Le cas qui demande un template complet ailleurs : ici c'est un paramètre." Code="@ThumbCode">
         <div class="row" style="gap:28px">
             <VeloSwitch @bind-Checked="_demo" ThumbColor="#f59e0b" Label="Ambre" />
             <VeloSwitch @bind-Checked="_demo" ThumbColor="#18181b" TrackColor="#e4e4e7" Color="#a3e635" Label="Lime" />
@@ -32,7 +32,7 @@
         </div>
     </Example>
 
-    <Example Title="Icône ou texte dans l'interrupteur" Description="OnIcon / OffIcon dans la pastille, OnText / OffText dans la piste (elle s'élargit). Ils changent à l'instant du clic." Code="@InsideCode">
+    <Example WpfCode="@Wpf3" Title="Icône ou texte dans l'interrupteur" Description="OnIcon / OffIcon dans la pastille, OnText / OffText dans la piste (elle s'élargit). Ils changent à l'instant du clic." Code="@InsideCode">
         <div class="row" style="gap:28px">
             <VeloSwitch @bind-Checked="_demo" OnIcon="check" OffIcon="x" Label="Icônes" />
             <VeloSwitch @bind-Checked="_demo" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Thème" />
@@ -41,14 +41,14 @@
         </div>
     </Example>
 
-    <Example Title="Description et côté du libellé" Description="Une deuxième ligne sous le libellé, lue avec l'interrupteur. LabelPosition=Start pour les listes de réglages." Code="@DescriptionCode">
+    <Example WpfCode="@Wpf4" Title="Description et côté du libellé" Description="Une deuxième ligne sous le libellé, lue avec l'interrupteur. LabelPosition=Start pour les listes de réglages." Code="@DescriptionCode">
         <div class="stack" style="max-width:420px">
             <VeloSwitch @bind-Checked="_demo" Label="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
             <VeloSwitch @bind-Checked="_demo2" LabelPosition="VeloLabelPosition.Start" Label="Synchronisation" Description="Chaque nuit à 2 h." Style="width:100%;justify-content:space-between" />
         </div>
     </Example>
 
-    <Example Title="Tailles" Code="@SizesCode">
+    <Example WpfCode="@Wpf5" Title="Tailles" Code="@SizesCode">
         <div class="row" style="gap:28px">
             <VeloSwitch @bind-Checked="_demo" Size="VeloSize.Sm" Label="Sm" />
             <VeloSwitch @bind-Checked="_demo" Label="Md" />
@@ -60,6 +60,38 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloSwitch Content="Mode avion" Description="Coupe toutes les connexions."
+                         IsChecked="{Binding IsOn}" LabelPosition="End" Size="Md"
+                         Accent="#10B981" TrackBrush="#E4E4E7" ThumbBrush="White" ThumbOnBrush="#DCFCE7"
+                         OnIcon="check" OffIcon="x" CornerRadius="999" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloSwitch Content="Ambre" IsChecked="True" ThumbBrush="#F59E0B" />
+        <velo:VeloSwitch Content="Lime" IsChecked="True" ThumbBrush="#18181B" TrackBrush="#E4E4E7" Accent="#A3E635" />
+        <velo:VeloSwitch Content="Danger" IsChecked="True" Tone="Danger" ThumbOnBrush="#FFE4E6" />
+        """;
+
+    private const string Wpf3 = """
+        <velo:VeloSwitch Content="Icônes" OnIcon="check" OffIcon="x" />
+        <velo:VeloSwitch Content="Thème" OnIcon="moon" OffIcon="sun" Accent="#312E81" />
+        <velo:VeloSwitch Content="Texte" OnText="ON" OffText="OFF" />
+        <velo:VeloSwitch Content="Pilote" OnText="AUTO" OffText="MANUEL" Accent="#FF8A00" Size="Lg" />
+        """;
+
+    private const string Wpf4 = """
+        <velo:VeloSwitch Content="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
+        <velo:VeloSwitch Content="Synchronisation" Description="Chaque nuit à 2 h."
+                         LabelPosition="Start" HorizontalAlignment="Stretch" />
+        """;
+
+    private const string Wpf5 = """
+        <velo:VeloSwitch Content="Sm" Size="Sm" />
+        <velo:VeloSwitch Content="Md" />
+        <velo:VeloSwitch Content="Lg" Size="Lg" />
+        """;
+
     private enum Inside { Rien, Icônes, Texte }
 
     private bool _checked = true, _disabled, _demo = true, _demo2;

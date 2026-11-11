@@ -1,7 +1,7 @@
 @page "/components/skeleton"
 
 <DemoPage Title="Skeleton" Description="Silhouettes animées pendant le chargement : la mise en page ne saute pas quand les données arrivent.">
-    <Example Title="Carte en chargement" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Carte en chargement" Code="@Code">
         <div class="stack">
             <VeloSwitch Label="Chargement" @bind-Checked="_loading" />
             <div class="grid-2">
@@ -34,6 +34,18 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloCard>
+            <StackPanel>
+                <DockPanel>
+                    <velo:VeloSkeleton IsCircle="True" Width="44" Height="44" Margin="0,0,14,0" />
+                    <velo:VeloSkeleton Lines="2" VerticalAlignment="Center" />
+                </DockPanel>
+                <velo:VeloSkeleton Height="120" CornerRadius="10" Margin="0,16,0,0" />
+            </StackPanel>
+        </velo:VeloCard>
+        """;
+
     private bool _loading = true;
 
     private const string Code = """

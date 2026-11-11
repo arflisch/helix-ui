@@ -1,10 +1,22 @@
 @using System.Net
 @using System.Text.RegularExpressions
 @inject IJSRuntime JS
+@inject DemoCodeState CodeState
+@implements IDisposable
 
 <div class="@(new CssBuilder("code").Add("code--flush", Flush).Build())">
     <div class="code__bar">
-        <span class="code__lang">@Language</span>
+        @if (string.IsNullOrEmpty(WpfCode))
+        {
+            <span class="code__lang">@Language</span>
+        }
+        else
+        {
+            <div class="code__tabs" role="tablist" aria-label="Version du code">
+                <button role="tab" aria-selected="@(!ShowWpf ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", !ShowWpf).Build())" @onclick="() => CodeState.Set(false)">Blazor</button>
+                <button role="tab" aria-selected="@(ShowWpf ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", ShowWpf).Build())" @onclick="() => CodeState.Set(true)">WPF</button>
+            </div>
+        }
         <button class="code__copy" @onclick="Copy">
             <VeloIcon Name="@(_copied ? "check" : "copy")" Size="13" />
             @(_copied ? "Copié" : "Copier")
@@ -18,15 +30,28 @@
     [Parameter] public string Language { get; set; } = "razor";
     [Parameter] public bool Flush { get; set; }
 
+    /// <summary>The same example for WPF (XAML, and C# when needed). Adds a Blazor / WPF switch.</summary>
+    [Parameter] public string? WpfCode { get; set; }
+
+    private bool ShowWpf => CodeState.ShowWpf && !string.IsNullOrEmpty(WpfCode);
+
+    private string Current => ShowWpf ? WpfCode! : Code;
+
+    protected override void OnInitialized() => CodeState.Changed += OnFlavorChanged;
+
+    private void OnFlavorChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => CodeState.Changed -= OnFlavorChanged;
+
     private bool _copied;
 
-    private MarkupString Highlighted => new(Highlight(Code.Trim('\n', '\r')));
+    private MarkupString Highlighted => new(Highlight(Current.Trim('\n', '\r')));
 
     private async Task Copy()
     {
         try
         {
-            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Code.Trim());
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Current.Trim());
             _copied = true;
             StateHasChanged();
             await Task.Delay(1500);
@@ -54,6 +79,6 @@
     }
 
     private static readonly Regex Tokens = new(
-        @"(?<c>//[^\n]*)|(?<s>&quot;.*?&quot;)|(?<t>(?<=&lt;/?)[A-Za-z][\w.]*)|(?<a>(?<=\s)@?[A-Za-z][\w:-]*(?==))|(?<k>\b(?:var|new|await|true|false|null|using)\b)",
+        @"(?<c>//[^\n]*)|(?<s>&quot;.*?&quot;)|(?<t>(?<=&lt;/?)[A-Za-z][\w.:]*)|(?<a>(?<=\s)@?[A-Za-z][\w:-]*(?==))|(?<k>\b(?:var|new|await|true|false|null|using)\b)",
         RegexOptions.Compiled);
 }

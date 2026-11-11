@@ -2,7 +2,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="ButtonGroup" Description="Boutons accolés pour des actions liées : barre d'outils, bouton principal + menu (split button), choix d'affichage.">
-    <Example Title="Barre d'outils et split button" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Barre d'outils et split button" Code="@Code">
         <div class="row" style="gap:20px">
             <VeloButtonGroup Label="Alignement">
                 <VeloButton Variant="VeloVariant.Outline" Color="neutral" Icon="chevron-left" aria-label="Précédent" />
@@ -35,6 +35,28 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <!-- Choix segmenté (SelectedIndex / SelectedItem comme une ListBox) -->
+        <velo:VeloButtonGroup SelectedIndex="1">
+            <ListBoxItem Content="Jour" />
+            <ListBoxItem Content="Semaine" />
+            <ListBoxItem Content="Mois" />
+        </velo:VeloButtonGroup>
+
+        <!-- Split button : un bouton + un bouton à menu -->
+        <StackPanel Orientation="Horizontal">
+            <velo:VeloButton Content="Enregistrer" CornerRadius="10,0,0,10" />
+            <velo:VeloMenuButton Icon="chevron-down" Padding="0" Width="34" CornerRadius="0,10,10,0" Margin="1,0,0,0" MenuAlignment="Right">
+                <velo:VeloMenuButton.Menu>
+                    <velo:VeloContextMenu>
+                        <velo:VeloMenuItem Header="Enregistrer sous…" />
+                        <velo:VeloMenuItem Header="Enregistrer comme modèle" />
+                    </velo:VeloContextMenu>
+                </velo:VeloMenuButton.Menu>
+            </velo:VeloMenuButton>
+        </StackPanel>
+        """;
+
     private static readonly string[] Periods = ["Jour", "Semaine", "Mois"];
     private string _period = "Semaine";
 

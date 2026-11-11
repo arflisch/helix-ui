@@ -1,7 +1,7 @@
 @page "/components/emptystate"
 
 <DemoPage Title="EmptyState" Description="Ce qu'on affiche quand il n'y a rien : expliquer pourquoi, et proposer l'action suivante.">
-    <Example Title="Variantes" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Variantes" Code="@Code">
         <div class="grid-3">
             <VeloEmptyState Framed="true" Icon="calendar" Title="Aucune demande planifiée" Description="Planifiez une demande pour la voir apparaître dans la timeline.">
                 <Actions><VeloButton Icon="plus" Size="VeloSize.Sm">Planifier</VeloButton></Actions>
@@ -17,6 +17,16 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloEmptyState Icon="search" Title="Aucun résultat"
+                             Description="Aucun rapport ne correspond à ces filtres.">
+            <velo:VeloEmptyState.Actions>
+                <velo:VeloButton Content="Effacer les filtres" Variant="Soft" />
+            </velo:VeloEmptyState.Actions>
+        </velo:VeloEmptyState>
+        <velo:VeloEmptyState Icon="bell" Title="Tout est lu" Tone="Success" Padding="12" />
+        """;
+
     private const string Code = """
         <VeloEmptyState Icon="calendar" Title="Aucune demande planifiée" Description="Planifiez une demande…">
             <Actions><VeloButton Icon="plus">Planifier</VeloButton></Actions>

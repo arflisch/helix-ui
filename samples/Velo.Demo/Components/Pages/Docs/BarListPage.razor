@@ -3,7 +3,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="BarList" Description="Classement en barres horizontales : le libellé dans la barre, la valeur à droite. Idéal pour « top N » (sites, clients, causes). Une seule couleur : les barres comparent une même mesure.">
-    <Example Title="Top des sites" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Top des sites" Code="@Code">
         <div class="grid-2">
             <VeloCard Title="Consommation par site" Subtitle="Cette semaine">
                 <VeloBarList Items="Sites" Unit="MWh" ValueFormat="N0" LabelHeader="Site" ValueHeader="MWh" Culture="French"
@@ -19,6 +19,21 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloBarList x:Name="Sites" Limit="5" LabelHeader="Site" ValueHeader="Visites" Unit="k" ItemClick="OnSiteClick" />
+
+        // Code-behind
+        Sites.Items =
+        [
+            new VeloBarItem("velo-ui.dev", 128.4) { Icon = "external" },
+            new VeloBarItem("github.com", 82.1),
+            new VeloBarItem("google.com", 64.5),
+        ];
+
+        private void OnSiteClick(object sender, RoutedEventArgs e) =>
+            Open(((VeloEventArgs<VeloBarItem>)e).Value.Label);
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
 
     private static readonly VeloBarItem[] Sites =

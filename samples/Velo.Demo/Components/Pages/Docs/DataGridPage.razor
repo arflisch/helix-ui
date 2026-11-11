@@ -124,7 +124,7 @@
         <CodeBlock Language="c#" Code="@ServerCSharpCode" />
     </section>
 
-    <Example Title="Le minimum" Description="Une collection et des colonnes. Le titre est déduit du nom de la propriété, le tri et la recherche suivent automatiquement." Code="@MinimalCode">
+    <Example WpfCode="@Wpf1" Title="Le minimum" Description="Une collection et des colonnes. Le titre est déduit du nom de la propriété, le tri et la recherche suivent automatiquement." Code="@MinimalCode">
         <VeloDataGrid Items="_employees.Take(4)" PageSize="0" Culture="French">
             <VeloColumn Field="e => e.Name" />
             <VeloColumn Field="e => e.Department" />
@@ -133,7 +133,7 @@
         </VeloDataGrid>
     </Example>
 
-    <Example Title="Personnaliser des lignes" Description="RowClass ajoute une classe par ligne ; une simple règle CSS fait le reste." Code="@RowClassCode">
+    <Example WpfCode="@Wpf2" Title="Personnaliser des lignes" Description="RowClass ajoute une classe par ligne ; une simple règle CSS fait le reste." Code="@RowClassCode">
         <style>
             .row-leaving td { color: var(--velo-text-subtle); text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--velo-danger) 50%, transparent); }
         </style>
@@ -162,6 +162,43 @@
 </VeloDialog>
 
 @code {
+    private const string Wpf1 = """
+        <!-- En mémoire : Source (pas ItemsSource) pour la recherche, le tri global et la pagination -->
+        <velo:VeloDataGrid Source="{Binding Employees}" IsSearchable="True" PageSize="10"
+                           AutoGenerateColumns="False" IsReadOnly="True" ShowColumnChooser="True">
+            <velo:VeloDataGrid.Columns>
+                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Service" Binding="{Binding Team}" />
+                <DataGridTextColumn Header="Salaire" Binding="{Binding Salary, StringFormat=N0}" />
+            </velo:VeloDataGrid.Columns>
+        </velo:VeloDataGrid>
+
+        // Côté serveur : une page à la fois, la requête précédente est annulée
+        Grid.ItemsProvider = async (request, ct) =>
+        {
+            var page = await api.SearchAsync(request.Search, request.SortBy, request.Descending, request.Page, request.PageSize, ct);
+            return new VeloGridPage(page.Items, page.Total);
+        };
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloDataGrid Source="{Binding Plants}" IsStriped="True" Density="Sm" AutoGenerateColumns="False">
+            <velo:VeloDataGrid.Columns>
+                <DataGridTextColumn Header="Site" Binding="{Binding Site}" Width="*" />
+                <DataGridTemplateColumn Header="Statut" SortMemberPath="Status">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <velo:VeloBadge Content="{Binding Status}" Tone="{Binding Tone}" ShowDot="True" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </velo:VeloDataGrid.Columns>
+            <velo:VeloDataGrid.Toolbar>
+                <TextBlock Text="Sites" FontWeight="SemiBold" />
+            </velo:VeloDataGrid.Toolbar>
+        </velo:VeloDataGrid>
+        """;
+
     private enum PageChoice { Five, Ten, TwentyFive, All }
 
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");

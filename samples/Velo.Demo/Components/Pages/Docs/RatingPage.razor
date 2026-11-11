@@ -2,7 +2,7 @@
 @using System.Globalization
 
 <DemoPage Title="Rating" Description="Note en étoiles ou en cœurs : saisie (vraies cases radio, flèches du clavier) ou affichage d'une moyenne avec fractions. Libellés au survol, remise à zéro en recliquant.">
-    <Example Title="Saisie" Code="@InputCode">
+    <Example WpfCode="@Wpf1" Title="Saisie" Code="@InputCode">
         <div class="stack">
             <VeloRating @bind-Value="_value" Labels="Labels" ShowValue="true" Label="Votre note" Culture="French" />
             <VeloRating @bind-Value="_love" Shape="heart" Color="danger" Size="VeloSize.Lg" Label="Coups de cœur" />
@@ -11,7 +11,7 @@
         </div>
     </Example>
 
-    <Example Title="Affichage d'une moyenne" Code="@ReadOnlyCode">
+    <Example WpfCode="@Wpf2" Title="Affichage d'une moyenne" Code="@ReadOnlyCode">
         <div class="stack">
             <VeloRating Value="4.3" ReadOnly="true" ShowValue="true" Count="128" Culture="French" Label="Satisfaction" />
             <VeloRating Value="3.6" ReadOnly="true" ShowValue="true" Count="42" Size="VeloSize.Sm" Culture="French" Label="Fiabilité" />
@@ -22,6 +22,15 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloRating Value="{Binding Score}" Max="5" Labels="{Binding ScoreLabels}" AllowClear="True" />
+        <velo:VeloRating Value="2" Shape="heart" Accent="#E11D48" Size="Lg" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloRating Value="3.6" IsReadOnly="True" ShowValue="True" Count="128" Size="Sm" />
+        """;
+
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
     private static readonly string[] Labels = ["Très mauvais", "Mauvais", "Correct", "Bien", "Excellent"];
     private double _value = 4, _love = 3;

@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Progress" Description="Barre de progression déterminée ou indéterminée, et spinner.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:380px">
                 <VeloProgress Value="_value" Label="@_label" ShowValue="_showValue" Indeterminate="_indeterminate" Color="@_color" Height="@($"{N(_height)}px")" />
@@ -18,7 +18,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Spinner" Code="@SpinnerCode">
+    <Example WpfCode="@Wpf2" Title="Spinner" Code="@SpinnerCode">
         <div class="row" style="gap:24px">
             <VeloSpinner />
             <VeloSpinner Size="28px" Color="success" />
@@ -30,6 +30,19 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloProgress Label="Import des données" Value="{Binding Percent}" ShowValue="True"
+                           BarHeight="8" Accent="#10B981" TrackBrush="#DCFCE7" />
+        <velo:VeloProgress Label="Synchronisation" IsIndeterminate="True" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloSpinner />
+        <velo:VeloSpinner Size="28" Tone="Success" />
+        <velo:VeloSpinner Size="36" Thickness="3" Accent="#FF8A00" />
+        <!-- Dans un bouton : IsLoading="True" affiche le spinner à la place du texte -->
+        """;
+
     private double _value = 64, _height = 8;
     private string? _label = "Téléversement";
     private string? _color;

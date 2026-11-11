@@ -2,7 +2,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Drawer" Description="Panneau latéral pour un détail ou un formulaire sans quitter la page. À droite, à gauche ou en bas ; Échap ou clic sur le fond pour fermer.">
-    <Example Title="Positions" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Positions" Code="@Code">
         <div class="row">
             <VeloButton OnClick="() => Open(VeloDrawerPosition.Right)">Ouvrir à droite</VeloButton>
             <VeloButton Variant="VeloVariant.Outline" Color="neutral" OnClick="() => Open(VeloDrawerPosition.Left)">À gauche</VeloButton>
@@ -29,6 +29,19 @@
 </VeloDrawer>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloDrawer IsOpen="{Binding FiltersOpen}" Title="Filtres" Position="Right" DrawerSize="420">
+            <StackPanel>
+                <velo:VeloSelect Label="Région" ItemsSource="{Binding Regions}" />
+                <velo:VeloSwitch Content="Seulement les actifs" Margin="0,16,0,0" />
+            </StackPanel>
+            <velo:VeloDrawer.Footer>
+                <velo:VeloButton Content="Appliquer" Command="{Binding ApplyCommand}" />
+            </velo:VeloDrawer.Footer>
+        </velo:VeloDrawer>
+        <!-- Position : Right, Left ou Bottom (DrawerSize = largeur ou hauteur). Nécessite un VeloHost. -->
+        """;
+
     private static readonly string[] Kinds = ["Directe", "Planifiée"];
     private bool _open;
     private VeloDrawerPosition _position;

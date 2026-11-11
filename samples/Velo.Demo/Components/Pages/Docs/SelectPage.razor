@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Select" Description="Liste déroulante typée : passez n'importe quelle collection d'objets et choisissez comment les afficher. Navigation au clavier (flèches, Entrée, Échap).">
-    <Playground Code="@Code" StageStyle="align-items:start;padding-top:56px">
+    <Playground WpfCode="@Wpf1" Code="@Code" StageStyle="align-items:start;padding-top:56px">
         <Preview>
             <div style="width:100%;max-width:320px">
                 <VeloSelect TValue="Country" Items="Countries" @bind-Value="_country" ItemText="c => c.Name" Label="@_label" Placeholder="Choisir un pays"
@@ -16,7 +16,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Avec des chaînes ou des enums" Code="@SimpleCode">
+    <Example WpfCode="@Wpf2" Title="Avec des chaînes ou des enums" Code="@SimpleCode">
         <div class="grid-2">
             <VeloSelect Items="_sizes" @bind-Value="_size" Label="Taille" />
             <VeloSelect Items="Enum.GetValues<VeloSeverity>()" @bind-Value="_severity" Label="Sévérité" />
@@ -27,6 +27,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloSelect Label="Pays" ItemsSource="{Binding Countries}" DisplayMemberPath="Name"
+                         SelectedItem="{Binding Country}" Placeholder="Choisir un pays"
+                         Hint="Pour la facturation" IsRequired="True" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloSelect Label="Site">
+            <ComboBoxItem Content="Lyon" />
+            <ComboBoxItem Content="Grenoble" />
+        </velo:VeloSelect>
+        <velo:VeloSelect Label="Priorité" ItemsSource="{Binding Priorities}" SelectedItem="{Binding Priority}" />
+
+        // Priorities = Enum.GetValues<Priority>();
+        """;
+
     public sealed record Country(string Code, string Name);
 
     private static readonly Country[] Countries =

@@ -2,7 +2,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Menu" Description="Menu déroulant d'actions : icônes, raccourcis, éléments cochables, séparateurs, actions dangereuses. Au clavier : flèches pour naviguer, Entrée pour choisir, Échap pour fermer (le focus revient sur le bouton).">
-    <Example Title="Menu d'actions" Code="@ActionsCode">
+    <Example WpfCode="@Wpf1" Title="Menu d'actions" Code="@ActionsCode">
         <div class="row" style="gap:16px">
             <VeloMenu>
                 <Trigger><VeloButton Variant="VeloVariant.Outline" Color="neutral" IconEnd="chevron-down">Actions</VeloButton></Trigger>
@@ -32,6 +32,22 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloMenuButton Content="Actions" IconEnd="chevron-down" Variant="Outline" Tone="Neutral">
+            <velo:VeloMenuButton.Menu>
+                <velo:VeloContextMenu>
+                    <velo:VeloMenuItem Header="Modifier" IconName="edit" Shortcut="Ctrl+E" Command="{Binding EditCommand}" />
+                    <velo:VeloMenuItem Header="Exporter" IconName="download" Description="PDF ou Excel" />
+                    <velo:VeloMenuSeparator />
+                    <velo:VeloMenuItem Header="Supprimer" IconName="trash" IsDanger="True" />
+                </velo:VeloContextMenu>
+            </velo:VeloMenuButton.Menu>
+        </velo:VeloMenuButton>
+
+        <!-- Clic droit : le même menu en ContextMenu de n'importe quel élément -->
+        <Border.ContextMenu><velo:VeloContextMenu> … </velo:VeloContextMenu></Border.ContextMenu>
+        """;
+
     private bool _compact, _grid = true;
 
     private void Say(string text) => Toasts.Show(text, VeloSeverity.Success, duration: TimeSpan.FromSeconds(2));

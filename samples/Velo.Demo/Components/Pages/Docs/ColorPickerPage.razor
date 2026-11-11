@@ -1,7 +1,7 @@
 @page "/components/colorpicker"
 
 <DemoPage Title="ColorPicker" Description="Sélecteur de couleur complet : zone saturation / luminosité (souris, tactile, flèches), teinte, opacité, saisie hexadécimale, couleurs proposées et pipette pour prendre une couleur à l'écran (Chrome, Edge).">
-    <Example Title="Exemples" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
         <div class="grid-3">
             <VeloColorPicker Label="Couleur de marque" @bind-Value="_brand" Hint="Utilisée pour les boutons." />
             <VeloColorPicker Label="Fond avec transparence" @bind-Value="_overlay" ShowAlpha="true" />
@@ -18,6 +18,14 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloColorPicker Label="Couleur de marque" SelectedColor="{Binding BrandColor}" />
+        <velo:VeloColorPicker Label="Avec opacité" ShowAlpha="True" Hint="Format #RRGGBBAA" />
+
+        // SelectedColor est un Color? (deux sens). Swatches remplace les couleurs proposées :
+        Picker.Swatches = [Colors.OrangeRed, Colors.SeaGreen, Colors.SteelBlue];
+        """;
+
     private string? _brand = "#4f46e5";
     private string? _overlay = "#0ea5e980";
     private string? _series = "#1baf7a";

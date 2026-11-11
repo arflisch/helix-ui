@@ -2,7 +2,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Stepper" Description="Les étapes d'un parcours (assistant, commande, onboarding) : faites, en cours, à venir, en erreur. Les étapes terminées sont cliquables pour revenir en arrière.">
-    <Example Title="Assistant" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Assistant" Code="@Code">
         <div class="stack" style="gap:24px">
             <VeloStepper Steps="Steps" @bind-ActiveIndex="_active" ErrorSteps="@(_error ? new[] { 1 } : null)" />
             <VeloCard>
@@ -16,7 +16,7 @@
         </div>
     </Example>
 
-    <Example Title="Vertical">
+    <Example WpfCode="@Wpf2" Title="Vertical">
         <div style="max-width:360px">
             <VeloStepper Steps="Steps" ActiveIndex="2" Vertical="true" Clickable="false" />
         </div>
@@ -26,6 +26,17 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloStepper Steps="{Binding Steps}" ActiveIndex="{Binding Step}" IsClickable="True" ErrorSteps="{Binding InvalidSteps}" />
+
+        // ViewModel
+        Steps = [new VeloStep("Compte", "E-mail et mot de passe"), new VeloStep("Profil"), new VeloStep("Équipe"), new VeloStep("Terminé")];
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloStepper Steps="{Binding Steps}" ActiveIndex="1" Orientation="Vertical" Width="320" />
+        """;
+
     private static readonly VeloStep[] Steps =
     [
         new("Site", "Choisir le site concerné"),

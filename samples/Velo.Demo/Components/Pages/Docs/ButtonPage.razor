@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Button" Description="Le bouton : quatre variantes, toutes les couleurs (sémantiques ou libres), trois tailles, icônes et état de chargement.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloButton Variant="_variant" Color="@_color" Size="_size" Radius="@Radius" Loading="_loading" Disabled="_disabled"
                         Icon="@(_icon ? "sparkles" : null)">@_label</VeloButton>
@@ -19,7 +19,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Variantes" Code="@VariantsCode">
+    <Example WpfCode="@Wpf2" Title="Variantes" Code="@VariantsCode">
         <div class="row">
             <VeloButton>Solid</VeloButton>
             <VeloButton Variant="VeloVariant.Soft">Soft</VeloButton>
@@ -28,7 +28,7 @@
         </div>
     </Example>
 
-    <Example Title="Couleurs" Description="Un nom sémantique ou n'importe quelle couleur CSS. Les états hover, focus et le texte sont calculés automatiquement.">
+    <Example WpfCode="@Wpf3" Title="Couleurs" Description="Un nom sémantique ou n'importe quelle couleur CSS. Les états hover, focus et le texte sont calculés automatiquement.">
         <div class="stack">
             @foreach (var variant in Enum.GetValues<VeloVariant>())
             {
@@ -42,7 +42,7 @@
         </div>
     </Example>
 
-    <Example Title="Icônes, tailles et chargement" Code="@IconsCode">
+    <Example WpfCode="@Wpf4" Title="Icônes, tailles et chargement" Code="@IconsCode">
         <div class="row">
             <VeloButton Icon="download" Size="VeloSize.Sm">Télécharger</VeloButton>
             <VeloButton Variant="VeloVariant.Outline" Color="neutral" IconEnd="arrow-right">Continuer</VeloButton>
@@ -57,6 +57,36 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloButton Content="Enregistrer" Variant="Solid" Tone="Primary" Size="Md"
+                         Icon="check" CornerRadius="10" Click="OnSave" />
+
+        <!-- N'importe quelle couleur : le texte devient noir ou blanc selon le contraste -->
+        <velo:VeloButton Content="Envoyer" Accent="#FF8A00" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloButton Content="Solid" />
+        <velo:VeloButton Content="Soft" Variant="Soft" />
+        <velo:VeloButton Content="Outline" Variant="Outline" />
+        <velo:VeloButton Content="Ghost" Variant="Ghost" />
+        """;
+
+    private const string Wpf3 = """
+        <velo:VeloButton Content="Primary" />
+        <velo:VeloButton Content="Neutral" Tone="Neutral" />
+        <velo:VeloButton Content="Success" Tone="Success" />
+        <velo:VeloButton Content="Danger" Tone="Danger" />
+        <velo:VeloButton Content="Violet" Accent="#8B5CF6" />
+        """;
+
+    private const string Wpf4 = """
+        <velo:VeloButton Content="Télécharger" Icon="download" Size="Sm" />
+        <velo:VeloButton Content="Continuer" IconEnd="arrow-right" Size="Lg" />
+        <velo:VeloButton Icon="settings" Variant="Ghost" Tone="Neutral" Padding="0" Width="38" ToolTip="Réglages" />
+        <velo:VeloButton x:Name="Save" Content="Enregistrer" IsLoading="{Binding IsSaving}" />
+        """;
+
     private static readonly string[] Colors = ["primary", "neutral", "success", "warning", "danger", "#8b5cf6"];
 
     private string? _label = "Enregistrer";

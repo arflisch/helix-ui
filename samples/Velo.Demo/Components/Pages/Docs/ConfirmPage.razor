@@ -3,7 +3,7 @@
 @inject VeloToastService Toasts
 
 <DemoPage Title="Confirm" Description="Demander une confirmation depuis n'importe quel code, en une ligne qui attend la réponse : if (await Confirm.AskAsync(…)). Pas de dialogue à déclarer dans la page : VeloProvider l'affiche.">
-    <Example Title="Exemples" Code="@Code">
+    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
         <div class="row">
             <VeloButton Color="danger" Variant="VeloVariant.Soft" Icon="trash" OnClick="Delete">Supprimer le planning</VeloButton>
             <VeloButton Variant="VeloVariant.Outline" Color="neutral" OnClick="Publish">Publier</VeloButton>
@@ -15,6 +15,19 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <!-- MainWindow.xaml : une fois, autour du contenu -->
+        <velo:VeloHost> … </velo:VeloHost>
+
+        // Code-behind ou ViewModel
+        if (await VeloConfirm.AskAsync("Supprimer le rapport ?", "Cette action est définitive.",
+                                       danger: true, confirmText: "Supprimer"))
+        {
+            await reports.DeleteAsync(id);
+            VeloToasts.Success("Rapport supprimé.");
+        }
+        """;
+
     private string _last = "—";
 
     private async Task Delete()

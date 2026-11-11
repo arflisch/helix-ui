@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Slider" Description="Curseur basé sur l'input range native : léger, accessible au clavier, avec remplissage coloré et format d'affichage libre.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:360px">
                 <VeloSlider @bind-Value="_value" Label="@_label" Max="_max" Step="_step" Color="@_color" ThumbColor="@_thumb"
@@ -19,7 +19,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Couleurs" Code="@ColorsCode">
+    <Example WpfCode="@Wpf2" Title="Couleurs" Code="@ColorsCode">
         <div class="grid-3">
             <VeloSlider Label="Basses" @bind-Value="_a" Color="success" />
             <VeloSlider Label="Médiums" @bind-Value="_b" Color="warning" />
@@ -31,6 +31,15 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloSlider Minimum="0" Maximum="100" Value="{Binding Volume}" TickFrequency="5" IsSnapToTickEnabled="True" />
+        """;
+
+    private const string Wpf2 = """
+        <velo:VeloSlider Value="40" Tone="Success" />
+        <velo:VeloSlider Value="60" Accent="#FF8A00" TrackBrush="#FFEDD5" />
+        """;
+
     private enum StepChoice { One, Five, Ten }
 
     private double _value = 40, _max = 100, _step = 1, _a = 70, _b = 45, _c = 25;

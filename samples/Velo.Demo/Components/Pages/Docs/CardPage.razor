@@ -2,7 +2,7 @@
 @using static Velo.Demo.Components.Shared.Snippet
 
 <DemoPage Title="Card" Description="Conteneur avec titre, sous-titre, zone d'actions et pied. Bordure ou ombre, effet au survol.">
-    <Playground Code="@Code">
+    <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <VeloCard Title="@_title" Subtitle="@_subtitle" Elevated="_elevated" Hoverable="_hoverable" Padding="@Padding"
                       Background="@_bg" Style="width:100%;max-width:380px">
@@ -34,7 +34,7 @@
         </Controls>
     </Playground>
 
-    <Example Title="Statistiques" Code="@StatsCode">
+    <Example WpfCode="@Wpf2" Title="Statistiques" Code="@StatsCode">
         <div class="grid-3">
             @foreach (var (label, value, delta, up) in Stats)
             {
@@ -53,6 +53,27 @@
 </DemoPage>
 
 @code {
+    private const string Wpf1 = """
+        <velo:VeloCard Title="Production du jour" Subtitle="Mise à jour il y a 2 min" IsElevated="True"
+                       Padding="20" CornerRadius="16">
+            <velo:VeloCard.Actions>
+                <velo:VeloButton Icon="refresh" Variant="Ghost" Tone="Neutral" Padding="0" Width="32" />
+            </velo:VeloCard.Actions>
+            <TextBlock Text="Contenu de la carte" />
+            <velo:VeloCard.Footer>
+                <velo:VeloButton Content="Exporter" Size="Sm" />
+            </velo:VeloCard.Footer>
+        </velo:VeloCard>
+        """;
+
+    private const string Wpf2 = """
+        <UniformGrid Columns="3">
+            <velo:VeloCard><velo:VeloStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" /></velo:VeloCard>
+            <velo:VeloCard><velo:VeloStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0.8" /></velo:VeloCard>
+            <velo:VeloCard><velo:VeloStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" /></velo:VeloCard>
+        </UniformGrid>
+        """;
+
     private static readonly (string, string, string, bool)[] Stats =
         [("Revenus", "48 290 €", "+12,4 %", true), ("Clients", "1 284", "+3,1 %", true), ("Désabonnements", "2,4 %", "+0,3 %", false)];
 
