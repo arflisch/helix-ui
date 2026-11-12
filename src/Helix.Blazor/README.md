@@ -3,6 +3,8 @@
 Clean, modern Blazor components that look good by default and are easy to customize:
 every visual part is a parameter (`ThumbColor`, `TrackColor`, `Radius`…), so you never copy a template.
 
+**Documentation and live examples: [helix-ui-docs.pages.dev](https://helix-ui-docs.pages.dev/)**
+
 ## Install
 
 ```bash

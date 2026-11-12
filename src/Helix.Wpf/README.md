@@ -3,6 +3,8 @@
 Clean, modern WPF controls that look good by default and are easy to customize:
 every visual part is a property (`ThumbBrush`, `TrackBrush`, `CornerRadius`…), so you never copy a template.
 
+**Documentation and examples (switch the code blocks to WPF): [helix-ui-docs.pages.dev](https://helix-ui-docs.pages.dev/)**
+
 ## Install
 
 ```bash

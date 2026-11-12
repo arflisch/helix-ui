@@ -2,6 +2,8 @@
 
 Composants Blazor et WPF épurés, beaux par défaut et faciles à personnaliser.
 
+**Documentation et démo : [helix-ui-docs.pages.dev](https://helix-ui-docs.pages.dev/)**
+
 ```
 Helix.slnx
 ├─ src/Helix.Blazor        la librairie (Razor Class Library, .NET 10)
@@ -10,7 +12,7 @@ Helix.slnx
 │  ├─ Services/           HelixToastService + AddHelix()
 │  ├─ wwwroot/helix.css    tokens + styles (spécificité zéro)
 │  └─ wwwroot/helix.js     glisser-déposer de la timeline (chargé à la demande)
-├─ src/Helix.Wpf           la même librairie pour WPF (.NET 10, Windows)
+├─ src/Helix.Wpf           la même librairie pour WPF (.NET 8 et 10, Windows)
 │  ├─ Controls/           champs, boutons, HelixDataGrid, HelixChart, HelixDonut, HelixTimeline, HelixKanban, HelixDashboard, HelixTreeView… (55+ contrôles)
 │  ├─ Core/               HelixResources (thème), HelixPalette, HelixIcon, HelixTexts
 │  └─ Themes/Generic.xaml styles par défaut (couleurs en DynamicResource)
