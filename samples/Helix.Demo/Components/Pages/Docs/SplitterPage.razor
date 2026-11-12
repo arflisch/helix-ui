@@ -1,0 +1,82 @@
+@page "/components/splitter"
+
+<DemoPage Title="Splitter" Description="Deux panneaux redimensionnables : glissez la séparation, ou utilisez les flèches (Début / Fin pour les bornes) une fois la séparation sélectionnée au clavier. Double-clic pour revenir à la taille initiale.">
+    <Example WpfCode="@Wpf1" Title="Liste + détail" Code="@Code">
+        <HelixSplitter @bind-Size="_size" Min="20" Max="70" Height="300px">
+            <First>
+                <ul class="split-list">
+                    @foreach (var name in Names)
+                    {
+                        <li class="@(name == _selected ? "is-active" : null)" @onclick="() => _selected = name">
+                            <HelixAvatar Name="@name" Size="HelixSize.Sm" /> @name
+                        </li>
+                    }
+                </ul>
+            </First>
+            <Second>
+                <div style="padding:20px">
+                    <div class="row"><HelixAvatar Name="@_selected" Size="HelixSize.Lg" /><strong style="font-size:16px">@_selected</strong></div>
+                    <p class="muted" style="margin:14px 0 0;line-height:1.6">Panneau de détail. La séparation est à <strong>@_size.ToString("0") %</strong> ; la valeur est liée par <code>@@bind-Size</code>, vous pouvez la sauvegarder comme préférence.</p>
+                </div>
+            </Second>
+        </HelixSplitter>
+    </Example>
+
+    <Example WpfCode="@Wpf2" Title="Vertical" Code="@VerticalCode">
+        <HelixSplitter Vertical="true" Size="60" Height="260px">
+            <First><div style="padding:16px" class="muted">Éditeur (haut)</div></First>
+            <Second><div style="padding:16px" class="muted">Console (bas)</div></Second>
+        </HelixSplitter>
+    </Example>
+
+    <ApiTable Title="HelixSplitter" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260" MinWidth="160" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="200" />
+            </Grid.ColumnDefinitions>
+            <ListBox ItemsSource="{Binding Mails}" />
+            <helix:HelixSplitter Grid.Column="1" />
+            <ContentControl Grid.Column="2" Content="{Binding SelectedMail}" />
+        </Grid>
+        """;
+
+    private const string Wpf2 = """
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="160" />
+            </Grid.RowDefinitions>
+            <TextBox Text="{Binding Query}" />
+            <helix:HelixSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
+            <helix:HelixDataGrid Grid.Row="2" Source="{Binding Results}" />
+        </Grid>
+        """;
+
+    private static readonly string[] Names = ["Ada Lovelace", "Alan Turing", "Grace Hopper", "Linus Torvalds", "Margaret Hamilton"];
+    private double _size = 35;
+    private string _selected = Names[0];
+
+    private const string Code = """
+        <HelixSplitter @bind-Size="size" Min="20" Max="70" Height="300px">
+            <First>…liste…</First>
+            <Second>…détail…</Second>
+        </HelixSplitter>
+        """;
+
+    private const string VerticalCode = """<HelixSplitter Vertical Size="60" Height="260px">…</HelixSplitter>""";
+
+    private static readonly ApiRow[] Api =
+    [
+        new("First / Second", "RenderFragment", null, "Les deux panneaux."),
+        new("Size", "double", "--_size", "Taille du premier panneau en % (@bind-Size)."),
+        new("Min / Max / KeyboardStep", "double", null, "Bornes (15–85) et pas des flèches (5)."),
+        new("Vertical / Height", "bool / string", null, "Panneaux empilés ; hauteur du conteneur."),
+    ];
+}

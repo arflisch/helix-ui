@@ -1,0 +1,121 @@
+@page "/components/card"
+@using static Helix.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Card" Description="Conteneur avec titre, sous-titre, zone d'actions et pied. Bordure ou ombre, effet au survol.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <HelixCard Title="@_title" Subtitle="@_subtitle" Elevated="_elevated" Hoverable="_hoverable" Padding="@Padding"
+                      Background="@_bg" Style="width:100%;max-width:380px">
+                <Actions>
+                    @if (_actions)
+                    {
+                        <HelixBadge Color="success" Dot="true">Actif</HelixBadge>
+                    }
+                </Actions>
+                <ChildContent>Le contenu de la carte. Tout ce que vous voulez : texte, formulaires, listes…</ChildContent>
+                <Footer>
+                    @if (_footer)
+                    {
+                        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm">Annuler</HelixButton>
+                        <HelixButton Size="HelixSize.Sm">Valider</HelixButton>
+                    }
+                </Footer>
+            </HelixCard>
+        </Preview>
+        <Controls>
+            <HelixTextField Label="Title" @bind-Value="_title" />
+            <HelixTextField Label="Subtitle" @bind-Value="_subtitle" />
+            <HelixSlider Label="Padding" @bind-Value="_padding" Min="8" Max="36" Format="@(v => $"{v} px")" />
+            <ColorPicker Label="Background" @bind-Value="_bg" Colors="@(["#fafaf9", "#eef2ff", "#ecfdf5", "#18181b"])" />
+            <HelixSwitch Label="Elevated" @bind-Checked="_elevated" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Hoverable" @bind-Checked="_hoverable" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Actions" @bind-Checked="_actions" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Footer" @bind-Checked="_footer" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example WpfCode="@Wpf2" Title="Statistiques" Code="@StatsCode">
+        <div class="grid-3">
+            @foreach (var (label, value, delta, up) in Stats)
+            {
+                <HelixCard Hoverable="true">
+                    <p class="muted" style="margin:0 0 8px;font-size:13px">@label</p>
+                    <div class="row" style="justify-content:space-between">
+                        <span style="font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--helix-text)">@value</span>
+                        <HelixBadge Color="@(up ? "success" : "danger")">@delta</HelixBadge>
+                    </div>
+                </HelixCard>
+            }
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixCard Title="Production du jour" Subtitle="Mise à jour il y a 2 min" IsElevated="True"
+                       Padding="20" CornerRadius="16">
+            <helix:HelixCard.Actions>
+                <helix:HelixButton Icon="refresh" Variant="Ghost" Tone="Neutral" Padding="0" Width="32" />
+            </helix:HelixCard.Actions>
+            <TextBlock Text="Contenu de la carte" />
+            <helix:HelixCard.Footer>
+                <helix:HelixButton Content="Exporter" Size="Sm" />
+            </helix:HelixCard.Footer>
+        </helix:HelixCard>
+        """;
+
+    private const string Wpf2 = """
+        <UniformGrid Columns="3">
+            <helix:HelixCard><helix:HelixStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" /></helix:HelixCard>
+            <helix:HelixCard><helix:HelixStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0.8" /></helix:HelixCard>
+            <helix:HelixCard><helix:HelixStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" /></helix:HelixCard>
+        </UniformGrid>
+        """;
+
+    private static readonly (string, string, string, bool)[] Stats =
+        [("Revenus", "48 290 €", "+12,4 %", true), ("Clients", "1 284", "+3,1 %", true), ("Désabonnements", "2,4 %", "+0,3 %", false)];
+
+    private string? _title = "Abonnement Pro";
+    private string? _subtitle = "Renouvelé le 1er de chaque mois";
+    private string? _bg;
+    private double _padding = 20;
+    private bool _elevated, _hoverable, _actions = true, _footer = true;
+
+    private string? Padding => _padding == 20 ? null : $"{N(_padding)}px";
+
+    private string Code
+    {
+        get
+        {
+            var actions = _actions ? "\n    <Actions><HelixBadge Color=\"success\" Dot>Actif</HelixBadge></Actions>" : "";
+            var footer = _footer ? "\n    <Footer>\n        <HelixButton Variant=\"HelixVariant.Ghost\">Annuler</HelixButton>\n        <HelixButton>Valider</HelixButton>\n    </Footer>" : "";
+            var content = actions.Length + footer.Length > 0 ? "\n    <ChildContent>Le contenu…</ChildContent>" : "Le contenu…";
+            var close = actions.Length + footer.Length > 0 ? "\n" : "";
+            return $"<HelixCard{A("Title", _title)}{A("Subtitle", _subtitle)}{A("Padding", Padding)}{A("Background", _bg)}{B("Elevated", _elevated)}{B("Hoverable", _hoverable)}>{actions}{content}{footer}{close}</HelixCard>";
+        }
+    }
+
+    private const string StatsCode = """
+        <HelixCard Hoverable>
+            <p>Revenus</p>
+            <strong>48 290 €</strong>
+            <HelixBadge Color="success">+12,4 %</HelixBadge>
+        </HelixCard>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Title / Subtitle", "string", null, "En-tête simple."),
+        new("Actions", "RenderFragment", null, "Contenu à droite du titre."),
+        new("Header", "RenderFragment", null, "Remplace tout l'en-tête."),
+        new("Footer", "RenderFragment", null, "Pied avec fond légèrement teinté."),
+        new("Elevated", "bool", null, "Ombre à la place de la bordure."),
+        new("Hoverable", "bool", null, "Se soulève au survol."),
+        new("Padding", "string", "--helix-card-padding", "Espacement intérieur."),
+        new("Radius", "string", "--helix-card-radius", "Arrondi."),
+        new("Background", "string", "--helix-card-bg", "Fond."),
+        new("BorderColor", "string", "--helix-card-border", "Bordure."),
+    ];
+}

@@ -1,0 +1,56 @@
+@page "/components/donut"
+@using System.Globalization
+@using static Helix.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Donut" Description="Répartition d'un tout en quelques parts (6 au maximum ; au-delà, les plus petites sont regroupées dans « Autres »). Survolez une part ou la légende : le centre affiche son détail. Pour comparer des valeurs proches, préférez une BarList, plus précise.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:560px">
+                <HelixDonut Title="Mix de production" Subtitle="Aujourd'hui" Items="Mix" Unit="MWh" ValueFormat="N0" Shape="_shape"
+                           MaxParts="(int)_max" Thickness="_thickness" Culture="French" />
+            </div>
+        </Preview>
+        <Controls>
+            <Choice TEnum="HelixPartShape" Label="Shape" @bind-Value="_shape" />
+            <HelixSlider Label="MaxParts" @bind-Value="_max" Min="3" Max="7" />
+            <HelixSlider Label="Thickness" @bind-Value="_thickness" Min="6" Max="20" />
+        </Controls>
+    </Playground>
+
+    <ApiTable Title="HelixDonut" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixDonut Title="Mix énergétique" Unit="GWh" MaxParts="6" CenterLabel="Total"
+                        Items="{Binding Mix}" ItemClick="OnPartClick" />
+        <helix:HelixDonut Shape="SegmentedBar" Items="{Binding Shares}" Unit="%" ValueFormat="0" />
+
+        // ViewModel
+        Mix = [new HelixPart("Nucléaire", 312), new HelixPart("Hydraulique", 64), new HelixPart("Éolien", 48, "series-3")];
+        """;
+
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+
+    private static readonly HelixPart[] Mix =
+    [
+        new("Nucléaire", 980), new("Éolien", 310), new("Hydraulique", 240), new("Solaire", 160),
+        new("Gaz", 120), new("Bioénergies", 45), new("Charbon", 12),
+    ];
+
+    private HelixPartShape _shape;
+    private double _max = 6, _thickness = 12;
+
+    private string Code =>
+        $"<HelixDonut Title=\"Mix de production\" Items=\"mix\" Unit=\"MWh\"{A("Shape", _shape, HelixPartShape.Donut)}{(_max == 6 ? "" : $" MaxParts=\"{N(_max)}\"")}{(_thickness == 12 ? "" : $" Thickness=\"{N(_thickness)}\"")} />\n\n// new HelixPart(\"Éolien\", 310), new HelixPart(\"Solaire\", 160, Color: \"warning\")…";
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items", "IEnumerable<HelixPart>", null, "HelixPart(Label, Value, Color?) ; couleurs de la palette des séries par défaut."),
+        new("Shape", "HelixPartShape", null, "Donut ou SegmentedBar (barre segmentée, plus facile à lire d'un coup d'œil)."),
+        new("MaxParts / OtherLabel / Sort", "int / string / bool", null, "6 parts max, le reste dans « Autres » ; tri décroissant."),
+        new("CenterLabel / Unit / ValueFormat", "string", null, "Texte sous le total, unité, format."),
+        new("Thickness / Size", "double / string", "--helix-donut-size", "Épaisseur de l'anneau ; diamètre."),
+        new("ShowTableToggle / OnItemClick", "bool / EventCallback<HelixPart>", null, "Vue tableau ; clic sur une part."),
+    ];
+}

@@ -1,0 +1,43 @@
+@page "/components/emptystate"
+
+<DemoPage Title="EmptyState" Description="Ce qu'on affiche quand il n'y a rien : expliquer pourquoi, et proposer l'action suivante.">
+    <Example WpfCode="@Wpf1" Title="Variantes" Code="@Code">
+        <div class="grid-3">
+            <HelixEmptyState Framed="true" Icon="calendar" Title="Aucune demande planifiée" Description="Planifiez une demande pour la voir apparaître dans la timeline.">
+                <Actions><HelixButton Icon="plus" Size="HelixSize.Sm">Planifier</HelixButton></Actions>
+            </HelixEmptyState>
+            <HelixEmptyState Framed="true" Icon="search" Title="Aucun résultat" Description="Essayez un autre mot-clé ou retirez des filtres.">
+                <Actions><HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm">Effacer les filtres</HelixButton></Actions>
+            </HelixEmptyState>
+            <HelixEmptyState Framed="true" Icon="success" Color="success" Title="Tout est à jour" Description="Aucune alerte en cours." />
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixEmptyState" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixEmptyState Icon="search" Title="Aucun résultat"
+                             Description="Aucun rapport ne correspond à ces filtres.">
+            <helix:HelixEmptyState.Actions>
+                <helix:HelixButton Content="Effacer les filtres" Variant="Soft" />
+            </helix:HelixEmptyState.Actions>
+        </helix:HelixEmptyState>
+        <helix:HelixEmptyState Icon="bell" Title="Tout est lu" Tone="Success" Padding="12" />
+        """;
+
+    private const string Code = """
+        <HelixEmptyState Icon="calendar" Title="Aucune demande planifiée" Description="Planifiez une demande…">
+            <Actions><HelixButton Icon="plus">Planifier</HelixButton></Actions>
+        </HelixEmptyState>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Icon / Title / Description", "string", null, "Illustration et textes."),
+        new("Actions", "RenderFragment", null, "Boutons d'action."),
+        new("Compact / Framed", "bool", null, "Version réduite ; cadre en pointillés."),
+        new("Color", "string", "--helix-empty-color", "Couleur de l'illustration."),
+    ];
+}

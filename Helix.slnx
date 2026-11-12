@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/Helix.Demo/Helix.Demo.csproj" />
+    <Project Path="samples/Helix.Wpf.Demo/Helix.Wpf.Demo.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Helix.Blazor/Helix.Blazor.csproj" />
+    <Project Path="src/Helix.Wpf/Helix.Wpf.csproj" />
+  </Folder>
+</Solution>

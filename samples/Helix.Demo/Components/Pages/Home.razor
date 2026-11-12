@@ -1,0 +1,126 @@
+@page "/"
+@inject HelixToastService Toasts
+
+<PageTitle>Helix UI · Composants Blazor et WPF</PageTitle>
+
+<div class="demo-page">
+    <section class="hero">
+        <HelixBadge Color="primary" Dot="true" Class="hero__badge">v0.1 · Blazor · WPF · .NET 10</HelixBadge>
+        <h1 class="hero__title">Des composants Blazor et WPF <em>beaux par défaut</em>, simples à personnaliser.</h1>
+        <p class="hero__lead">
+            Helix UI vous donne des composants épurés et accessibles. Chaque détail visuel est un paramètre :
+            pas de template à copier, pas de CSS à combattre.
+        </p>
+        <div class="row">
+            <HelixButton Size="HelixSize.Lg" IconEnd="arrow-right" OnClick="@(() => Nav.NavigateTo("getting-started"))">Commencer</HelixButton>
+            <HelixButton Size="HelixSize.Lg" Variant="HelixVariant.Outline" Color="neutral" Icon="settings" OnClick="@(() => Nav.NavigateTo("customization"))">Personnalisation</HelixButton>
+        </div>
+    </section>
+
+    <section class="showcase">
+        <HelixCard Title="Créer un compte" Subtitle="Quelques secondes suffisent." Elevated="true">
+            <ChildContent>
+                <div class="stack">
+                    <div class="grid-2">
+                        <HelixTextField Label="Prénom" @bind-Value="_firstName" Placeholder="Ada" />
+                        <HelixTextField Label="Nom" @bind-Value="_lastName" Placeholder="Lovelace" />
+                    </div>
+                    <HelixTextField Label="Email" Icon="mail" @bind-Value="_email" Placeholder="ada@exemple.fr" Clearable="true"
+                                   Error="@(_email is { Length: > 0 } && !_email.Contains('@') ? "Adresse invalide" : null)" />
+                    <HelixSelect Label="Rôle" Items="_roles" @bind-Value="_role" />
+                    <HelixCheckbox @bind-Checked="_terms" Label="J'accepte les conditions d'utilisation" />
+                </div>
+            </ChildContent>
+            <Footer>
+                <HelixButton Variant="HelixVariant.Ghost" Color="neutral">Annuler</HelixButton>
+                <HelixButton Disabled="!_terms" Loading="_saving" OnClick="Save">Créer le compte</HelixButton>
+            </Footer>
+        </HelixCard>
+
+        <div class="stack">
+            <HelixCard Title="Notifications" Subtitle="Choisissez ce que vous recevez.">
+                <Actions><HelixBadge Color="success" Dot="true">Actif</HelixBadge></Actions>
+                <ChildContent>
+                    <div class="stack">
+                        <HelixSwitch @bind-Checked="_n1" Label="Nouveaux commentaires" />
+                        <HelixSwitch @bind-Checked="_n2" Label="Mentions" Color="#10b981" />
+                        <HelixSwitch @bind-Checked="_n3" Label="Résumé hebdomadaire" Color="#f59e0b" ThumbOnColor="#fff7ed" />
+                        <HelixSlider Label="Volume" @bind-Value="_volume" Format="@(v => $"{v:0} %")" />
+                    </div>
+                </ChildContent>
+            </HelixCard>
+            <HelixCard>
+                <div class="row" style="justify-content:space-between">
+                    <HelixAvatarGroup>
+                        <HelixAvatar Name="Ada Lovelace" />
+                        <HelixAvatar Name="Alan Turing" />
+                        <HelixAvatar Name="Grace Hopper" />
+                        <HelixAvatar Name="Linus Torvalds" />
+                    </HelixAvatarGroup>
+                    <HelixTooltip Text="Inviter un membre">
+                        <HelixButton Variant="HelixVariant.Soft" Icon="plus" aria-label="Inviter" />
+                    </HelixTooltip>
+                </div>
+                <div style="margin-top:16px">
+                    <HelixProgress Label="Stockage" Value="68" ShowValue="true" />
+                </div>
+            </HelixCard>
+        </div>
+    </section>
+
+    <section class="features">
+        <HelixCard>
+            <span class="feature__icon"><HelixIcon Name="sparkles" Size="18" /></span>
+            <p class="feature__title">Beau sans effort</p>
+            <p class="feature__text">Typographie, espacements, ombres et animations soignés. Clair et sombre inclus.</p>
+        </HelixCard>
+        <HelixCard>
+            <span class="feature__icon"><HelixIcon Name="settings" Size="18" /></span>
+            <p class="feature__title">Un paramètre, pas un template</p>
+            <p class="feature__text"><code>&lt;HelixSwitch ThumbColor="#f59e0b" /&gt;</code> : la pastille change, c'est tout.</p>
+        </HelixCard>
+        <HelixCard>
+            <span class="feature__icon"><HelixIcon Name="lock" Size="18" /></span>
+            <p class="feature__title">Votre CSS gagne toujours</p>
+            <p class="feature__text">Styles en spécificité zéro : une simple classe surcharge Helix, sans <code>!important</code>.</p>
+        </HelixCard>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Composants</h2>
+        <p class="demo-section__text">Chaque page a un playground : réglez les paramètres et copiez le code généré.</p>
+        <div class="comp-grid">
+            @foreach (var item in DemoNav.Components)
+            {
+                <a class="comp-link" href="@item.Href">
+                    <HelixCard Hoverable="true" Padding="18px">
+                        <div class="comp-link__head">
+                            <span class="comp-link__title">@item.Title</span>
+                            <HelixIcon Name="arrow-right" Size="15" Class="comp-link__arrow" />
+                        </div>
+                        <p class="comp-link__text">@item.Description</p>
+                    </HelixCard>
+                </a>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private readonly string[] _roles = ["Développeur", "Designer", "Product manager", "Autre"];
+    private string? _firstName, _lastName, _email;
+    private string? _role = "Développeur";
+    private bool _terms, _saving;
+    private bool _n1 = true, _n2 = true, _n3;
+    private double _volume = 60;
+
+    private async Task Save()
+    {
+        _saving = true;
+        await Task.Delay(900);
+        _saving = false;
+        Toasts.Success($"Bienvenue {(_firstName is { Length: > 0 } ? _firstName : "à bord")} !", "Compte créé");
+    }
+}

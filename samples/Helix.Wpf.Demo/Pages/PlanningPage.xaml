@@ -1,0 +1,16 @@
+<UserControl x:Class="Helix.Wpf.Demo.Pages.PlanningPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Timeline" />
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Des éléments sur un axe du temps, par couloir, avec la ligne « maintenant » en direct. En mode édition : glisser pour déplacer, tirer un bord pour allonger, flèches pour décaler (Maj + flèches pour la fin)." />
+
+        <helix:HelixTimeline x:Name="Schedule" Title="Planning des équipes" SlotDuration="1:00:00" LaneHeader="ÉQUIPE" IsEditable="True" AllowLaneChange="True"
+                           IsCollapsible="True" SnapTo="0:15:00" Margin="0,0,0,32" />
+
+        <helix:HelixTimeline x:Name="Demand" Title="Time schedule" SlotDuration="0:15:00" Layout="Staircase" SlotMinWidth="150"
+                           NowBrush="#F15A24" Margin="0,0,0,32" />
+    </StackPanel>
+</UserControl>

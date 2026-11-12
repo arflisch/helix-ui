@@ -1,0 +1,66 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+<div @attributes="Attributes" class="@ClassValue" style="@StyleValue">
+    <div class="helix-tabs__list" role="tablist">
+        @for (var i = 0; i < _tabs.Count; i++)
+        {
+            var index = i;
+            var tab = _tabs[i];
+            var active = index == ActiveIndex;
+            <button type="button"
+                    role="tab"
+                    aria-selected="@(active ? "true" : "false")"
+                    class="@(new CssBuilder("helix-tabs__tab").Add("is-active", active).Build())"
+                    disabled="@tab.Disabled"
+                    @onclick="() => Activate(index)">
+                @if (!string.IsNullOrEmpty(tab.Icon))
+                {
+                    <HelixIcon Name="@tab.Icon" Size="15" />
+                }
+                @tab.Title
+            </button>
+        }
+    </div>
+    @if (ActiveIndex >= 0 && ActiveIndex < _tabs.Count)
+    {
+        <div class="helix-tabs__panel" role="tabpanel" @key="ActiveIndex">@_tabs[ActiveIndex].ChildContent</div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public int ActiveIndex { get; set; }
+    [Parameter] public EventCallback<int> ActiveIndexChanged { get; set; }
+    [Parameter] public HelixTabsVariant Variant { get; set; } = HelixTabsVariant.Underline;
+
+    /// <summary>Indicator / active color.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    private readonly List<HelixTab> _tabs = [];
+
+    private string ClassValue => new CssBuilder("helix-tabs").Add($"helix-tabs--{Variant.Css()}").Add(Class).Build();
+    private string? StyleValue => new StyleBuilder().Color("tabs", Color).Raw(Style).Build();
+
+    internal void Register(HelixTab tab)
+    {
+        _tabs.Add(tab);
+        StateHasChanged();
+    }
+
+    internal void Unregister(HelixTab tab)
+    {
+        if (_tabs.Remove(tab))
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task Activate(int index)
+    {
+        ActiveIndex = index;
+        await ActiveIndexChanged.InvokeAsync(index);
+    }
+}

@@ -1,0 +1,325 @@
+@page "/customization"
+@inject DemoThemeState ThemeState
+
+<DemoPage Title="Personnalisation" Eyebrow="Guide"
+          Description="Changer la couleur de la pastille d'un switch ne devrait jamais demander de copier un template. Avec Helix, il y a trois niveaux, du plus local au plus global, et vous choisissez le plus simple pour votre besoin.">
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">1</span>
+            <div>
+                <h2 class="demo-section__title">Un paramètre sur le composant</h2>
+                <p class="demo-section__text">
+                    Chaque partie visuelle est un paramètre nommé simplement. Pour un switch : <code>Color</code> (piste active),
+                    <code>TrackColor</code>, <code>ThumbColor</code>, <code>ThumbOnColor</code>, <code>Radius</code>.
+                </p>
+                <div class="demo-example">
+                    <div class="demo-example__stage row" style="gap:28px">
+                        <HelixSwitch @bind-Checked="_a" Label="Par défaut" />
+                        <HelixSwitch @bind-Checked="_a" Label="Pastille ambre" ThumbColor="#f59e0b" />
+                        <HelixSwitch @bind-Checked="_a" Label="Vert + pastille" Color="success" ThumbOnColor="#dcfce7" />
+                        <HelixSwitch @bind-Checked="_a" Label="Carré" Radius="6px" Color="#18181b" />
+                    </div>
+                    <CodeBlock Flush="true" Code="@Level1Code" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">2</span>
+            <div>
+                <h2 class="demo-section__title">Le thème : toute l'application d'un coup</h2>
+                <p class="demo-section__text">
+                    <code>HelixTheme</code> règle les couleurs, l'arrondi, la densité et la police. <code>Set()</code> accepte n'importe quelle
+                    variable Helix, par exemple <code>switch-thumb</code> pour toutes les pastilles. Modifiez ce thème : il s'applique à tout ce site.
+                </p>
+                <div class="pg">
+                    <div class="pg__stage">
+                        <HelixCard Title="Aperçu du thème" Subtitle="Tous les composants suivent." Style="width:100%;max-width:380px">
+                            <ChildContent>
+                                <div class="stack">
+                                    <HelixTextField Label="Projet" Value="Helix UI" />
+                                    <HelixSwitch @bind-Checked="_b" Label="Publier" />
+                                    <div class="row">
+                                        <HelixBadge Color="primary">Nouveau</HelixBadge>
+                                        <HelixBadge Color="success" Dot="true">En ligne</HelixBadge>
+                                    </div>
+                                </div>
+                            </ChildContent>
+                            <Footer>
+                                <HelixButton Variant="HelixVariant.Outline" Color="neutral">Annuler</HelixButton>
+                                <HelixButton>Enregistrer</HelixButton>
+                            </Footer>
+                        </HelixCard>
+                    </div>
+                    <aside class="pg__controls">
+                        <ColorPicker Label="Primary" Value="@Theme.Primary" ValueChanged="v => Apply(() => Theme.Primary = v is null || v.StartsWith('#') ? v : null)"
+                                     Colors="@(["#0ea5e9", "#10b981", "#f59e0b", "#e11d48", "#8b5cf6", "#18181b"])" />
+                        <HelixSlider Label="Radius" Value="_radius" Min="0" Max="20" ValueChanged="SetRadius" Format="@(v => $"{v} px")" />
+                        <HelixSlider Label="Hauteur des contrôles" Value="_height" Min="30" Max="46" ValueChanged="SetHeight" Format="@(v => $"{v} px")" />
+                        <ColorPicker Label="switch-thumb (toutes les pastilles)" Value="@_thumb" ValueChanged="v => Apply(() => SetThumb(v))"
+                                     Colors="@(["#fef3c7", "#e0e7ff", "#18181b"])" />
+                        <HelixSwitch Label="Boutons en pilule" Checked="_pill" CheckedChanged="v => Apply(() => SetPill(v))" />
+                        <HelixSwitch Label="Mode sombre" Checked="@(Theme.Mode == HelixThemeMode.Dark)"
+                                    CheckedChanged="v => Apply(() => Theme.Mode = v ? HelixThemeMode.Dark : HelixThemeMode.Light)" />
+                        <HelixButton Variant="HelixVariant.Soft" Color="neutral" Size="HelixSize.Sm" OnClick="Reset">Réinitialiser</HelixButton>
+                    </aside>
+                </div>
+                <CodeBlock Language="c#" Code="@ThemeCode" />
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">3</span>
+            <div>
+                <h2 class="demo-section__title">Des valeurs par défaut pour chaque composant</h2>
+                <p class="demo-section__text">
+                    Réglez une fois, dans <code>Program.cs</code>, l'apparence et le comportement par défaut de chaque composant :
+                    tous les switches orange, tous les boutons à 6 px, des champs compacts, des grilles denses…
+                    Un paramètre posé sur un composant garde toujours la priorité.
+                </p>
+                <div class="pg">
+                    <div class="pg__stage">
+                        <HelixProvider Theme="ThemeState.Theme" Options="_defaults" ShowHosts="false" Style="width:100%;max-width:400px">
+                            <HelixCard Title="Réglages" Subtitle="Aucun paramètre posé ici.">
+                                <ChildContent>
+                                    <div class="stack">
+                                        <HelixSwitch @bind-Checked="_d1" Label="Pilote automatique" Description="Contrôle les volumes." />
+                                        <HelixSwitch @bind-Checked="_d2" Label="Alertes" />
+                                        <HelixTextField Label="Nom" Value="Helix UI" />
+                                        <HelixNumberField Label="Volume" Value="42" Unit="MW" />
+                                        <div class="row"><HelixBadge>Brouillon</HelixBadge><HelixBadge Color="success">Publié</HelixBadge></div>
+                                    </div>
+                                </ChildContent>
+                                <Footer>
+                                    <HelixButton Color="neutral" Variant="HelixVariant.Ghost">Annuler</HelixButton>
+                                    <HelixButton>Enregistrer</HelixButton>
+                                </Footer>
+                            </HelixCard>
+                        </HelixProvider>
+                    </div>
+                    <aside class="pg__controls">
+                        <ColorPicker Label="Defaults.Switch.Color" Value="@_defaults.Defaults.Switch.Color" ValueChanged="v => _defaults.Defaults.Switch.Color = v"
+                                     Colors="@(["#ff8a00", "#10b981", "#8b5cf6", "#18181b"])" />
+                        <Choice TEnum="HelixLabelPosition" Label="Defaults.Switch.LabelPosition" Value="@(_defaults.Defaults.Switch.LabelPosition ?? HelixLabelPosition.End)"
+                                ValueChanged="v => _defaults.Defaults.Switch.LabelPosition = v" />
+                        <Choice TEnum="HelixVariant" Label="Defaults.Button.Variant" Value="@(_defaults.Defaults.Button.Variant ?? HelixVariant.Solid)"
+                                ValueChanged="v => _defaults.Defaults.Button.Variant = v" />
+                        <HelixSlider Label="Defaults.Button.Radius" Value="_btnRadius" Min="0" Max="20" ValueChanged="SetButtonRadius" Format="@(v => $"{v} px")" />
+                        <Choice TEnum="HelixBadgeVariant" Label="Defaults.Badge.Variant" Value="@(_defaults.Defaults.Badge.Variant ?? HelixBadgeVariant.Soft)"
+                                ValueChanged="v => _defaults.Defaults.Badge.Variant = v" />
+                        <HelixSwitch Label="Champs compacts (Field.Height)" Size="HelixSize.Sm" Checked="@(_defaults.Defaults.Field.Height is not null)"
+                                    CheckedChanged="SetCompact" />
+                        <HelixSwitch Label="Sans boutons − / + (Field.ShowSteppers)" Size="HelixSize.Sm" Checked="@(_defaults.Defaults.Field.ShowSteppers == false)"
+                                    CheckedChanged="v => _defaults.Defaults.Field.ShowSteppers = v ? false : null" />
+                    </aside>
+                </div>
+                <CodeBlock Language="c#" Code="@DefaultsCode" />
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">4</span>
+            <div>
+                <h2 class="demo-section__title">Les textes intégrés, dans votre langue</h2>
+                <p class="demo-section__text">
+                    Boutons, états vides, libellés pour lecteurs d'écran : tous les textes écrits par les composants viennent de
+                    <code>HelixTexts</code>. Français et anglais sont fournis et choisis selon la culture ; remplacez-en un seul
+                    ou fournissez une autre langue avec <code>with { … }</code>.
+                </p>
+                <div class="demo-example">
+                    <div class="demo-example__stage" style="display:grid;gap:16px">
+                        <Choice TEnum="Language" Label="Texts" @bind-Value="_language" />
+                        <HelixProvider Theme="ThemeState.Theme" Options="LanguageOptions" ShowHosts="false" Style="display:grid;gap:16px">
+                            <div class="row" style="gap:16px;align-items:flex-end">
+                                <HelixSelect TValue="string" Label="Select" Items="_fruits" Style="min-width:180px" />
+                                <HelixDatePicker Label="DatePicker" Style="min-width:200px" />
+                            </div>
+                            <HelixPagination Page="2" TotalItems="87" PageSize="10" ShowInfo="true" ShowLabels="true" />
+                            <HelixDataGrid TItem="string" Items="Array.Empty<string>()" Searchable="true" PageSize="0">
+                                <HelixColumn TItem="string" Field="x => x" Title="Nom" />
+                            </HelixDataGrid>
+                        </HelixProvider>
+                    </div>
+                    <CodeBlock Flush="true" Language="c#" Code="@TextsCode" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="level">
+            <span class="level__num">5</span>
+            <div>
+                <h2 class="demo-section__title">Du CSS normal, qui gagne toujours</h2>
+                <p class="demo-section__text">
+                    Les styles Helix sont écrits dans <code>:where()</code> : leur spécificité est nulle. Une simple classe suffit à les surcharger,
+                    sans <code>!important</code>. Chaque partie a une classe stable (<code>.helix-switch__thumb</code>, <code>.helix-btn</code>…)
+                    et lit une variable <code>--helix-*</code>.
+                </p>
+                <div class="demo-example">
+                    <div class="demo-example__stage row" style="gap:28px">
+                        <style>
+                            .glow .helix-switch__thumb { box-shadow: 0 0 0 4px rgb(236 72 153 / .25), 0 1px 3px rgb(0 0 0 / .3); }
+                            .brand { --helix-switch-color: #ec4899; --helix-btn-color: #ec4899; --helix-btn-radius: 999px; }
+                        </style>
+                        <HelixSwitch @bind-Checked="_c" Label="Classe .glow" Class="glow" Color="#ec4899" />
+                        <div class="brand row">
+                            <HelixSwitch @bind-Checked="_c" Label="Variables dans .brand" />
+                            <HelixButton>Bouton .brand</HelixButton>
+                        </div>
+                    </div>
+                    <CodeBlock Flush="true" Language="css" Code="@Level3Code" />
+                </div>
+            </div>
+        </div>
+    </section>
+</DemoPage>
+
+@code {
+    private HelixTheme Theme => ThemeState.Theme;
+
+    private enum Language { Français, English, Personnalisé }
+
+    private bool _a = true, _b = true, _c = true, _pill, _d1 = true, _d2;
+    private double _btnRadius = 10;
+    private Language _language = Language.English;
+    private readonly HelixOptions _defaults = CreateDefaults();
+    private readonly string[] _fruits = ["Pomme", "Poire", "Kiwi"];
+
+    private static readonly HelixOptions French = new() { Texts = HelixTexts.French };
+    private static readonly HelixOptions English = new() { Texts = HelixTexts.English };
+    private static readonly HelixOptions Custom = new() { Texts = HelixTexts.English with { SelectPlaceholder = "Pick one…", NoData = "Nothing here yet", Search = "Find…" } };
+
+    private HelixOptions LanguageOptions => _language switch { Language.Français => French, Language.English => English, _ => Custom };
+
+    private static HelixOptions CreateDefaults()
+    {
+        var options = new HelixOptions { Texts = HelixTexts.French };
+        options.Defaults.Switch.Color = "#ff8a00";
+        return options;
+    }
+
+    private void SetCompact(bool value) => _defaults.Defaults.Field.Height = value ? "32px" : null;
+
+    private void SetButtonRadius(double value)
+    {
+        _btnRadius = value;
+        _defaults.Defaults.Button.Radius = $"{value}px";
+    }
+
+    private const string DefaultsCode = """
+        builder.Services.AddVelo(o =>
+        {
+            o.Defaults.Switch.Color = "#ff8a00";
+            o.Defaults.Switch.LabelPosition = HelixLabelPosition.Start;
+            o.Defaults.Button.Variant = HelixVariant.Soft;
+            o.Defaults.Button.Radius = "6px";
+            o.Defaults.Field.Height = "32px";         // champs compacts
+            o.Defaults.Field.ShowSteppers = false;
+            o.Defaults.DataGrid.Density = HelixSize.Sm;
+            o.Defaults.Tooltip.Placement = HelixPlacement.Bottom;
+        });
+
+        // Une section différente ? Un HelixProvider imbriqué avec ses propres options :
+        // <HelixProvider Options="compactOptions" ShowHosts="false">…</HelixProvider>
+        """;
+
+    private const string TextsCode = """
+        // Par défaut : français si la culture est française, anglais sinon.
+        builder.Services.AddVelo(o => o.Texts = HelixTexts.French);
+
+        // Changer quelques textes, ou toute une langue :
+        builder.Services.AddVelo(o => o.Texts = HelixTexts.English with
+        {
+            SelectPlaceholder = "Pick one…",
+            NoData = "Nothing here yet",
+        });
+        """;
+    private double _radius = 10, _height = 38;
+    private string? _thumb;
+
+    private void Apply(Action change)
+    {
+        change();
+        ThemeState.Notify();
+    }
+
+    private void SetRadius(double value) => Apply(() =>
+    {
+        _radius = value;
+        Theme.Radius = $"{value}px";
+    });
+
+    private void SetHeight(double value) => Apply(() =>
+    {
+        _height = value;
+        Theme.ControlHeight = $"{value}px";
+    });
+
+    private void SetThumb(string? value)
+    {
+        _thumb = value;
+        if (value is null) Theme.Variables.Remove("switch-thumb");
+        else Theme.Set("switch-thumb", value);
+    }
+
+    private void SetPill(bool value)
+    {
+        _pill = value;
+        if (value) Theme.Set("btn-radius", "999px");
+        else Theme.Variables.Remove("btn-radius");
+    }
+
+    private void Reset()
+    {
+        Theme.Primary = null;
+        Theme.Radius = null;
+        Theme.ControlHeight = null;
+        Theme.Variables.Clear();
+        _radius = 10;
+        _height = 38;
+        _thumb = null;
+        _pill = false;
+        ThemeState.Notify();
+    }
+
+    private string ThemeCode
+    {
+        get
+        {
+            var lines = new List<string>();
+            if (Theme.Mode == HelixThemeMode.Dark) lines.Add("    Mode = HelixThemeMode.Dark,");
+            if (Theme.Primary is not null) lines.Add($"    Primary = \"{Theme.Primary}\",");
+            if (Theme.Radius is not null) lines.Add($"    Radius = \"{Theme.Radius}\",");
+            if (Theme.ControlHeight is not null) lines.Add($"    ControlHeight = \"{Theme.ControlHeight}\",");
+            var body = lines.Count == 0 ? "" : "\n" + string.Join("\n", lines) + "\n";
+            var sets = string.Concat(Theme.Variables.Select(v => $"\n    .Set(\"{v.Key}\", \"{v.Value}\")"));
+            return $"var theme = new HelixTheme {{{body}}}{sets};\n\n// MainLayout.razor\n<HelixProvider Theme=\"theme\">@Body</HelixProvider>";
+        }
+    }
+
+    private const string Level1Code = """
+        <HelixSwitch @bind-Checked="on" Label="Pastille ambre" ThumbColor="#f59e0b" />
+        <HelixSwitch @bind-Checked="on" Label="Vert + pastille" Color="success" ThumbOnColor="#dcfce7" />
+        <HelixSwitch @bind-Checked="on" Label="Carré" Radius="6px" Color="#18181b" />
+        """;
+
+    private const string Level3Code = """
+        /* Une classe sur un composant */
+        .glow .helix-switch__thumb { box-shadow: 0 0 0 4px rgb(236 72 153 / .25); }
+
+        /* Ou des variables sur une zone entière */
+        .brand {
+            --helix-switch-color: #ec4899;
+            --helix-btn-color: #ec4899;
+            --helix-btn-radius: 999px;
+        }
+        """;
+}

@@ -1,0 +1,255 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@using System.Globalization
+@inject IJSRuntime JS
+
+<div class="@(new CssBuilder("helix-field").Add("is-disabled", Disabled).Add(Class).Build())" style="@Style">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="helix-field__label" for="@_id">@Label</label>
+    }
+    <div class="@(new CssBuilder("helix-select helix-color").Add("is-open", _open).Build())">
+        <button @attributes="Attributes" id="@_id" type="button" class="helix-input helix-select__trigger helix-color__trigger" disabled="@Disabled"
+                aria-haspopup="dialog" aria-expanded="@(_open ? "true" : "false")" @onclick="Toggle">
+            <span class="helix-color__swatch" style="--_v:@(Value ?? "transparent")"></span>
+            <span class="@(new CssBuilder("helix-select__value helix-color__hex").Add("is-placeholder", Value is null).Build())">@(Value ?? Placeholder)</span>
+            <HelixIcon Name="chevron-down" Class="helix-select__chevron" />
+        </button>
+
+        @if (_open)
+        {
+            var pure = HelixColorMath.FromHsv(_h, 1, 1);
+            var hueColor = HelixColorMath.ToHex(pure.R, pure.G, pure.B);
+            var opaque = OpaqueHex;
+            <div class="helix-select__backdrop" @onclick="Close"></div>
+            <div class="helix-color__panel" role="dialog" aria-label="Choisir une couleur">
+                <div class="helix-color__area" @ref="_area" tabindex="0" role="slider"
+                     aria-label="@Texts.SaturationBrightness" aria-valuetext="@HelixTexts.Format(Texts.SaturationBrightnessValue, Math.Round(_s * 100), Math.Round(_v * 100))"
+                     style="--_hue:@hueColor">
+                    <span class="helix-color__area-thumb" style="left:@HelixScale.Pct(_s * 100);top:@HelixScale.Pct((1 - _v) * 100);background:@opaque"></span>
+                </div>
+                <div class="helix-color__controls">
+                    <div class="helix-color__sliders">
+                        <input type="range" class="helix-color__hue" min="0" max="360" step="1" value="@Inv(_h)" aria-label="Teinte" @oninput="OnHue" />
+                        @if (ShowAlpha)
+                        {
+                            <input type="range" class="helix-color__alpha" min="0" max="100" step="1" value="@Inv(_a * 100)" aria-label="@Texts.Opacity"
+                                   style="--_v:@opaque" @oninput="OnAlpha" />
+                        }
+                    </div>
+                    <span class="helix-color__preview" style="--_v:@(Value ?? opaque)"></span>
+                </div>
+                <div class="helix-color__inputs">
+                    <input class="helix-color__hex-input" value="@(Value ?? opaque)" aria-label="@Texts.HexCode" spellcheck="false" maxlength="9" @onchange="OnHexInput" />
+                    @if (ShowAlpha)
+                    {
+                        <span class="helix-color__alpha-text">@Inv(Math.Round(_a * 100)) %</span>
+                    }
+                    @if (_eyeDropper)
+                    {
+                        <button type="button" class="helix-close" aria-label="@Texts.PickFromScreen" title="@Texts.Eyedropper" @onclick="PickFromScreen">
+                            <HelixIcon Svg="<path d='m2 22 1-1h3l9-9M3 21v-3l9-9M15 6l3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3z'/>" Size="15" />
+                        </button>
+                    }
+                </div>
+                @if (Swatches.Count > 0)
+                {
+                    <div class="helix-color__swatches" role="group" aria-label="@Texts.SuggestedColors">
+                        @foreach (var swatch in Swatches)
+                        {
+                            <button type="button" class="@(new CssBuilder("helix-color__preset").Add("is-active", string.Equals(swatch, Value, StringComparison.OrdinalIgnoreCase)).Build())"
+                                    style="--_v:@swatch" aria-label="@swatch" title="@swatch" @onclick="() => SetHex(swatch)"></button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Hint))
+    {
+        <p class="helix-field__hint">@Hint</p>
+    }
+</div>
+
+@code {
+    /// <summary>"#rrggbb", or "#rrggbbaa" when ShowAlpha is on and opacity is below 100 %.</summary>
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Choisir une couleur";
+
+    /// <summary>Opacity slider.</summary>
+    [Parameter] public bool ShowAlpha { get; set; }
+
+    /// <summary>Preset colors (your brand palette…).</summary>
+    [Parameter] public IReadOnlyList<string> Swatches { get; set; } =
+        ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#e11d48", "#8b5cf6", "#ec4899", "#18181b", "#71717a", "#ffffff"];
+
+    [Parameter] public bool Disabled { get; set; }
+
+    private readonly string _id = HelixId.Next("color");
+    private bool _open, _justOpened, _eyeDropper;
+    private double _h, _s, _v = 1, _a = 1;
+    private ElementReference _area;
+    private IJSObjectReference? _module, _areaHandle;
+    private DotNetObjectReference<HelixColorPicker>? _self;
+
+    private string OpaqueHex
+    {
+        get
+        {
+            var (r, g, b) = HelixColorMath.FromHsv(_h, _s, _v);
+            return HelixColorMath.ToHex(r, g, b);
+        }
+    }
+
+    private static string Inv(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private void Toggle()
+    {
+        if (_open)
+        {
+            Close();
+            return;
+        }
+
+        if (HelixColorMath.TryParseHex(Value, out var c))
+        {
+            var (h, s, v) = HelixColorMath.ToHsv(c.R, c.G, c.B);
+            (_s, _v, _a) = (s, v, c.A);
+            if (s > 0.001) _h = h; // keep the previous hue for grays
+        }
+
+        _open = true;
+        _justOpened = true;
+    }
+
+    private void Close() => _open = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_justOpened)
+        {
+            return;
+        }
+
+        _justOpened = false;
+        try
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+            _self ??= DotNetObjectReference.Create(this);
+            if (_areaHandle is not null)
+            {
+                await _areaHandle.InvokeVoidAsync("dispose");
+                await _areaHandle.DisposeAsync();
+            }
+
+            _areaHandle = await _module.InvokeAsync<IJSObjectReference>("attachColorArea", _area, _self);
+            var hadEyeDropper = _eyeDropper;
+            _eyeDropper = await _module.InvokeAsync<bool>("hasEyeDropper");
+            if (_eyeDropper != hadEyeDropper)
+            {
+                StateHasChanged();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit closed.
+        }
+    }
+
+    private Task Emit()
+    {
+        var (r, g, b) = HelixColorMath.FromHsv(_h, _s, _v);
+        Value = HelixColorMath.ToHex(r, g, b, ShowAlpha ? _a : 1);
+        return ValueChanged.InvokeAsync(Value);
+    }
+
+    [JSInvokable]
+    public Task OnArea(double s, double v)
+    {
+        (_s, _v) = (s, v);
+        StateHasChanged();
+        return Emit();
+    }
+
+    [JSInvokable]
+    public Task OnAreaStep(double ds, double dv)
+    {
+        (_s, _v) = (Math.Clamp(_s + ds, 0, 1), Math.Clamp(_v + dv, 0, 1));
+        StateHasChanged();
+        return Emit();
+    }
+
+    private Task OnHue(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var h))
+        {
+            _h = Math.Clamp(h, 0, 359.99);
+            if (_s < 0.01 && _v > 0.99) _s = 1; // moving the hue on pure white would show nothing
+        }
+
+        return Emit();
+    }
+
+    private Task OnAlpha(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var a))
+        {
+            _a = Math.Clamp(a / 100, 0, 1);
+        }
+
+        return Emit();
+    }
+
+    private Task OnHexInput(ChangeEventArgs e) => SetHex(e.Value?.ToString());
+
+    private Task SetHex(string? text)
+    {
+        if (!HelixColorMath.TryParseHex(text, out var c))
+        {
+            return Task.CompletedTask; // invalid input: keep the current color
+        }
+
+        var (h, s, v) = HelixColorMath.ToHsv(c.R, c.G, c.B);
+        (_s, _v) = (s, v);
+        if (s > 0.001) _h = h;
+        if (ShowAlpha) _a = c.A;
+        return Emit();
+    }
+
+    private async Task PickFromScreen()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var picked = await _module.InvokeAsync<string?>("eyeDropper");
+        if (picked is not null)
+        {
+            await SetHex(picked);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_areaHandle is not null)
+            {
+                await _areaHandle.InvokeVoidAsync("dispose");
+                await _areaHandle.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit closed.
+        }
+
+        await HelixJs.DisposeQuietlyAsync(_module);
+        _self?.Dispose();
+    }
+}

@@ -1,0 +1,39 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+
+@{
+    var index = Carousel?.IndexOf(this) ?? 0;
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-carousel__slide").Add(Class).Build())" style="@Style"
+     role="group" aria-roledescription="@Texts.SlideRole" aria-label="@AriaLabelText(index)">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] private HelixCarousel? Carousel { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Name read by screen readers ("2 of 5: Lyon plant").</summary>
+    [Parameter] public string? Label { get; set; }
+
+    private string AriaLabelText(int index)
+    {
+        var position = HelixTexts.Format(Texts.PositionOf, index + 1, Carousel?.Count);
+        return string.IsNullOrEmpty(Label) ? position : $"{position}: {Label}";
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Carousel is null)
+        {
+            throw new InvalidOperationException($"{nameof(HelixCarouselSlide)} must be placed inside a {nameof(HelixCarousel)}.");
+        }
+
+        Carousel.Add(this);
+    }
+
+    public void Dispose() => Carousel?.Remove(this);
+}

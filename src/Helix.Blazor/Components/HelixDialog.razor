@@ -1,0 +1,95 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+@if (Open)
+{
+    <div class="helix-dialog-backdrop" @onclick="OnBackdropClick">
+        <div @attributes="Attributes"
+             @ref="_dialog"
+             class="@(new CssBuilder("helix-dialog").Add(Class).Build())"
+             style="@StyleValue"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="@_titleId"
+             tabindex="-1"
+             @onclick:stopPropagation="true"
+             @onkeydown="OnKeyDown">
+            @if (!string.IsNullOrEmpty(Title) || ShowClose)
+            {
+                <header class="helix-dialog__header">
+                    <div>
+                        @if (!string.IsNullOrEmpty(Title))
+                        {
+                            <h2 class="helix-dialog__title" id="@_titleId">@Title</h2>
+                        }
+                        @if (!string.IsNullOrEmpty(Description))
+                        {
+                            <p class="helix-dialog__description">@Description</p>
+                        }
+                    </div>
+                    @if (ShowClose)
+                    {
+                        <button type="button" class="helix-close" aria-label="@Texts.Close" @onclick="Close">
+                            <HelixIcon Name="x" />
+                        </button>
+                    }
+                </header>
+            }
+            @if (ChildContent is not null)
+            {
+                <div class="helix-dialog__body">@ChildContent</div>
+            }
+            @if (Footer is not null)
+            {
+                <footer class="helix-dialog__footer">@Footer</footer>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public bool ShowClose { get; set; } = true;
+    [Parameter] public bool CloseOnBackdrop { get; set; } = true;
+    [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>Max width, e.g. "640px".</summary>
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Radius { get; set; }
+
+    private readonly string _titleId = HelixId.Next("dialog-title");
+    private ElementReference _dialog;
+    private bool _wasOpen;
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--helix-dialog-width", Width)
+        .Var("--helix-dialog-radius", Radius)
+        .Raw(Style)
+        .Build();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Open && !_wasOpen)
+        {
+            await _dialog.FocusAsync();
+        }
+
+        _wasOpen = Open;
+    }
+
+    public async Task Close()
+    {
+        Open = false;
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private Task OnBackdropClick() => CloseOnBackdrop ? Close() : Task.CompletedTask;
+
+    private Task OnKeyDown(KeyboardEventArgs e) =>
+        CloseOnEscape && e.Key == "Escape" ? Close() : Task.CompletedTask;
+}

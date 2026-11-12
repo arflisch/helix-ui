@@ -1,0 +1,51 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-accordion").Add("helix-accordion--flush", Flush).Add(Class).Build())" style="@Style">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Several sections open at once (otherwise opening one closes the others).</summary>
+    [Parameter] public bool Multiple { get; set; }
+
+    /// <summary>No outer frame, only separators.</summary>
+    [Parameter] public bool Flush { get; set; }
+
+    private readonly List<HelixAccordionItem> _items = [];
+    private readonly HashSet<HelixAccordionItem> _open = [];
+
+    internal void Add(HelixAccordionItem item, bool expanded)
+    {
+        _items.Add(item);
+        if (expanded && (Multiple || _open.Count == 0))
+        {
+            _open.Add(item);
+        }
+    }
+
+    internal void Remove(HelixAccordionItem item)
+    {
+        _items.Remove(item);
+        _open.Remove(item);
+    }
+
+    internal bool IsOpen(HelixAccordionItem item) => _open.Contains(item);
+
+    internal void Toggle(HelixAccordionItem item)
+    {
+        if (!_open.Remove(item))
+        {
+            if (!Multiple)
+            {
+                _open.Clear();
+            }
+
+            _open.Add(item);
+        }
+
+        StateHasChanged();
+    }
+}

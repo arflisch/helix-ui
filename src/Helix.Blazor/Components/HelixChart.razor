@@ -1,0 +1,732 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+@using System.Globalization
+@using System.Text
+
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+@{
+    var model = BuildModel();
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-chart").Add(Class).Build())" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Title) || _series.Count >= 2 || ShowTableToggle || IsZoomed)
+    {
+        <div class="helix-chart__header">
+            <div class="helix-chart__titles">
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h3 class="helix-chart__title">@Title</h3>
+                }
+                @if (!string.IsNullOrEmpty(Subtitle))
+                {
+                    <p class="helix-chart__subtitle">@Subtitle</p>
+                }
+            </div>
+            <div class="helix-chart__actions">
+                @if (IsZoomed)
+                {
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" OnClick="ResetZoom">Tout afficher</HelixButton>
+                }
+                @if (ShowTableToggle)
+                {
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" OnClick="() => _showTable = !_showTable"
+                                aria-pressed="@(_showTable ? "true" : "false")">@(_showTable ? "Graphique" : "Tableau")</HelixButton>
+                }
+            </div>
+        </div>
+    }
+
+    @if (_series.Count >= 2)
+    {
+        <div class="helix-chart__legend" role="group" aria-label="@Texts.Series">
+            @foreach (var series in _series)
+            {
+                var hidden = _hidden.Contains(series);
+                <button type="button" class="@(new CssBuilder("helix-chart__legend-item").Add("is-off", hidden).Build())"
+                        aria-pressed="@(hidden ? "false" : "true")" title="@HelixTexts.Format(hidden ? Texts.ShowSeries : Texts.HideSeries, series.Name)"
+                        @onclick="() => Toggle(series)">
+                    <span class="@($"helix-chart__key helix-chart__key--{KeyShape(series)}{(series.Dashed ? " is-dashed" : "")}")" style="--_s:@ColorOf(series)"></span>
+                    @series.Name
+                </button>
+            }
+        </div>
+    }
+
+    @if (_showTable)
+    {
+        <div class="helix-chart__table-wrap">
+            <table class="helix-chart__table">
+                <thead>
+                    <tr>
+                        <th scope="col">@(XLabel ?? (model?.IsTime == true ? "Heure" : "X"))</th>
+                        @foreach (var series in VisibleSeries)
+                        {
+                            <th scope="col" class="is-end">@series.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (model is not null)
+                    {
+                        @foreach (var x in model.HitXs)
+                        {
+                            <tr>
+                                <th scope="row">@FormatX(x, model, tooltip: true)</th>
+                                @foreach (var view in model.Series)
+                                {
+                                    <td class="is-end">@FormatY(view.Values.GetValueOrDefault(x))</td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (model is null)
+    {
+        <div class="helix-chart__empty" style="height:@Height">@(EmptyText ?? Texts.NoData)</div>
+    }
+    else
+    {
+        <div class="helix-chart__frame">
+            <div class="helix-chart__yaxis" aria-hidden="true">
+                @if (!string.IsNullOrEmpty(Unit))
+                {
+                    <span class="helix-chart__unit">@Unit</span>
+                }
+                @foreach (var tick in model.YTicks)
+                {
+                    <span class="helix-chart__ylabel" style="top:@HelixScale.Pct(model.YPct(tick))">@FormatTick(tick)</span>
+                }
+            </div>
+
+            <div class="helix-chart__plot" style="height:@Height">
+                <svg class="helix-chart__svg" viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label="@(Title ?? "Graphique")">
+                    @foreach (var tick in model.YTicks)
+                    {
+                        var y = model.YPct(tick) * 10;
+                        <line class="@(Math.Abs(tick) < 1e-9 ? "helix-chart__zero" : "helix-chart__grid")" x1="0" x2="1000" y1="@HelixScale.Num(y)" y2="@HelixScale.Num(y)" />
+                    }
+                    @foreach (var view in model.Series)
+                    {
+                        <g class="@(new CssBuilder("helix-chart__series").Add("is-dashed", view.Series.Dashed).Build())" style="--_s:@view.Color">
+                            @if (view.AreaPath is not null)
+                            {
+                                <path class="helix-chart__area" d="@view.AreaPath" />
+                            }
+                            @if (view.LinePath is not null)
+                            {
+                                <path class="helix-chart__line" d="@view.LinePath" />
+                            }
+                            @if (view.MarkerPath is not null)
+                            {
+                                <path class="helix-chart__marker-ring" d="@view.MarkerPath" />
+                                <path class="helix-chart__marker" d="@view.MarkerPath" />
+                            }
+                        </g>
+                    }
+                    @foreach (var line in model.Lines)
+                    {
+                        <line class="@(new CssBuilder("helix-chart__ref").Add("is-dashed", line.Dashed).Build())" style="--_s:@line.Color"
+                              x1="@HelixScale.Num(line.X1)" x2="@HelixScale.Num(line.X2)" y1="@HelixScale.Num(line.Y1)" y2="@HelixScale.Num(line.Y2)" />
+                    }
+                </svg>
+
+                <div class="helix-chart__bars">
+                    @foreach (var view in model.Series)
+                    {
+                        @foreach (var bar in view.Bars)
+                        {
+                            <span class="@(new CssBuilder("helix-chart__bar").Add("is-negative", bar.Negative).Build())"
+                                  style="--_s:@view.Color;left:@HelixScale.Pct(bar.Left);width:@HelixScale.Pct(bar.Width);top:@HelixScale.Pct(bar.Top);height:@HelixScale.Pct(bar.Height)"></span>
+                        }
+                    }
+                </div>
+
+                @foreach (var line in model.Lines.Where(l => !string.IsNullOrEmpty(l.Label)))
+                {
+                    <span class="@(new CssBuilder("helix-chart__ref-label").Add("is-vertical", line.Vertical).Build())"
+                          style="left:@HelixScale.Pct((line.Vertical ? line.X1 : line.X2) / 10);top:@HelixScale.Pct(line.Vertical ? 0 : line.Y1 / 10)">@line.Label</span>
+                }
+
+                @if (model.NowPct is { } nowPct)
+                {
+                    <div class="helix-chart__now" style="left:@HelixScale.Pct(nowPct)">
+                        <span class="helix-chart__now-badge">@_now.ToString("HH:mm", EffectiveCulture)</span>
+                    </div>
+                }
+
+                <div class="helix-chart__hits">
+                    @foreach (var hit in model.Hits)
+                    {
+                        <div class="helix-chart__hit" style="left:@HelixScale.Pct(hit.Left);width:@HelixScale.Pct(hit.Width)">
+                            <span class="helix-chart__cross" style="left:@HelixScale.Pct(hit.Center)"></span>
+                            @foreach (var dot in hit.Dots)
+                            {
+                                <span class="helix-chart__dot" style="left:@HelixScale.Pct(hit.Center);top:@HelixScale.Pct(dot.Top);--_s:@dot.Color"></span>
+                            }
+                            <div class="@(new CssBuilder("helix-chart__tip").Add("is-left", hit.TipLeft).Build())" style="left:@HelixScale.Pct(hit.Center)">
+                                <div class="helix-chart__tip-x">@FormatX(hit.X, model, tooltip: true)</div>
+                                @foreach (var view in model.Series)
+                                {
+                                    <div class="helix-chart__tip-row">
+                                        <span class="helix-chart__tip-key@(view.Series.Dashed ? " is-dashed" : "")" style="--_s:@view.Color"></span>
+                                        <strong>@FormatY(view.Values.GetValueOrDefault(hit.X))</strong>
+                                        <span class="helix-chart__tip-name">@view.Series.Name</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div></div>
+            <div class="helix-chart__xaxis" aria-hidden="true">
+                @foreach (var (pct, label) in model.XTicks)
+                {
+                    <span class="helix-chart__xlabel" style="left:@HelixScale.Pct(pct)">@label</span>
+                }
+            </div>
+        </div>
+
+        @if (ShowNavigator)
+        {
+            <div class="helix-chart__nav">
+                <svg class="helix-chart__nav-svg" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
+                    @foreach (var (color, path) in model.Overview)
+                    {
+                        <path d="@path" style="--_s:@color" />
+                    }
+                </svg>
+                <span class="helix-chart__nav-shade" style="left:0;width:@HelixScale.Pct(_from * 100)"></span>
+                <span class="helix-chart__nav-shade" style="left:@HelixScale.Pct(_to * 100);right:0"></span>
+                <span class="helix-chart__nav-window" style="left:@HelixScale.Pct(_from * 100);width:@HelixScale.Pct((_to - _from) * 100)"></span>
+                <input type="range" class="helix-chart__nav-input" min="0" max="1000" step="1" value="@HelixScale.Num(_from * 1000)"
+                       aria-label="@Texts.WindowStart" @oninput="e => SetWindow(e, start: true)" />
+                <input type="range" class="helix-chart__nav-input" min="0" max="1000" step="1" value="@HelixScale.Num(_to * 1000)"
+                       aria-label="@Texts.WindowEnd" @oninput="e => SetWindow(e, start: false)" />
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Plot height, e.g. "320px".</summary>
+    [Parameter] public string Height { get; set; } = "280px";
+
+    /// <summary>Unit shown above the Y axis and in the tooltip, e.g. "MW".</summary>
+    [Parameter] public string? Unit { get; set; }
+
+    /// <summary>.NET number format for values, e.g. "N0" or "0.0".</summary>
+    [Parameter] public string YFormat { get; set; } = "#,0.##";
+
+    /// <summary>Fixed Y bounds (otherwise computed from the visible data).</summary>
+    [Parameter] public double? YMin { get; set; }
+    [Parameter] public double? YMax { get; set; }
+
+    /// <summary>Fixed X domain (numbers, or HelixTime.ToX(date)). Otherwise the data range.</summary>
+    [Parameter] public double? XMin { get; set; }
+    [Parameter] public double? XMax { get; set; }
+
+    /// <summary>Time domain shortcut for XMin / XMax.</summary>
+    [Parameter] public DateTime? From { get; set; }
+    [Parameter] public DateTime? To { get; set; }
+
+    /// <summary>Header of the first column in the table view.</summary>
+    [Parameter] public string? XLabel { get; set; }
+
+    /// <summary>Custom X label, e.g. x => $"{x} km".</summary>
+    [Parameter] public Func<double, string>? XFormat { get; set; }
+
+    /// <summary>A live vertical line at the current time (time axis only), refreshed every <see cref="NowRefresh"/>.</summary>
+    [Parameter] public bool ShowNow { get; set; }
+    [Parameter] public string? NowColor { get; set; }
+    [Parameter] public TimeSpan NowRefresh { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Overview strip with two handles to zoom on a period.</summary>
+    [Parameter] public bool ShowNavigator { get; set; }
+
+    /// <summary>"Tableau" button: the same data as an accessible table.</summary>
+    [Parameter] public bool ShowTableToggle { get; set; } = true;
+
+    [Parameter] public string? EmptyText { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    /// <summary>Clock used by the now line (inject a fake one in tests).</summary>
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    private readonly List<HelixChartSeries> _series = [];
+    private readonly List<HelixChartLine> _lines = [];
+    private readonly HashSet<HelixChartSeries> _hidden = [];
+    private readonly HelixTicker _ticker = new();
+    private double _from, _to = 1;
+    private bool _showTable;
+    private DateTime _now;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private TimeProvider Clock => TimeProvider ?? TimeProvider.System;
+    private IEnumerable<HelixChartSeries> VisibleSeries => _series.Where(s => !_hidden.Contains(s));
+    private bool IsZoomed => _from > 0.0001 || _to < 0.9999;
+
+    private string? StyleValue => new StyleBuilder().Var("--helix-chart-now", NowColor).Raw(Style).Build();
+
+    protected override void OnParametersSet() => _now = Clock.GetLocalNow().DateTime;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && ShowNow)
+        {
+            _ticker.Start(NowRefresh, Clock, () => InvokeAsync(() =>
+            {
+                _now = Clock.GetLocalNow().DateTime;
+                StateHasChanged();
+            }));
+        }
+    }
+
+    internal void AddSeries(HelixChartSeries series)
+    {
+        _series.Add(series);
+        if (series.Hidden)
+        {
+            _hidden.Add(series);
+        }
+
+        StateHasChanged();
+    }
+
+    internal void RemoveSeries(HelixChartSeries series)
+    {
+        _hidden.Remove(series);
+        if (_series.Remove(series))
+        {
+            StateHasChanged();
+        }
+    }
+
+    internal void AddLine(HelixChartLine line)
+    {
+        _lines.Add(line);
+        StateHasChanged();
+    }
+
+    internal void RemoveLine(HelixChartLine line)
+    {
+        if (_lines.Remove(line))
+        {
+            StateHasChanged();
+        }
+    }
+
+    internal void Invalidate() => StateHasChanged();
+
+    private void Toggle(HelixChartSeries series)
+    {
+        if (!_hidden.Remove(series))
+        {
+            _hidden.Add(series);
+        }
+    }
+
+    private void ResetZoom() => (_from, _to) = (0, 1);
+
+    private void SetWindow(ChangeEventArgs e, bool start)
+    {
+        if (!double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var raw))
+        {
+            return;
+        }
+
+        const double minGap = 0.02;
+        var value = raw / 1000;
+        if (start)
+        {
+            _from = Math.Clamp(value, 0, _to - minGap);
+        }
+        else
+        {
+            _to = Math.Clamp(value, _from + minGap, 1);
+        }
+    }
+
+    private string ColorOf(HelixChartSeries series)
+    {
+        if (!string.IsNullOrEmpty(series.Color))
+        {
+            return HelixColor.Resolve(series.Color).Value;
+        }
+
+        // Fixed palette order, never cycled: a 9th series falls back to neutral ink.
+        var index = _series.IndexOf(series);
+        return index is >= 0 and < 8 ? $"var(--helix-series-{index + 1})" : "var(--helix-text-subtle)";
+    }
+
+    private static string KeyShape(HelixChartSeries series) =>
+        series.Type is HelixSeriesType.Bar or HelixSeriesType.Area ? "box" : "line";
+
+    private string FormatY(double? value) =>
+        value is null ? "—" : value.Value.ToString(YFormat, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");
+
+    private string FormatTick(double value) => value.ToString(YFormat, EffectiveCulture);
+
+    private string FormatX(double x, Model model, bool tooltip)
+    {
+        if (XFormat is not null)
+        {
+            return XFormat(x);
+        }
+
+        if (!model.IsTime)
+        {
+            return x.ToString("#,0.##", EffectiveCulture);
+        }
+
+        var time = HelixTime.FromX(x);
+        var sameDay = HelixTime.FromX(model.X0).Date == HelixTime.FromX(model.X1).Date;
+        return tooltip && !sameDay ? time.ToString("d MMM HH:mm", EffectiveCulture) : time.ToString("HH:mm", EffectiveCulture);
+    }
+
+    // ----- Geometry ---------------------------------------------------------------------------
+
+    private sealed record Bar(double Left, double Width, double Top, double Height, bool Negative);
+
+    private sealed record SeriesView(HelixChartSeries Series, string Color, string? LinePath, string? AreaPath, string? MarkerPath, List<Bar> Bars, Dictionary<double, double?> Values);
+
+    private sealed record Dot(double Top, string Color);
+
+    private sealed record Hit(double X, double Left, double Width, double Center, bool TipLeft, List<Dot> Dots);
+
+    private sealed record RefLine(double X1, double Y1, double X2, double Y2, string? Label, string Color, bool Dashed, bool Vertical);
+
+    private sealed record Model(bool IsTime, double X0, double X1, double Y0, double Y1, double[] YTicks)
+    {
+        public List<(double Pct, string Label)> XTicks { get; } = [];
+        public List<SeriesView> Series { get; } = [];
+        public List<double> HitXs { get; set; } = [];
+        public List<Hit> Hits { get; } = [];
+        public List<RefLine> Lines { get; } = [];
+        public List<(string Color, string Path)> Overview { get; } = [];
+        public double? NowPct { get; set; }
+
+        public double XPct(double x) => (x - X0) / (X1 - X0) * 100;
+
+        public double YPct(double y) => (1 - (y - Y0) / (Y1 - Y0)) * 100;
+    }
+
+    private Model? BuildModel()
+    {
+        var all = _series.SelectMany(s => s.Data).ToList();
+        if (all.Count == 0)
+        {
+            return null;
+        }
+
+        var isTime = all.Any(p => p.IsTime);
+        var visible = VisibleSeries.ToList();
+
+        // Domain: every series (hiding one never shifts the axis), padded by half a slot for bars.
+        var domainMin = XMin ?? (From is { } from ? HelixTime.ToX(from) : all.Min(p => p.X));
+        var domainMax = XMax ?? (To is { } to ? HelixTime.ToX(to) : all.Max(p => p.X));
+        var barSeries = visible.Where(s => s.Type == HelixSeriesType.Bar).ToList();
+        var spacing = MinSpacing(barSeries.Count > 0 ? barSeries : _series, domainMax - domainMin);
+        if (barSeries.Count > 0 && XMin is null && From is null)
+        {
+            domainMin -= spacing / 2;
+        }
+
+        if (barSeries.Count > 0 && XMax is null && To is null)
+        {
+            domainMax += spacing / 2;
+        }
+
+        if (domainMax <= domainMin)
+        {
+            domainMax = domainMin + 1;
+        }
+
+        var x0 = domainMin + _from * (domainMax - domainMin);
+        var x1 = domainMin + _to * (domainMax - domainMin);
+
+        // Y range from what is visible in the window.
+        var ys = visible.SelectMany(s => s.Data).Where(p => p.X >= x0 && p.X <= x1 && p.Y is not null).Select(p => p.Y!.Value).ToList();
+        ys.AddRange(_lines.Where(l => l.Y is not null).Select(l => l.Y!.Value));
+        if (visible.Any(s => s.Type is HelixSeriesType.Bar or HelixSeriesType.Area))
+        {
+            ys.Add(0);
+        }
+
+        var (niceMin, niceMax, ticks) = ys.Count == 0 ? (0d, 1d, new[] { 0d, 1d }) : HelixScale.Nice(ys.Min(), ys.Max());
+        var y0 = YMin ?? niceMin;
+        var y1 = YMax ?? niceMax;
+        if (y1 <= y0)
+        {
+            y1 = y0 + 1;
+        }
+
+        var model = new Model(isTime, x0, x1, y0, y1, ticks.Where(t => t >= y0 - 1e-9 && t <= y1 + 1e-9).ToArray());
+
+        BuildXTicks(model);
+        var baseline = Math.Clamp(0, y0, y1);
+
+        for (var i = 0; i < visible.Count; i++)
+        {
+            var series = visible[i];
+            var color = ColorOf(series);
+            var values = new Dictionary<double, double?>();
+            foreach (var p in series.Data)
+            {
+                values.TryAdd(p.X, p.Y);
+            }
+
+            var bars = new List<Bar>();
+            string? line = null, area = null, markers = null;
+            if (series.Type == HelixSeriesType.Bar)
+            {
+                var slotPct = spacing / (x1 - x0) * 100;
+                var barIndex = barSeries.IndexOf(series);
+                var width = slotPct * 0.72 / barSeries.Count;
+                foreach (var p in series.Data.Where(p => p.Y is not null && p.X >= x0 - spacing && p.X <= x1 + spacing))
+                {
+                    var left = model.XPct(p.X) - slotPct * 0.36 + barIndex * width;
+                    var top = model.YPct(Math.Max(p.Y!.Value, baseline));
+                    var bottom = model.YPct(Math.Min(p.Y.Value, baseline));
+                    bars.Add(new Bar(left, width, top, Math.Max(bottom - top, 0), p.Y.Value < baseline));
+                }
+            }
+            else
+            {
+                (line, area) = BuildPaths(series, model, baseline);
+                if (series.Markers)
+                {
+                    markers = BuildMarkers(series, model);
+                }
+            }
+
+            model.Series.Add(new SeriesView(series, color, line, area, markers, bars, values));
+        }
+
+        BuildHits(model);
+        BuildLines(model);
+        BuildOverview(model, domainMin, domainMax);
+
+        if (ShowNow && isTime)
+        {
+            var nowX = HelixTime.ToX(_now);
+            if (nowX >= x0 && nowX <= x1)
+            {
+                model.NowPct = model.XPct(nowX);
+            }
+        }
+
+        return model;
+    }
+
+    private static double MinSpacing(IEnumerable<HelixChartSeries> series, double range)
+    {
+        var min = double.MaxValue;
+        foreach (var s in series)
+        {
+            for (var i = 1; i < s.Data.Count; i++)
+            {
+                var d = s.Data[i].X - s.Data[i - 1].X;
+                if (d > 0 && d < min)
+                {
+                    min = d;
+                }
+            }
+        }
+
+        return min == double.MaxValue ? Math.Max(range / 10, 1) : min;
+    }
+
+    private void BuildXTicks(Model model)
+    {
+        if (model.IsTime)
+        {
+            var (ticks, step) = HelixScale.TimeTicks(HelixTime.FromX(model.X0), HelixTime.FromX(model.X1));
+            foreach (var t in ticks)
+            {
+                model.XTicks.Add((model.XPct(HelixTime.ToX(t)), XFormat?.Invoke(HelixTime.ToX(t)) ?? HelixScale.FormatTime(t, step, EffectiveCulture)));
+            }
+        }
+        else
+        {
+            var (_, _, ticks) = HelixScale.Nice(model.X0, model.X1, 6);
+            foreach (var t in ticks.Where(t => t >= model.X0 && t <= model.X1))
+            {
+                model.XTicks.Add((model.XPct(t), XFormat?.Invoke(t) ?? t.ToString("#,0.##", EffectiveCulture)));
+            }
+        }
+    }
+
+    /// <summary>Points in the window plus one neighbour on each side, so lines run to the edges.</summary>
+    private static IEnumerable<HelixPoint> Windowed(IReadOnlyList<HelixPoint> data, double x0, double x1)
+    {
+        for (var i = 0; i < data.Count; i++)
+        {
+            var inside = data[i].X >= x0 && data[i].X <= x1;
+            var nextInside = i + 1 < data.Count && data[i + 1].X >= x0;
+            var prevInside = i > 0 && data[i - 1].X <= x1;
+            if (inside || (data[i].X < x0 && nextInside) || (data[i].X > x1 && prevInside))
+            {
+                yield return data[i];
+            }
+        }
+    }
+
+    private static (string? Line, string? Area) BuildPaths(HelixChartSeries series, Model model, double baseline)
+    {
+        var line = new StringBuilder();
+        var area = new StringBuilder();
+        var baseY = HelixScale.Num(model.YPct(baseline) * 10);
+        var segment = new List<(string X, string Y)>();
+
+        void Flush()
+        {
+            if (segment.Count == 0)
+            {
+                return;
+            }
+
+            var path = new StringBuilder($"M{segment[0].X} {segment[0].Y}");
+            for (var i = 1; i < segment.Count; i++)
+            {
+                path.Append(series.Type == HelixSeriesType.Step
+                    ? $"H{segment[i].X}V{segment[i].Y}"
+                    : $"L{segment[i].X} {segment[i].Y}");
+            }
+
+            line.Append(path);
+            if (series.Type == HelixSeriesType.Area)
+            {
+                area.Append(path).Append($"L{segment[^1].X} {baseY}L{segment[0].X} {baseY}Z");
+            }
+
+            segment.Clear();
+        }
+
+        foreach (var p in Windowed(series.Data, model.X0, model.X1))
+        {
+            if (p.Y is null)
+            {
+                Flush();
+                continue;
+            }
+
+            segment.Add((HelixScale.Num(model.XPct(p.X) * 10), HelixScale.Num(model.YPct(p.Y.Value) * 10)));
+        }
+
+        Flush();
+        return (line.Length == 0 ? null : line.ToString(), area.Length == 0 ? null : area.ToString());
+    }
+
+    private static string? BuildMarkers(HelixChartSeries series, Model model)
+    {
+        // Zero-length segments with round caps + non-scaling stroke = round dots that never stretch.
+        var sb = new StringBuilder();
+        foreach (var p in series.Data.Where(p => p.Y is not null && p.X >= model.X0 && p.X <= model.X1))
+        {
+            sb.Append($"M{HelixScale.Num(model.XPct(p.X) * 10)} {HelixScale.Num(model.YPct(p.Y!.Value) * 10)}h0");
+        }
+
+        return sb.Length == 0 ? null : sb.ToString();
+    }
+
+    private static void BuildHits(Model model)
+    {
+        var xs = model.Series.SelectMany(s => s.Values.Keys).Where(x => x >= model.X0 && x <= model.X1).Distinct().Order().ToList();
+        model.HitXs = xs;
+        for (var i = 0; i < xs.Count; i++)
+        {
+            var left = i == 0 ? model.X0 : (xs[i - 1] + xs[i]) / 2;
+            var right = i == xs.Count - 1 ? model.X1 : (xs[i] + xs[i + 1]) / 2;
+            var leftPct = model.XPct(left);
+            var widthPct = model.XPct(right) - leftPct;
+            var center = widthPct <= 0 ? 0 : (model.XPct(xs[i]) - leftPct) / widthPct * 100;
+
+            var dots = new List<Dot>();
+            foreach (var view in model.Series)
+            {
+                if (view.Values.GetValueOrDefault(xs[i]) is { } y && view.Series.Type != HelixSeriesType.Bar)
+                {
+                    dots.Add(new Dot(model.YPct(y), view.Color));
+                }
+            }
+
+            model.Hits.Add(new Hit(xs[i], leftPct, widthPct, center, model.XPct(xs[i]) > 62, dots));
+        }
+    }
+
+    private void BuildLines(Model model)
+    {
+        foreach (var line in _lines)
+        {
+            var color = line.Color is null ? "var(--helix-text-subtle)" : HelixColor.Resolve(line.Color).Value;
+            if (line.Y is { } y && y >= model.Y0 && y <= model.Y1)
+            {
+                var py = model.YPct(y) * 10;
+                model.Lines.Add(new RefLine(0, py, 1000, py, line.Label, color, line.Dashed, Vertical: false));
+            }
+
+            if (line.XValue is { } x && x >= model.X0 && x <= model.X1)
+            {
+                var px = model.XPct(x) * 10;
+                model.Lines.Add(new RefLine(px, 0, px, 1000, line.Label, color, line.Dashed, Vertical: true));
+            }
+        }
+
+    }
+
+    private void BuildOverview(Model model, double domainMin, double domainMax)
+    {
+        if (!ShowNavigator)
+        {
+            return;
+        }
+
+        // The overview always shows the whole domain, so it uses all the data, not just the window.
+        var visible = model.Series;
+        var ys = visible.SelectMany(s => s.Series.Data).Where(p => p.Y is not null).Select(p => p.Y!.Value).ToList();
+        if (ys.Count == 0)
+        {
+            return;
+        }
+
+        var (min, max) = (ys.Min(), ys.Max());
+        if (max - min < 1e-9)
+        {
+            max = min + 1;
+        }
+
+        foreach (var view in visible)
+        {
+            var sb = new StringBuilder();
+            var pen = 'M';
+            foreach (var p in view.Series.Data)
+            {
+                if (p.Y is null)
+                {
+                    pen = 'M';
+                    continue;
+                }
+
+                var px = (p.X - domainMin) / (domainMax - domainMin) * 1000;
+                var py = 92 - (p.Y.Value - min) / (max - min) * 84;
+                sb.Append($"{pen}{HelixScale.Num(px)} {HelixScale.Num(py)}");
+                pen = 'L';
+            }
+
+            model.Overview.Add((view.Color, sb.ToString()));
+        }
+    }
+
+    public void Dispose() => _ticker.Dispose();
+}

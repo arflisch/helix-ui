@@ -1,0 +1,94 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+
+@{
+    var (order, span, hidden) = Dashboard!.StateOf(Id);
+    var editing = Dashboard.IsEditing;
+}
+
+@if (!hidden)
+{
+    <section @attributes="Attributes"
+             class="@(new CssBuilder("helix-dashboard__tile").Add("is-dragged", Dashboard.DraggedId == Id).Add("is-drop-target", Dashboard.DropTargetId == Id).Add("is-plain", Plain).Add(Class).Build())"
+             style="@(new StyleBuilder().Var("order", order.ToString()).Var("--_span", span.ToString()).Var("min-height", MinHeight).Raw(Style).Build())"
+             draggable="@(editing ? "true" : "false")"
+             data-helix-drag="@(editing ? "" : null)"
+             aria-label="@Title"
+             @ondragstart="() => Dashboard.DragStart(Id)"
+             @ondragenter="() => Dashboard.DragEnter(Id)"
+             @ondragover:preventDefault="true"
+             @ondrop="Dashboard.Drop"
+             @ondragend="Dashboard.DragEnd">
+        @if (!string.IsNullOrEmpty(Title) || Actions is not null || editing)
+        {
+            <header class="helix-dashboard__tile-head">
+                @if (editing)
+                {
+                    <span class="helix-dashboard__grip" aria-hidden="true"><HelixIcon Name="grip" Size="15" /></span>
+                }
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h3 class="helix-dashboard__tile-title">@Title</h3>
+                }
+                <div class="helix-dashboard__tile-actions">
+                    @if (editing)
+                    {
+                        <div class="helix-dashboard__tools" role="group" aria-label="@HelixTexts.Format(Texts.TileLayout, Title)">
+                            <button type="button" class="helix-close" aria-label="@Texts.MoveBefore" @onclick="() => Dashboard.Shift(Id, -1)"><HelixIcon Name="chevron-left" Size="14" /></button>
+                            <button type="button" class="helix-close" aria-label="@Texts.MoveAfter" @onclick="() => Dashboard.Shift(Id, 1)"><HelixIcon Name="chevron-right" Size="14" /></button>
+                            <span class="helix-dashboard__sep"></span>
+                            <button type="button" class="helix-close" aria-label="@Texts.Narrower" disabled="@(span <= MinSpan)" @onclick="() => Dashboard.Resize(Id, -1)"><HelixIcon Name="minus" Size="14" /></button>
+                            <span class="helix-dashboard__span" aria-label="@Texts.Width">@span / @Dashboard.ColumnCount</span>
+                            <button type="button" class="helix-close" aria-label="@Texts.Wider" disabled="@(span >= Math.Min(MaxSpan, Dashboard.ColumnCount))" @onclick="() => Dashboard.Resize(Id, 1)"><HelixIcon Name="plus" Size="14" /></button>
+                            @if (CanHide)
+                            {
+                                <span class="helix-dashboard__sep"></span>
+                                <button type="button" class="helix-close" aria-label="@HelixTexts.Format(Texts.HideTile, Title)" @onclick="() => Dashboard.SetHidden(Id, true)"><HelixIcon Name="eye-off" Size="14" /></button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        @Actions
+                    }
+                </div>
+            </header>
+        }
+        <div class="helix-dashboard__tile-body">@ChildContent</div>
+    </section>
+}
+
+@code {
+    [CascadingParameter] private HelixDashboard? Dashboard { get; set; }
+
+    /// <summary>Stable identifier, used to save the layout.</summary>
+    [Parameter, EditorRequired] public string Id { get; set; } = "";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Buttons or badges on the right of the title (hidden while customizing).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>Width in columns when nothing is saved.</summary>
+    [Parameter] public int DefaultSpan { get; set; } = 1;
+    [Parameter] public int MinSpan { get; set; } = 1;
+    [Parameter] public int MaxSpan { get; set; } = 12;
+    [Parameter] public bool CanHide { get; set; } = true;
+    [Parameter] public string? MinHeight { get; set; }
+
+    /// <summary>No frame: for content that already has one (a HelixStat, a HelixCard…).</summary>
+    [Parameter] public bool Plain { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Dashboard is null)
+        {
+            throw new InvalidOperationException($"{nameof(HelixDashboardTile)} must be placed inside a {nameof(HelixDashboard)}.");
+        }
+
+        Dashboard.AddTile(this);
+    }
+
+    public void Dispose() => Dashboard?.RemoveTile(this);
+}

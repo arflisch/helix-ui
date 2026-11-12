@@ -1,0 +1,10 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<span @attributes="Attributes" class="@(new CssBuilder("helix-avatar-group").Add(Class).Build())" style="@Style">
+    @ChildContent
+</span>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

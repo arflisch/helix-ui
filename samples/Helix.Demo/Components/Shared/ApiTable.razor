@@ -1,0 +1,34 @@
+<section class="demo-section">
+    <h2 class="demo-section__title">@Title</h2>
+    @if (ShowIntro)
+    {
+    <p class="demo-section__text">
+        Chaque paramètre visuel correspond à une variable CSS. Utilisez le paramètre pour un composant précis,
+        ou la variable (dans votre CSS ou via <code>HelixTheme.Set(...)</code>) pour tous les composants à la fois.
+    </p>
+    }
+    <div class="api">
+        <table>
+            <thead>
+                <tr><th>Paramètre</th><th>Type</th><th>Variable CSS</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Rows)
+                {
+                    <tr>
+                        <td><code class="api__param">@row.Param</code></td>
+                        <td><code class="api__type">@row.Type</code></td>
+                        <td>@if (!string.IsNullOrEmpty(row.CssVar)) { <code class="api__var">@row.CssVar</code> } else { <span class="api__none">—</span> }</td>
+                        <td>@row.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "API";
+    [Parameter] public bool ShowIntro { get; set; } = true;
+    [Parameter] public IReadOnlyList<ApiRow> Rows { get; set; } = [];
+}

@@ -1,0 +1,73 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+<div class="@(new CssBuilder("helix-slider").Add(Class).Build())" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Label) || ShowValue)
+    {
+        <div class="helix-slider__header">
+            <label class="helix-slider__label" for="@_id">@Label</label>
+            @if (ShowValue)
+            {
+                <span class="helix-slider__value">@Display</span>
+            }
+        </div>
+    }
+    <input @attributes="Attributes"
+           id="@_id"
+           type="range"
+           class="helix-slider__input"
+           min="@Inv(Min)"
+           max="@Inv(Max)"
+           step="@Inv(Step)"
+           value="@Inv(Value)"
+           disabled="@Disabled"
+           @oninput="OnInput" />
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public double Step { get; set; } = 1;
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool ShowValue { get; set; } = true;
+
+    /// <summary>How the value is displayed, e.g. v => $"{v} %".</summary>
+    [Parameter] public Func<double, string>? Format { get; set; }
+
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Fill color.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? TrackColor { get; set; }
+    [Parameter] public string? ThumbColor { get; set; }
+
+    private readonly string _id = HelixId.Next("slider");
+
+    private string Display => Format?.Invoke(Value) ?? Value.ToString(CultureInfo.CurrentCulture);
+
+    private double Percent => Max > Min ? Math.Clamp((Value - Min) / (Max - Min) * 100, 0, 100) : 0;
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("slider", Color)
+        .Var("--helix-slider-track", TrackColor)
+        .Var("--helix-slider-thumb", ThumbColor)
+        .Var("--helix-slider-pct", Inv(Percent) + "%")
+        .Raw(Style)
+        .Build();
+
+    private static string Inv(double value) => value.ToString(CultureInfo.InvariantCulture);
+
+    private Task OnInput(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        {
+            Value = value;
+            return ValueChanged.InvokeAsync(value);
+        }
+
+        return Task.CompletedTask;
+    }
+}

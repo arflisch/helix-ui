@@ -1,0 +1,61 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+@{
+    var items = Items.ToList();
+    var collapse = !_expanded && MaxItems is { } max && items.Count > max && max >= 2;
+}
+
+<nav @attributes="Attributes" class="@(new CssBuilder("helix-breadcrumb").Add(Class).Build())" style="@Style" aria-label="@AriaLabel">
+    <ol class="helix-breadcrumb__list">
+        @for (var i = 0; i < items.Count; i++)
+        {
+            var index = i;
+            var item = items[i];
+            var last = index == items.Count - 1;
+            if (collapse && index > 0 && index < items.Count - (MaxItems!.Value - 1))
+            {
+                if (index == 1)
+                {
+                    <li class="helix-breadcrumb__item">
+                        <button type="button" class="helix-breadcrumb__more" aria-label="@Texts.ShowFullPath" @onclick="() => _expanded = true">…</button>
+                        <HelixIcon Name="chevron-right" Size="14" Class="helix-breadcrumb__sep" />
+                    </li>
+                }
+
+                continue;
+            }
+
+            <li class="helix-breadcrumb__item">
+                @if (last || string.IsNullOrEmpty(item.Href))
+                {
+                    <span class="@(new CssBuilder("helix-breadcrumb__link").Add("is-current", last).Build())" aria-current="@(last ? "page" : null)">
+                        @if (!string.IsNullOrEmpty(item.Icon)) { <HelixIcon Name="@item.Icon" Size="14" /> }
+                        @item.Text
+                    </span>
+                }
+                else
+                {
+                    <a class="helix-breadcrumb__link" href="@item.Href">
+                        @if (!string.IsNullOrEmpty(item.Icon)) { <HelixIcon Name="@item.Icon" Size="14" /> }
+                        @item.Text
+                    </a>
+                }
+                @if (!last)
+                {
+                    <HelixIcon Name="chevron-right" Size="14" Class="helix-breadcrumb__sep" />
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<HelixBreadcrumbItem> Items { get; set; } = [];
+
+    /// <summary>Beyond this count, middle items fold into "…" (click to expand).</summary>
+    [Parameter] public int? MaxItems { get; set; }
+    [Parameter] public string AriaLabel { get; set; } = "Fil d'Ariane";
+
+    private bool _expanded;
+}

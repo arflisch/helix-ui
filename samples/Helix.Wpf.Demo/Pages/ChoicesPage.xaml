@@ -1,0 +1,93 @@
+<UserControl x:Class="Helix.Wpf.Demo.Pages.ChoicesPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Choix" />
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Interrupteurs, cases, boutons radio et curseurs. La couleur de la pastille d'un switch ? Une propriété, ThumbBrush." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Switch : couleurs" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <WrapPanel>
+                    <helix:HelixSwitch Content="Par défaut" IsChecked="True" Margin="0,0,28,12" />
+                    <helix:HelixSwitch Content="Pastille ambre" IsChecked="True" ThumbBrush="#F59E0B" Margin="0,0,28,12" />
+                    <helix:HelixSwitch Content="Lime" IsChecked="True" Accent="#A3E635" ThumbBrush="#18181B" TrackBrush="#E4E4E7" Margin="0,0,28,12" />
+                    <helix:HelixSwitch Content="Danger" IsChecked="True" Tone="Danger" ThumbOnBrush="#FFE4E6" Margin="0,0,28,12" />
+                    <helix:HelixSwitch Content="Carré" IsChecked="True" CornerRadius="5" Tone="Neutral" Margin="0,0,28,12" />
+                </WrapPanel>
+                <TextBox Style="{StaticResource Code}" Text="&lt;helix:HelixSwitch Content=&quot;Pastille ambre&quot; ThumbBrush=&quot;#F59E0B&quot; IsChecked=&quot;{Binding IsOn}&quot; /&gt;" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Switch : icône ou texte dedans" />
+        <TextBlock Style="{StaticResource SectionText}" Text="OnIcon / OffIcon dans la pastille, OnText / OffText dans la piste, qui s'élargit pour le texte le plus long." />
+        <Border Style="{StaticResource Stage}">
+            <WrapPanel>
+                <helix:HelixSwitch Content="Icônes" OnIcon="check" OffIcon="x" IsChecked="True" Margin="0,0,28,12" />
+                <helix:HelixSwitch Content="Thème" OnIcon="moon" OffIcon="sun" Accent="#312E81" Margin="0,0,28,12" />
+                <helix:HelixSwitch Content="Texte" OnText="ON" OffText="OFF" IsChecked="True" Margin="0,0,28,12" />
+                <helix:HelixSwitch Content="Pilote" OnText="AUTO" OffText="MANUEL" Accent="#FF8A00" Size="Lg" IsChecked="True" Margin="0,0,28,12" />
+            </WrapPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Switch : description et côté du libellé" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel MaxWidth="460" HorizontalAlignment="Left">
+                <helix:HelixSwitch Content="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." IsChecked="True" Margin="0,0,0,16" />
+                <helix:HelixSwitch Content="Synchronisation" Description="Chaque nuit à 2 h." LabelPosition="Start" HorizontalAlignment="Stretch" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="CheckBox et RadioButton" />
+        <Border Style="{StaticResource Stage}">
+            <UniformGrid Columns="2">
+                <StackPanel Margin="0,0,24,0">
+                    <helix:HelixCheckBox Content="J'accepte les conditions" IsChecked="True" Margin="0,0,0,12" />
+                    <helix:HelixCheckBox Content="Tout sélectionner" IsThreeState="True" IsChecked="{x:Null}" Margin="0,0,0,12" />
+                    <helix:HelixCheckBox Content="Rapport hebdomadaire" Description="Envoyé le lundi matin." Accent="#10B981" IsChecked="True" Margin="0,0,0,12" />
+                    <helix:HelixCheckBox Content="Coins carrés" CornerRadius="2" Tone="Neutral" IsChecked="True" />
+                </StackPanel>
+                <StackPanel>
+                    <helix:HelixRadioButton Content="Standard" Description="Livré en 3 à 5 jours." GroupName="ship" IsChecked="True" Margin="0,0,0,12" />
+                    <helix:HelixRadioButton Content="Express" Description="Livré demain." GroupName="ship" Margin="0,0,0,12" />
+                    <helix:HelixRadioButton Content="Retrait sur place" GroupName="ship" Accent="#EC4899" />
+                </StackPanel>
+            </UniformGrid>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="RadioGroup" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Un seul choix, en liste, en cartes ou en boutons segmentés (Appearance). Les flèches changent d'option." />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <helix:HelixRadioGroup x:Name="Plans" Label="Formule" Appearance="Cards" Columns="3" SelectedIndex="1"
+                                     Hint="Changeable à tout moment." Margin="0,0,0,24" />
+                <UniformGrid Columns="2">
+                    <helix:HelixRadioGroup Label="Livraison" SelectedIndex="0" Margin="0,0,24,0">
+                        <helix:HelixRadioItem Content="Standard" Description="3 à 5 jours" />
+                        <helix:HelixRadioItem Content="Express" Description="Demain" />
+                        <helix:HelixRadioItem Content="Retrait" IsEnabled="False" Description="Bientôt" />
+                    </helix:HelixRadioGroup>
+                    <helix:HelixRadioGroup Label="Période" Appearance="Segmented" SelectedIndex="1" VerticalAlignment="Top">
+                        <helix:HelixRadioItem Content="Jour" />
+                        <helix:HelixRadioItem Content="Semaine" />
+                        <helix:HelixRadioItem Content="Mois" />
+                    </helix:HelixRadioGroup>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Slider" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel MaxWidth="460" HorizontalAlignment="Left">
+                <DockPanel Margin="0,0,0,6">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding Value, ElementName=Volume, StringFormat={}{0:0} %}" Foreground="{DynamicResource Helix.TextMuted}" />
+                    <TextBlock Text="Volume" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                </DockPanel>
+                <helix:HelixSlider x:Name="Volume" Minimum="0" Maximum="100" Value="60" Margin="0,0,0,20" />
+                <helix:HelixSlider Minimum="0" Maximum="100" Value="35" Accent="#FF8A00" TrackBrush="#FFEDD5" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

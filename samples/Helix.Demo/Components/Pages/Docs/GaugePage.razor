@@ -1,0 +1,78 @@
+@page "/components/gauge"
+@using System.Globalization
+
+<DemoPage Title="Gauge" Description="Jauge semi-circulaire pour une valeur dans une plage connue (taux de charge, réserve, remplissage). Les seuils changent la couleur et affichent un libellé d'état : l'information ne repose jamais sur la couleur seule.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <HelixGauge Value="_value" Min="0" Max="100" Unit="%" Label="Charge du réseau" Thresholds="_thresholds ? Bands : []" Size="@($"{_size}px")" Culture="French" />
+        </Preview>
+        <Controls>
+            <HelixSlider Label="Value" @bind-Value="_value" />
+            <HelixSlider Label="Size" @bind-Value="_size" Min="160" Max="320" Step="20" Format="@(v => $"{v} px")" />
+            <HelixSwitch Label="Thresholds" @bind-Checked="_thresholds" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example WpfCode="@Wpf2" Title="Plusieurs jauges">
+        <div class="row" style="justify-content:space-around;gap:24px">
+            <HelixGauge Value="38" Unit="%" Label="Batterie" Thresholds="Bands" Size="180px" Culture="French" />
+            <HelixGauge Value="72" Unit="%" Label="Réserve engagée" Thresholds="Bands" Size="180px" Culture="French" />
+            <HelixGauge Value="91" Unit="%" Label="Ligne Nord" Thresholds="Bands" Size="180px" Culture="French" />
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixGauge" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixGauge Value="{Binding Load}" Minimum="0" Maximum="100" Unit="%" Label="Charge"
+                        Format="0" Size="200" Thresholds="{Binding LoadZones}" />
+
+        // ViewModel
+        LoadZones = [new HelixGaugeThreshold(70, "warning", "Élevée"), new HelixGaugeThreshold(90, "danger", "Critique")];
+        """;
+
+    private const string Wpf2 = """
+        <StackPanel Orientation="Horizontal">
+            <helix:HelixGauge Value="72" Unit="%" Label="CPU" Size="150" />
+            <helix:HelixGauge Value="38" Maximum="60" Unit="°C" Label="Température" Size="150" Accent="#0EA5E9" />
+            <helix:HelixGauge Value="5.2" Maximum="8" Unit="Go" Label="Mémoire" Size="150" Format="0.0" />
+        </StackPanel>
+        """;
+
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+
+    private static readonly HelixGaugeThreshold[] Bands =
+    [
+        new(0, "success", "Normal"),
+        new(60, "warning", "Tendu"),
+        new(85, "danger", "Critique"),
+    ];
+
+    private double _value = 68, _size = 240;
+    private bool _thresholds = true;
+
+    private string Code => $$"""
+        <HelixGauge Value="{{_value}}" Max="100" Unit="%" Label="Charge du réseau" Thresholds="bands" />
+
+        @code {
+            private HelixGaugeThreshold[] bands =
+            [
+                new(0, "success", "Normal"),
+                new(60, "warning", "Tendu"),
+                new(85, "danger", "Critique"),
+            ];
+        }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Value / Min / Max", "double", null, "Valeur et plage (0–100)."),
+        new("Thresholds", "IReadOnlyList<HelixGaugeThreshold>", null, "(Value, Color, Label) : à partir de Value, couleur + libellé d'état."),
+        new("Label / Unit / Format", "string", null, "Légende, unité, format."),
+        new("Color", "string", null, "Couleur sans seuil."),
+        new("Size", "string", "--helix-gauge-size", "Largeur (220px)."),
+        new("—", "", "--helix-gauge-track", "Couleur du fond de l'arc."),
+    ];
+}

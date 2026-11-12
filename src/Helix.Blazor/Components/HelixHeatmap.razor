@@ -1,0 +1,150 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+@{
+    var model = Build();
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-heatmap").Add(Class).Build())" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Title) || ShowLegend)
+    {
+        <div class="helix-heatmap__header">
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <h3 class="helix-heatmap__title">@Title</h3>
+            }
+            @if (ShowLegend && model.Count > 0)
+            {
+                <div class="helix-heatmap__legend" aria-hidden="true">
+                    <span>@FormatValue(model.Min)</span>
+                    <span class="@(new CssBuilder("helix-heatmap__ramp").Add("is-diverging", Diverging).Build())"></span>
+                    <span>@FormatValue(model.Max)</span>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="helix-heatmap__scroll">
+        <div class="helix-heatmap__grid" role="table" aria-label="@(Title ?? "Carte de chaleur")"
+             style="grid-template-columns:auto repeat(@model.Columns.Count, minmax(@CellMinWidth, 1fr))">
+            <div class="helix-heatmap__corner" role="columnheader"></div>
+            @for (var c = 0; c < model.Columns.Count; c++)
+            {
+                <div class="helix-heatmap__col-label" role="columnheader">@(c % Math.Max(1, ColumnLabelEvery) == 0 ? model.Columns[c] : "")</div>
+            }
+            @foreach (var row in model.Rows)
+            {
+                <div class="helix-heatmap__row-label" role="rowheader">@row</div>
+                @for (var c = 0; c < model.Columns.Count; c++)
+                {
+                    var column = model.Columns[c];
+                    var value = model.Values.GetValueOrDefault((row, column));
+                    var (background, dark) = value is { } v ? ColorFor(v, model) : ("", false);
+                    <div class="@(new CssBuilder("helix-heatmap__cell").Add("is-empty", value is null).Add("is-dark", dark).Add("is-clickable", OnCellClick.HasDelegate).Add("is-end", c > model.Columns.Count * 0.6).Build())"
+                         role="cell"
+                         style="@(value is null ? null : $"--_bg:{background}")"
+                         tabindex="@(OnCellClick.HasDelegate ? "0" : null)"
+                         @onclick="() => OnCellClick.InvokeAsync(new HelixHeatCell(row, column, value))">
+                        @if (ShowValues && value is { } shown)
+                        {
+                            <span class="helix-heatmap__value">@shown.ToString(Format, EffectiveCulture)</span>
+                        }
+                        <span class="helix-heatmap__tip" role="tooltip">
+                            <strong>@FormatValue(value)</strong>
+                            <span>@row · @column</span>
+                        </span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<HelixHeatCell> Cells { get; set; } = [];
+
+    /// <summary>Row order (defaults to order of appearance).</summary>
+    [Parameter] public IReadOnlyList<string>? Rows { get; set; }
+
+    /// <summary>Column order (defaults to order of appearance).</summary>
+    [Parameter] public IReadOnlyList<string>? Columns { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string Format { get; set; } = "#,0.#";
+
+    /// <summary>Two colors around <see cref="Midpoint"/> (e.g. deficit / surplus) instead of one scale.</summary>
+    [Parameter] public bool Diverging { get; set; }
+    [Parameter] public double Midpoint { get; set; }
+
+    /// <summary>Fixed bounds, otherwise from the data.</summary>
+    [Parameter] public double? Min { get; set; }
+    [Parameter] public double? Max { get; set; }
+
+    [Parameter] public bool ShowValues { get; set; }
+    [Parameter] public bool ShowLegend { get; set; } = true;
+
+    /// <summary>Show one column label every N (e.g. 3 for hours).</summary>
+    [Parameter] public int ColumnLabelEvery { get; set; } = 1;
+    [Parameter] public string CellMinWidth { get; set; } = "22px";
+
+    /// <summary>Row height, e.g. "32px".</summary>
+    [Parameter] public string? CellHeight { get; set; }
+
+    [Parameter] public EventCallback<HelixHeatCell> OnCellClick { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private string? StyleValue => new StyleBuilder().Var("--helix-heatmap-cell-h", CellHeight).Raw(Style).Build();
+
+    private sealed record Model(List<string> Rows, List<string> Columns, Dictionary<(string, string), double?> Values, double Min, double Max, int Count);
+
+    private Model Build()
+    {
+        var cells = Cells.ToList();
+        var rows = Rows?.ToList() ?? cells.Select(c => c.Row).Distinct().ToList();
+        var columns = Columns?.ToList() ?? cells.Select(c => c.Column).Distinct().ToList();
+        var values = new Dictionary<(string, string), double?>();
+        foreach (var cell in cells)
+        {
+            values[(cell.Row, cell.Column)] = cell.Value;
+        }
+
+        var present = cells.Where(c => c.Value is not null).Select(c => c.Value!.Value).ToList();
+        var min = Min ?? (present.Count > 0 ? present.Min() : 0);
+        var max = Max ?? (present.Count > 0 ? present.Max() : 1);
+        if (Diverging)
+        {
+            // Symmetric around the midpoint so equal distances get equal intensity.
+            var reach = Math.Max(Math.Abs(max - Midpoint), Math.Abs(Midpoint - min));
+            (min, max) = (Midpoint - reach, Midpoint + reach);
+        }
+
+        if (max - min < 1e-12)
+        {
+            max = min + 1;
+        }
+
+        return new Model(rows, columns, values, min, max, present.Count);
+    }
+
+    private (string Background, bool Dark) ColorFor(double value, Model model)
+    {
+        if (Diverging)
+        {
+            var half = (model.Max - model.Min) / 2;
+            var t = Math.Clamp((value - Midpoint) / half, -1, 1);
+            var pole = t < 0 ? "var(--helix-heat-neg)" : "var(--helix-heat-pos)";
+            var pct = Math.Abs(t) * 100;
+            return ($"color-mix(in oklab, {pole} {pct.ToString("0.#", CultureInfo.InvariantCulture)}%, var(--helix-heat-mid))", Math.Abs(t) > 0.62);
+        }
+
+        var s = Math.Clamp((value - model.Min) / (model.Max - model.Min), 0, 1);
+        return ($"color-mix(in oklab, var(--helix-heat-hi) {(s * 100).ToString("0.#", CultureInfo.InvariantCulture)}%, var(--helix-heat-lo))", s > 0.55);
+    }
+
+    private string FormatValue(double? value) =>
+        value is null ? Texts.NoData : value.Value.ToString(Format, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");
+}

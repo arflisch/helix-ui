@@ -1,0 +1,75 @@
+@page "/components/accordion"
+
+<DemoPage Title="Accordion" Description="Sections repliables pour une FAQ, des réglages avancés ou un détail optionnel. Animation de hauteur fluide ; le contenu fermé n'est pas atteignable au clavier.">
+    <Example WpfCode="@Wpf1" Title="FAQ" Code="@Code">
+        <div class="grid-2">
+            <HelixAccordion>
+                <HelixAccordionItem Title="Comment est calculé le déséquilibre ?" Icon="info" Expanded="true">
+                    C'est l'écart entre la production et la consommation sur chaque quart d'heure, mesuré par le gestionnaire de réseau.
+                </HelixAccordionItem>
+                <HelixAccordionItem Title="Quand une demande est-elle rejetée ?" Icon="warning">
+                    Lorsqu'elle arrive après l'heure limite de dépôt, dépasse la capacité disponible ou sort des bornes de prix.
+                </HelixAccordionItem>
+                <HelixAccordionItem Title="Puis-je exporter les données ?" Icon="download">
+                    Oui, depuis chaque tableau : menu Actions, puis « Exporter en CSV ».
+                </HelixAccordionItem>
+                <HelixAccordionItem Title="Fonction réservée aux administrateurs" Disabled="true" />
+            </HelixAccordion>
+            <HelixAccordion Multiple="true" Flush="true">
+                <HelixAccordionItem Title="Notifications" Subtitle="E-mail, push, SMS">
+                    <ChildContent>
+                        <div class="stack">
+                            <HelixSwitch Label="E-mail" Checked="true" />
+                            <HelixSwitch Label="Push" />
+                        </div>
+                    </ChildContent>
+                    <Extra><HelixBadge Color="success">2 actives</HelixBadge></Extra>
+                </HelixAccordionItem>
+                <HelixAccordionItem Title="Réglages avancés" Subtitle="Pour les utilisateurs expérimentés">
+                    <HelixNumberField Label="Délai de relance" Value="15" Unit="min" Min="5" Max="60" Step="5" />
+                </HelixAccordionItem>
+            </HelixAccordion>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixAccordion et HelixAccordionItem" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixAccordion>
+            <helix:HelixAccordionItem Header="Livraison" Subtitle="Délais et zones" Icon="download" IsExpanded="True">
+                <TextBlock Text="Livraison en 48 h partout en France." TextWrapping="Wrap" />
+            </helix:HelixAccordionItem>
+            <helix:HelixAccordionItem Header="Retours" Icon="refresh">
+                <TextBlock Text="30 jours pour changer d'avis." />
+            </helix:HelixAccordionItem>
+            <helix:HelixAccordionItem Header="Paiement" Icon="lock">
+                <helix:HelixAccordionItem.Extra>
+                    <helix:HelixBadge Content="Sécurisé" Tone="Success" />
+                </helix:HelixAccordionItem.Extra>
+                <TextBlock Text="Carte, virement ou prélèvement." />
+            </helix:HelixAccordionItem>
+        </helix:HelixAccordion>
+
+        <!-- Plusieurs sections ouvertes à la fois, sans cadre -->
+        <helix:HelixAccordion AllowMultiple="True" IsFlush="True"> … </helix:HelixAccordion>
+        """;
+
+    private const string Code = """
+        <HelixAccordion>
+            <HelixAccordionItem Title="Comment est calculé le déséquilibre ?" Icon="info" Expanded>…</HelixAccordionItem>
+            <HelixAccordionItem Title="Quand une demande est-elle rejetée ?">…</HelixAccordionItem>
+        </HelixAccordion>
+
+        <HelixAccordion Multiple Flush>…</HelixAccordion>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Multiple", "bool", null, "Plusieurs sections ouvertes à la fois (sinon une seule)."),
+        new("Flush", "bool", null, "Sans cadre, seulement des séparateurs."),
+        new("Item Title / Subtitle / Icon / Extra", "string / string / string / RenderFragment", null, "En-tête de la section, contenu à droite (badge…)."),
+        new("Item Expanded / Disabled", "bool", null, "Ouverte au départ ; désactivée."),
+    ];
+}

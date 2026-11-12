@@ -1,0 +1,82 @@
+@page "/components/alert"
+@using static Helix.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Alert" Description="Message contextuel dans la page. La sévérité choisit l'icône et la couleur ; les deux restent modifiables.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:520px">
+                <HelixAlert @key="_key" Severity="_severity" Title="@_title" Closable="_closable" Color="@_color" OnClose="Reopen">@_text</HelixAlert>
+            </div>
+        </Preview>
+        <Controls>
+            <Choice TEnum="HelixSeverity" Label="Severity" @bind-Value="_severity" />
+            <HelixTextField Label="Title" @bind-Value="_title" />
+            <HelixTextField Label="Texte" @bind-Value="_text" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <HelixSwitch Label="Closable" @bind-Checked="_closable" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example WpfCode="@Wpf2" Title="Sévérités" Code="@AllCode">
+        <div class="stack">
+            <HelixAlert Title="Nouvelle version">Helix 0.2 est disponible avec le DataGrid.</HelixAlert>
+            <HelixAlert Severity="HelixSeverity.Success" Title="Paiement reçu">Merci, votre facture est disponible.</HelixAlert>
+            <HelixAlert Severity="HelixSeverity.Warning" Title="Stockage presque plein">Il vous reste 5 % d'espace.</HelixAlert>
+            <HelixAlert Severity="HelixSeverity.Danger" Title="Échec de la synchronisation" Closable="true">Vérifiez votre connexion puis réessayez.</HelixAlert>
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixAlert Severity="Warning" Title="Quota presque atteint"
+                        Content="Il reste 8 % de l'espace disponible."
+                        IsClosable="True" Closed="OnAlertClosed" />
+
+        <!-- Couleur et icône libres -->
+        <helix:HelixAlert Title="Nouveauté" Content="Les exports PDF arrivent." Accent="#8B5CF6" Icon="sparkles" CornerRadius="16" />
+        """;
+
+    private const string Wpf2 = """
+        <helix:HelixAlert Severity="Info" Title="Information" Content="Une nouvelle version est disponible." />
+        <helix:HelixAlert Severity="Success" Title="Enregistré" Content="Vos réglages ont été appliqués." />
+        <helix:HelixAlert Severity="Warning" Title="Attention" Content="Le certificat expire dans 7 jours." />
+        <helix:HelixAlert Severity="Danger" Title="Erreur" Content="La connexion au serveur a été perdue." />
+        """;
+
+    private HelixSeverity _severity = HelixSeverity.Info;
+    private string? _title = "Mise à jour disponible";
+    private string? _text = "Une nouvelle version est prête. Elle sera installée au prochain redémarrage.";
+    private string? _color;
+    private bool _closable = true;
+    private int _key;
+
+    private async Task Reopen()
+    {
+        await Task.Delay(800);
+        _key++;
+    }
+
+    private string Code =>
+        $"<HelixAlert{A("Severity", _severity, HelixSeverity.Info)}{A("Title", _title)}{A("Color", _color)}{B("Closable", _closable)}>\n    {_text}\n</HelixAlert>";
+
+    private const string AllCode = """
+        <HelixAlert Title="Nouvelle version">Helix 0.2 est disponible.</HelixAlert>
+        <HelixAlert Severity="HelixSeverity.Success" Title="Paiement reçu">…</HelixAlert>
+        <HelixAlert Severity="HelixSeverity.Warning" Title="Stockage presque plein">…</HelixAlert>
+        <HelixAlert Severity="HelixSeverity.Danger" Title="Échec" Closable>…</HelixAlert>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Severity", "HelixSeverity", null, "Info, Success, Warning ou Danger."),
+        new("Title / ChildContent", "string / RenderFragment", null, "Titre et message."),
+        new("Closable / OnClose", "bool / EventCallback", null, "Bouton de fermeture."),
+        new("Icon / IconContent", "string / RenderFragment", null, "Remplace l'icône de sévérité."),
+        new("ShowIcon", "bool", null, "Masque l'icône (true)."),
+        new("Color", "string", "--helix-alert-color", "Remplace la couleur de sévérité."),
+        new("—", "", "--helix-alert-radius", "Arrondi."),
+    ];
+}

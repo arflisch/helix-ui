@@ -1,0 +1,75 @@
+@page "/components/tabs"
+@using static Helix.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Tabs" Description="Onglets en trois styles. Déclarez des HelixTab enfants : c'est tout.">
+    <Playground WpfCode="@Wpf1" Code="@Code" StageStyle="align-items:start">
+        <Preview>
+            <div style="width:100%;max-width:520px">
+                <HelixTabs Variant="_variant" Color="@_color" @bind-ActiveIndex="_active">
+                    <HelixTab Title="Compte" Icon="@(_icons ? "user" : null)">
+                        <p class="muted" style="margin:0">Gérez votre nom, votre email et votre photo de profil.</p>
+                    </HelixTab>
+                    <HelixTab Title="Notifications" Icon="@(_icons ? "bell" : null)">
+                        <div class="stack">
+                            <HelixSwitch @bind-Checked="_n1" Label="Emails" />
+                            <HelixSwitch @bind-Checked="_n2" Label="Push" />
+                        </div>
+                    </HelixTab>
+                    <HelixTab Title="Sécurité" Icon="@(_icons ? "lock" : null)">
+                        <p class="muted" style="margin:0">Mot de passe et authentification à deux facteurs.</p>
+                    </HelixTab>
+                    <HelixTab Title="Facturation" Disabled="true" />
+                </HelixTabs>
+            </div>
+        </Preview>
+        <Controls>
+            <Choice TEnum="HelixTabsVariant" Label="Variant" @bind-Value="_variant" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <HelixSwitch Label="Icônes" @bind-Checked="_icons" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixTabs Variant="Underline" SelectedIndex="{Binding Tab}" Accent="#8B5CF6">
+            <helix:HelixTab Header="Aperçu" Icon="layout">
+                <TextBlock Text="Contenu de l'aperçu" />
+            </helix:HelixTab>
+            <helix:HelixTab Header="Activité" Icon="bell" />
+            <helix:HelixTab Header="Réglages" Icon="settings" IsEnabled="False" />
+        </helix:HelixTabs>
+        <!-- Variant : Underline, Pills ou Segmented -->
+        """;
+
+    private HelixTabsVariant _variant;
+    private string? _color;
+    private bool _icons = true, _n1 = true, _n2;
+    private int _active;
+
+    private string Code
+    {
+        get
+        {
+            string Icon(string name) => _icons ? $" Icon=\"{name}\"" : "";
+            return $"""
+                <HelixTabs{A("Variant", _variant, HelixTabsVariant.Underline)}{A("Color", _color)} @bind-ActiveIndex="active">
+                    <HelixTab Title="Compte"{Icon("user")}>…</HelixTab>
+                    <HelixTab Title="Notifications"{Icon("bell")}>…</HelixTab>
+                    <HelixTab Title="Sécurité"{Icon("lock")}>…</HelixTab>
+                    <HelixTab Title="Facturation" Disabled />
+                </HelixTabs>
+                """;
+        }
+    }
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Variant", "HelixTabsVariant", null, "Underline, Pills ou Segmented."),
+        new("ActiveIndex", "int", null, "Onglet actif (@bind-ActiveIndex)."),
+        new("Color", "string", "--helix-tabs-color", "Couleur de l'indicateur / de l'onglet actif."),
+        new("HelixTab.Title / Icon / Disabled", "string / string / bool", null, "Définition d'un onglet ; son contenu est le ChildContent."),
+    ];
+}

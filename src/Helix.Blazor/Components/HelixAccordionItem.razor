@@ -1,0 +1,64 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+
+@{
+    var open = Accordion?.IsOpen(this) ?? false;
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-accordion__item").Add("is-open", open).Add("is-disabled", Disabled).Add(Class).Build())" style="@Style">
+    <h3 class="helix-accordion__heading">
+        <button type="button" id="@_buttonId" class="helix-accordion__trigger" aria-expanded="@(open ? "true" : "false")" aria-controls="@_panelId"
+                disabled="@Disabled" @onclick="() => Accordion?.Toggle(this)">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <span class="helix-accordion__icon"><HelixIcon Name="@Icon" Size="16" /></span>
+            }
+            <span class="helix-accordion__titles">
+                <span class="helix-accordion__title">@Title</span>
+                @if (!string.IsNullOrEmpty(Subtitle))
+                {
+                    <span class="helix-accordion__subtitle">@Subtitle</span>
+                }
+            </span>
+            @Extra
+            <HelixIcon Name="chevron-down" Size="16" Class="helix-accordion__chevron" />
+        </button>
+    </h3>
+    <div id="@_panelId" class="helix-accordion__panel" role="region" aria-labelledby="@_buttonId" inert="@(!open)">
+        <div class="helix-accordion__inner">
+            <div class="helix-accordion__content">@ChildContent</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private HelixAccordion? Accordion { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Content on the right of the title (badge…).</summary>
+    [Parameter] public RenderFragment? Extra { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Open at first render.</summary>
+    [Parameter] public bool Expanded { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private readonly string _buttonId = HelixId.Next("acc-btn");
+    private readonly string _panelId = HelixId.Next("acc-panel");
+
+    protected override void OnInitialized()
+    {
+        if (Accordion is null)
+        {
+            throw new InvalidOperationException($"{nameof(HelixAccordionItem)} must be placed inside a {nameof(HelixAccordion)}.");
+        }
+
+        Accordion.Add(this, Expanded);
+    }
+
+    public void Dispose() => Accordion?.Remove(this);
+}

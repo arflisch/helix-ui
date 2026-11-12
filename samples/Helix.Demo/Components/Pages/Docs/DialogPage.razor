@@ -1,0 +1,117 @@
+@page "/components/dialog"
+@using static Helix.Demo.Components.Shared.Snippet
+@inject HelixToastService Toasts
+
+<DemoPage Title="Dialog" Description="Fenêtre modale : focus automatique, fermeture par Échap ou clic sur le fond, en-tête, corps et pied.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <HelixButton OnClick="() => _open = true">Ouvrir la fenêtre</HelixButton>
+            <HelixDialog @bind-Open="_open" Title="@_title" Description="@_description" Width="@($"{N(_width)}px")"
+                        CloseOnBackdrop="_backdrop" ShowClose="_showClose">
+                <ChildContent>
+                    <HelixTextField Label="Nom du projet" Value="Helix UI" />
+                </ChildContent>
+                <Footer>
+                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => _open = false">Annuler</HelixButton>
+                    <HelixButton OnClick="Confirm">Enregistrer</HelixButton>
+                </Footer>
+            </HelixDialog>
+        </Preview>
+        <Controls>
+            <HelixTextField Label="Title" @bind-Value="_title" />
+            <HelixTextField Label="Description" @bind-Value="_description" />
+            <HelixSlider Label="Width" @bind-Value="_width" Min="320" Max="720" Step="20" Format="@(v => $"{v} px")" />
+            <HelixSwitch Label="CloseOnBackdrop" @bind-Checked="_backdrop" Size="HelixSize.Sm" />
+            <HelixSwitch Label="ShowClose" @bind-Checked="_showClose" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example WpfCode="@Wpf2" Title="Confirmation destructive" Code="@ConfirmCode">
+        <HelixButton Color="danger" Variant="HelixVariant.Soft" Icon="trash" OnClick="() => _confirm = true">Supprimer le projet</HelixButton>
+        <HelixDialog @bind-Open="_confirm" Title="Supprimer le projet ?" Width="420px">
+            <ChildContent>Cette action est définitive. Toutes les données du projet seront perdues.</ChildContent>
+            <Footer>
+                <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => _confirm = false">Annuler</HelixButton>
+                <HelixButton Color="danger" OnClick="Delete">Supprimer</HelixButton>
+            </Footer>
+        </HelixDialog>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixDialog IsOpen="{Binding IsInviteOpen}" Title="Inviter un membre"
+                         Description="Il recevra un e-mail pour rejoindre l'équipe." DialogWidth="480">
+            <helix:HelixTextField Label="E-mail" Icon="mail" Text="{Binding Email}" />
+            <helix:HelixDialog.Footer>
+                <StackPanel Orientation="Horizontal">
+                    <helix:HelixButton Content="Annuler" Variant="Ghost" Tone="Neutral" Command="{Binding CancelCommand}" />
+                    <helix:HelixButton Content="Inviter" Margin="8,0,0,0" Command="{Binding InviteCommand}" />
+                </StackPanel>
+            </helix:HelixDialog.Footer>
+        </helix:HelixDialog>
+        <!-- Affiché par le HelixHost de la fenêtre ; Échap et le fond ferment (CloseOnEscape, CloseOnBackdrop). -->
+        """;
+
+    private const string Wpf2 = """
+        // Une confirmation n'a pas besoin de XAML :
+        if (await HelixConfirm.AskAsync("Supprimer 3 fichiers ?", "Ils seront perdus définitivement.", danger: true, confirmText: "Supprimer"))
+        {
+            DeleteSelection();
+        }
+        """;
+
+    private bool _open, _confirm, _backdrop = true, _showClose = true;
+    private string? _title = "Modifier le projet";
+    private string? _description = "Les changements sont visibles par toute l'équipe.";
+    private double _width = 480;
+
+    private void Confirm()
+    {
+        _open = false;
+        Toasts.Success("Projet enregistré");
+    }
+
+    private void Delete()
+    {
+        _confirm = false;
+        Toasts.Error("Projet supprimé", "Supprimé");
+    }
+
+    private string Code =>
+        $"""
+        <HelixButton OnClick="() => open = true">Ouvrir</HelixButton>
+
+        <HelixDialog @bind-Open="open"{A("Title", _title)}{A("Description", _description)}{A("Width", $"{N(_width)}px", "480px")}{(_backdrop ? "" : " CloseOnBackdrop=\"false\"")}{(_showClose ? "" : " ShowClose=\"false\"")}>
+            <ChildContent>…</ChildContent>
+            <Footer>
+                <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => open = false">Annuler</HelixButton>
+                <HelixButton OnClick="Save">Enregistrer</HelixButton>
+            </Footer>
+        </HelixDialog>
+        """;
+
+    private const string ConfirmCode = """
+        <HelixDialog @bind-Open="confirm" Title="Supprimer le projet ?" Width="420px">
+            <ChildContent>Cette action est définitive.</ChildContent>
+            <Footer>
+                <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => confirm = false">Annuler</HelixButton>
+                <HelixButton Color="danger" OnClick="Delete">Supprimer</HelixButton>
+            </Footer>
+        </HelixDialog>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Open", "bool", null, "Visibilité (@bind-Open)."),
+        new("Title / Description", "string", null, "En-tête."),
+        new("ChildContent / Footer", "RenderFragment", null, "Corps et pied."),
+        new("CloseOnBackdrop / CloseOnEscape", "bool", null, "Fermeture par clic sur le fond / Échap (true)."),
+        new("ShowClose", "bool", null, "Croix de fermeture (true)."),
+        new("Width", "string", "--helix-dialog-width", "Largeur maximale (480px)."),
+        new("Radius", "string", "--helix-dialog-radius", "Arrondi."),
+        new("—", "", "--helix-overlay", "Couleur du fond assombri."),
+    ];
+}

@@ -1,0 +1,200 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+@{
+    var parts = Parts();
+    var total = parts.Sum(p => p.Value);
+    var active = _active is { } a && a < parts.Count ? parts[a] : null;
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-donut").Add($"helix-donut--{Shape.Css()}").Add(Class).Build())"
+     style="@(new StyleBuilder().Var("--helix-donut-size", Size).Raw(Style).Build())">
+    @if (!string.IsNullOrEmpty(Title) || ShowTableToggle)
+    {
+        <div class="helix-chart__header">
+            <div class="helix-chart__titles">
+                @if (!string.IsNullOrEmpty(Title)) { <h3 class="helix-chart__title">@Title</h3> }
+                @if (!string.IsNullOrEmpty(Subtitle)) { <p class="helix-chart__subtitle">@Subtitle</p> }
+            </div>
+            @if (ShowTableToggle)
+            {
+                <div class="helix-chart__actions">
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" aria-pressed="@(_table ? "true" : "false")"
+                                OnClick="() => _table = !_table">@(_table ? "Graphique" : "Tableau")</HelixButton>
+                </div>
+            }
+        </div>
+    }
+
+    @if (total <= 0)
+    {
+        <p class="helix-chart__empty">@(EmptyText ?? Texts.NoData)</p>
+    }
+    else if (_table)
+    {
+        <div class="helix-chart__table-wrap">
+            <table class="helix-chart__table">
+                <thead><tr><th scope="col">@(LabelHeader ?? Texts.Category)</th><th scope="col" class="is-end">@Texts.Value</th><th scope="col" class="is-end">@Texts.Share</th></tr></thead>
+                <tbody>
+                    @foreach (var part in parts)
+                    {
+                        <tr><th scope="row">@part.Label</th><td class="is-end">@FormatValue(part.Value)</td><td class="is-end">@FormatPct(part.Value / total)</td></tr>
+                    }
+                </tbody>
+                <tfoot><tr><th scope="row">Total</th><td class="is-end">@FormatValue(total)</td><td class="is-end">100 %</td></tr></tfoot>
+            </table>
+        </div>
+    }
+    else if (Shape == HelixPartShape.SegmentedBar)
+    {
+        <div class="helix-donut__bar" role="img" aria-label="@Describe(parts, total)">
+            @for (var i = 0; i < parts.Count; i++)
+            {
+                var index = i;
+                var part = parts[i];
+                var share = part.Value / total;
+                <span class="@(new CssBuilder("helix-donut__block").Add("is-dim", _active is not null && _active != index).Build())"
+                      style="flex-grow:@Inv(part.Value);--_s:@part.Color"
+                      title="@($"{part.Label} · {FormatValue(part.Value)} · {FormatPct(share)}")"
+                      @onmouseenter="() => _active = index" @onmouseleave="() => _active = null">
+                    @if (share >= 0.1)
+                    {
+                        <span class="helix-donut__block-text">@FormatPct(share)</span>
+                    }
+                </span>
+            }
+        </div>
+        @Legend(parts, total, withFigures: false)
+    }
+    else
+    {
+        <div class="helix-donut__body">
+            <div class="helix-donut__ring">
+                <svg viewBox="0 0 100 100" role="img" aria-label="@Describe(parts, total)">
+                    <circle class="helix-donut__track" cx="50" cy="50" r="40" style="stroke-width:@Inv(Thickness)" />
+                    @{
+                        var offset = 0d;
+                        var gap = parts.Count > 1 ? 0.8 : 0; // surface gap between segments, in % of the circle
+                    }
+                    @for (var i = 0; i < parts.Count; i++)
+                    {
+                        var index = i;
+                        var part = parts[i];
+                        var length = part.Value / total * 100;
+                        <circle class="@(new CssBuilder("helix-donut__segment").Add("is-active", _active == index).Add("is-dim", _active is not null && _active != index).Build())"
+                                cx="50" cy="50" r="40" pathLength="100"
+                                style="--_s:@part.Color;stroke-width:@Inv(Thickness);stroke-dasharray:@Inv(Math.Max(length - gap, 0.1)) @Inv(100 - Math.Max(length - gap, 0.1));stroke-dashoffset:@Inv(-offset)"
+                                @onmouseenter="() => _active = index" @onmouseleave="() => _active = null" @onclick="() => OnItemClick.InvokeAsync(part.Source)" />
+                        offset += length;
+                    }
+                </svg>
+                <div class="helix-donut__center" aria-hidden="true">
+                    @if (active is not null)
+                    {
+                        <span class="helix-donut__center-value">@FormatPct(active.Value / total)</span>
+                        <span class="helix-donut__center-label">@active.Label</span>
+                        <span class="helix-donut__center-sub">@FormatValue(active.Value)</span>
+                    }
+                    else
+                    {
+                        <span class="helix-donut__center-value">@FormatValue(total)</span>
+                        <span class="helix-donut__center-label">@(CenterLabel ?? Texts.Total)</span>
+                    }
+                </div>
+            </div>
+            @Legend(parts, total, withFigures: true)
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IEnumerable<HelixPart> Items { get; set; } = [];
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public HelixPartShape Shape { get; set; } = HelixPartShape.Donut;
+
+    /// <summary>Beyond this, the smallest parts are grouped into "Autres" (6 max: more becomes unreadable).</summary>
+    [Parameter] public int MaxParts { get; set; } = 6;
+    [Parameter] public string? OtherLabel { get; set; }
+
+    /// <summary>Largest first (true).</summary>
+    [Parameter] public bool Sort { get; set; } = true;
+    [Parameter] public string? CenterLabel { get; set; }
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string ValueFormat { get; set; } = "#,0.##";
+    [Parameter] public string? LabelHeader { get; set; }
+
+    /// <summary>Ring width (in % of the diameter, 12 by default).</summary>
+    [Parameter] public double Thickness { get; set; } = 12;
+
+    /// <summary>Ring diameter, e.g. "200px".</summary>
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public bool ShowTableToggle { get; set; } = true;
+    [Parameter] public string? EmptyText { get; set; }
+    [Parameter] public EventCallback<HelixPart> OnItemClick { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private int? _active;
+    private bool _table;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private sealed record Part(string Label, double Value, string Color, HelixPart Source);
+
+    private List<Part> Parts()
+    {
+        var items = Items.Where(i => i.Value > 0).ToList();
+        if (Sort)
+        {
+            items = items.OrderByDescending(i => i.Value).ToList();
+        }
+
+        var max = Math.Clamp(MaxParts, 2, 8);
+        if (items.Count > max)
+        {
+            var rest = items.Skip(max - 1).ToList();
+            items = items.Take(max - 1).Append(new HelixPart(OtherLabel ?? Texts.Others, rest.Sum(r => r.Value), "var(--helix-text-subtle)")).ToList();
+        }
+
+        // Colors follow the fixed series order; an explicit color wins.
+        return items.Select((item, i) => new Part(item.Label, item.Value,
+            item.Color is { } c ? HelixColor.Resolve(c).Value : $"var(--helix-series-{i + 1})", item)).ToList();
+    }
+
+    private RenderFragment Legend(List<Part> parts, double total, bool withFigures) => __builder =>
+    {
+        <ul class="@(new CssBuilder("helix-donut__legend").Add("is-compact", !withFigures).Build())">
+            @for (var i = 0; i < parts.Count; i++)
+            {
+                var index = i;
+                var part = parts[i];
+                <li>
+                    <button type="button" class="@(new CssBuilder("helix-donut__legend-item").Add("is-active", _active == index).Build())"
+                            @onmouseenter="() => _active = index" @onmouseleave="() => _active = null"
+                            @onfocus="() => _active = index" @onblur="() => _active = null"
+                            @onclick="() => OnItemClick.InvokeAsync(part.Source)">
+                        <span class="helix-donut__key" style="--_s:@part.Color"></span>
+                        <span class="helix-donut__legend-label">@part.Label</span>
+                        @if (withFigures)
+                        {
+                            <span class="helix-donut__legend-value">@FormatValue(part.Value)</span>
+                            <span class="helix-donut__legend-pct">@FormatPct(part.Value / total)</span>
+                        }
+                    </button>
+                </li>
+            }
+        </ul>
+    };
+
+    private string Describe(List<Part> parts, double total) =>
+        $"{Title ?? Texts.Breakdown}: " + string.Join(", ", parts.Select(p => $"{p.Label} {FormatPct(p.Value / total)}"));
+
+    private string FormatValue(double value) =>
+        value.ToString(ValueFormat, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");
+
+    /// <summary>"42 %", or one decimal under 10 % ("4,5 %") where the difference matters.</summary>
+    private string FormatPct(double share) => (share * 100).ToString(share < 0.1 ? "0.#" : "0", EffectiveCulture) + " %";
+
+    private static string Inv(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+}

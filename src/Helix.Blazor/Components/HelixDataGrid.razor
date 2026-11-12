@@ -1,0 +1,772 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@typeparam TItem
+@attribute [CascadingTypeParameter(nameof(TItem))]
+@using System.Globalization
+
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+@{
+    var view = BuildView();
+    var columns = VisibleColumns;
+    var colCount = columns.Count + (Selectable ? 1 : 0);
+    var showSkeleton = Loading || (IsServerMode && !_hasLoaded && _error is null);
+    var showFooter = _pageSize > 0 && !showSkeleton && _error is null && view.Total > 0;
+}
+
+<div @attributes="Attributes" class="@ClassValue(showFooter)" style="@StyleValue" aria-busy="@(_loadingData ? "true" : null)">
+    @if (HasToolbar)
+    {
+        <div class="helix-grid__toolbar">
+            @if (Searchable)
+            {
+                <HelixTextField Class="helix-grid__search" Icon="search" Clearable="true" Placeholder="@(SearchPlaceholder ?? Texts.Search)"
+                               Value="@_search" ValueChanged="OnSearch" aria-label="@(SearchPlaceholder ?? Texts.Search)" />
+            }
+            <div class="helix-grid__toolbar-end">
+                @Toolbar
+                @if (ColumnChooser)
+                {
+                    <div class="helix-grid__chooser">
+                        <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="columns"
+                                    aria-expanded="@(_chooserOpen ? "true" : "false")" OnClick="() => _chooserOpen = !_chooserOpen">Colonnes</HelixButton>
+                        @if (_chooserOpen)
+                        {
+                            <div class="helix-select__backdrop" @onclick="() => _chooserOpen = false"></div>
+                            <div class="helix-grid__chooser-menu" role="dialog" aria-label="@Texts.VisibleColumns">
+                                <p class="helix-grid__chooser-title">@Texts.VisibleColumns</p>
+                                @foreach (var (column, visible) in OrderedColumns)
+                                {
+                                    var col = column;
+                                    <HelixCheckbox Checked="visible" Label="@column.HeaderText" Color="@Color"
+                                                  Disabled="@(visible && columns.Count == 1)"
+                                                  CheckedChanged="v => SetColumnVisible(col, v)" />
+                                }
+                                <button type="button" class="helix-grid__chooser-reset" @onclick="ResetColumns">@Texts.Reset</button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="helix-grid__body">
+        @if (_loadingData && _hasLoaded)
+        {
+            <div class="helix-grid__refresh" role="progressbar" aria-label="@Texts.Loading"></div>
+        }
+        <div class="helix-grid__scroll">
+            <table class="helix-grid__table">
+                <thead>
+                    <tr>
+                        @if (Selectable)
+                        {
+                            <th class="helix-grid__check" scope="col">
+                                <HelixCheckbox Checked="view.AllSelected" Indeterminate="view.SomeSelected" Color="@Color"
+                                              Disabled="@(view.Page.Count == 0)" CheckedChanged="ToggleAll"
+                                              aria-label="@(IsServerMode ? Texts.SelectPage : Texts.SelectAll)" />
+                            </th>
+                        }
+                        @foreach (var column in columns)
+                        {
+                            var sorted = ReferenceEquals(column, _sortColumn);
+                            var sortable = CanSort(column);
+                            <th scope="col"
+                                class="@(new CssBuilder().Add($"is-{column.Align.Css()}").Add("is-sortable", sortable).Add("is-sorted", sorted).Add("is-movable", ReorderableColumns).Add("is-col-dragged", ReferenceEquals(column, _dragColumn)).Add("is-col-target", _dragColumn is not null && ReferenceEquals(column, _dropColumn) && !ReferenceEquals(column, _dragColumn)).Build())"
+                                draggable="@(ReorderableColumns ? "true" : "false")"
+                                data-helix-drag="@(ReorderableColumns ? "" : null)"
+                                @ondragstart="() => _dragColumn = column"
+                                @ondragenter="() => { if (_dragColumn is not null) _dropColumn = column; }"
+                                @ondragover:preventDefault="true"
+                                @ondrop="DropColumn"
+                                @ondragend="() => (_dragColumn, _dropColumn) = (null, null)"
+                                style="@(column.Width is null ? null : $"width:{column.Width}")"
+                                aria-sort="@(sorted ? (_sortDescending ? "descending" : "ascending") : null)"
+                                tabindex="@(sortable ? "0" : null)"
+                                @onclick="() => Sort(column)"
+                                @onkeydown="e => OnHeaderKey(e, column)">
+                                <span class="helix-grid__th">
+                                    @column.HeaderText
+                                    @if (sortable)
+                                    {
+                                        <HelixIcon Class="helix-grid__sort" Size="13" Name="@(sorted ? (_sortDescending ? "arrow-down" : "arrow-up") : "chevrons-up-down")" />
+                                    }
+                                </span>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (showSkeleton)
+                    {
+                        @for (var r = 0; r < Math.Clamp(_pageSize > 0 ? _pageSize : 5, 3, 8); r++)
+                        {
+                            <tr class="helix-grid__loading-row">
+                                @for (var c = 0; c < colCount; c++)
+                                {
+                                    <td><span class="helix-grid__skeleton" style="width:@(c == 0 && Selectable ? 16 : 40 + (r * 13 + c * 29) % 45)%"></span></td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else if (_error is not null)
+                    {
+                        <tr>
+                            <td class="helix-grid__empty helix-grid__error" colspan="@colCount">
+                                <HelixIcon Name="danger" Size="22" />
+                                <p>@(ErrorText ?? Texts.LoadError)</p>
+                                <HelixButton Variant="HelixVariant.Soft" Color="neutral" Size="HelixSize.Sm" OnClick="RefreshAsync">@Texts.Retry</HelixButton>
+                            </td>
+                        </tr>
+                    }
+                    else if (view.Page.Count == 0)
+                    {
+                        <tr>
+                            <td class="helix-grid__empty" colspan="@colCount">
+                                @if (EmptyContent is not null)
+                                {
+                                    @EmptyContent
+                                }
+                                else
+                                {
+                                    <HelixIcon Name="search" Size="22" />
+                                    <p>@(string.IsNullOrWhiteSpace(_search) ? EmptyText ?? Texts.NoData : HelixTexts.Format(Texts.NoResultsFor, _search))</p>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in view.Page)
+                        {
+                            var selected = Selectable && _selected.Contains(item);
+                            <tr @key="KeyOf(item)"
+                                class="@(new CssBuilder().Add("is-selected", selected).Add("is-clickable", OnRowClick.HasDelegate || Selectable).Add(RowClass?.Invoke(item)).Build())"
+                                aria-selected="@(Selectable ? (selected ? "true" : "false") : null)"
+                                @onclick="() => RowClicked(item)">
+                                @if (Selectable)
+                                {
+                                    <td class="helix-grid__check" @onclick:stopPropagation="true">
+                                        <HelixCheckbox Checked="selected" Color="@Color" CheckedChanged="v => ToggleItem(item, v)" aria-label="@Texts.SelectRow" />
+                                    </td>
+                                }
+                                @foreach (var column in columns)
+                                {
+                                    <td class="@(new CssBuilder($"is-{column.Align.Css()}").Add(column.CellClass).Build())">
+                                        @if (column.Template is not null)
+                                        {
+                                            @column.Template(item)
+                                        }
+                                        else
+                                        {
+                                            @column.Text(item, EffectiveCulture)
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (showFooter)
+    {
+        <div class="helix-grid__footer">
+            <span class="helix-grid__info">
+                @(view.From)–@(view.To) sur @view.Total
+                @if (Selectable && _selected.Count > 0)
+                {
+                    <span class="helix-grid__info-sel"> · @HelixTexts.Format(Texts.SelectedCount, _selected.Count)</span>
+                }
+            </span>
+            <div class="helix-grid__pager">
+                @if (PageSizes.Length > 1)
+                {
+                    <span class="helix-grid__rows-label">Lignes</span>
+                    <HelixSelect TValue="int" Class="helix-grid__size" Items="PageSizes" Value="_pageSize" ValueChanged="SetPageSize" aria-label="@Texts.RowsPerPageLabel" />
+                }
+                <button type="button" class="helix-grid__page" disabled="@(_page == 0)" aria-label="@Texts.PreviousPage" @onclick="() => GoTo(_page - 1)">
+                    <HelixIcon Name="chevron-left" Size="15" />
+                </button>
+                @foreach (var p in PageNumbers(view.PageCount))
+                {
+                    if (p < 0)
+                    {
+                        <span class="helix-grid__ellipsis">…</span>
+                    }
+                    else
+                    {
+                        var page = p;
+                        <button type="button" class="@(new CssBuilder("helix-grid__page").Add("is-active", page == _page).Build())"
+                                aria-current="@(page == _page ? "page" : null)" @onclick="() => GoTo(page)">@(page + 1)</button>
+                    }
+                }
+                <button type="button" class="helix-grid__page" disabled="@(_page >= view.PageCount - 1)" aria-label="@Texts.NextPage" @onclick="() => GoTo(_page + 1)">
+                    <HelixIcon Name="chevron-right" Size="15" />
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>In-memory rows: the grid sorts, searches and pages them itself.</summary>
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>
+    /// Server mode: the grid asks for one page at a time (sort, search and paging done by your code or database).
+    /// Pass a method, not a lambda that changes on every render. Takes precedence over <see cref="Items"/>.
+    /// </summary>
+    [Parameter] public HelixGridItemsProvider<TItem>? ItemsProvider { get; set; }
+
+    /// <summary>Delay after the last keystroke before searching in server mode.</summary>
+    [Parameter] public TimeSpan SearchDelay { get; set; } = TimeSpan.FromMilliseconds(300);
+
+    [Parameter] public string? ErrorText { get; set; }
+
+    /// <summary>Called when the ItemsProvider throws (log it, show a toast…).</summary>
+    [Parameter] public EventCallback<Exception> OnLoadError { get; set; }
+
+    /// <summary>Row identity for selection and rendering, e.g. e => e.Id. Needed in server mode unless rows are records.</summary>
+    [Parameter] public Func<TItem, object>? ItemKey { get; set; }
+
+    /// <summary>The HelixColumn definitions.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Shows a search box that filters on every searchable column.</summary>
+    [Parameter] public bool Searchable { get; set; }
+    [Parameter] public string? SearchPlaceholder { get; set; }
+
+    /// <summary>Content on the right of the toolbar (buttons, filters…).</summary>
+    [Parameter] public RenderFragment? Toolbar { get; set; }
+
+    /// <summary>Rows per page. 0 shows every row.</summary>
+    /// <summary>Rows per page; 0 shows all. Null: HelixOptions.Defaults.DataGrid.PageSize, else 10.</summary>
+    [Parameter] public int? PageSize { get; set; }
+
+    private int EffectivePageSize => PageSize ?? Defaults.DataGrid.PageSize ?? 10;
+    [Parameter] public int[] PageSizes { get; set; } = [10, 25, 50];
+
+    /// <summary>Adds a checkbox column. Use with @bind-SelectedItems.</summary>
+    [Parameter] public bool Selectable { get; set; }
+    [Parameter] public IReadOnlyCollection<TItem>? SelectedItems { get; set; }
+    [Parameter] public EventCallback<IReadOnlyCollection<TItem>> SelectedItemsChanged { get; set; }
+
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+
+    /// <summary>Extra CSS class per row, e.g. item => item.IsLate ? "late" : null.</summary>
+    [Parameter] public Func<TItem, string?>? RowClass { get; set; }
+
+    [Parameter] public bool? Striped { get; set; }
+
+    /// <summary>Row height: Sm (compact), Md, Lg (comfortable).</summary>
+    /// <summary>Null: HelixOptions.Defaults.DataGrid.Density, else Md.</summary>
+    [Parameter] public HelixSize? Density { get; set; }
+
+    /// <summary>Forces skeleton rows (in server mode they appear automatically on the first load).</summary>
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public RenderFragment? EmptyContent { get; set; }
+    [Parameter] public string? EmptyText { get; set; }
+
+    /// <summary>Culture used by column formats (defaults to the current culture).</summary>
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    /// <summary>Accent: sort indicator, selection, current page.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? HeaderBackground { get; set; }
+    [Parameter] public string? HoverColor { get; set; }
+    [Parameter] public string? StripeColor { get; set; }
+    [Parameter] public string? SelectedColor { get; set; }
+    [Parameter] public string? Radius { get; set; }
+
+    /// <summary>Scroll height with a sticky header, e.g. "420px".</summary>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>Drag the headers to reorder the columns.</summary>
+    [Parameter] public bool ReorderableColumns { get; set; }
+
+    /// <summary>"Colonnes" button: the reader picks the visible columns.</summary>
+    [Parameter] public bool ColumnChooser { get; set; }
+
+    /// <summary>Saved column order and visibility (keys = HelixColumn.Key, or the property path, or the title).</summary>
+    [Parameter] public IReadOnlyList<HelixColumnState>? ColumnLayout { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<HelixColumnState>> ColumnLayoutChanged { get; set; }
+
+    private readonly List<HelixColumn<TItem>> _columns = [];
+    private List<HelixColumnState>? _columnState;
+    private IReadOnlyList<HelixColumnState>? _lastColumnLayoutParam;
+    private HelixColumn<TItem>? _dragColumn;
+    private HelixColumn<TItem>? _dropColumn;
+    private bool _chooserOpen;
+    private IJSObjectReference? _module;
+
+    private bool HasToolbar => Searchable || Toolbar is not null || ColumnChooser;
+
+    /// <summary>Every column in display order, with its visibility (columns the saved layout doesn't know come last, visible).</summary>
+    private List<(HelixColumn<TItem> Column, bool Visible)> OrderedColumns
+    {
+        get
+        {
+            if (_columnState is null)
+            {
+                return _columns.Select(c => (c, true)).ToList();
+            }
+
+            var result = new List<(HelixColumn<TItem>, bool)>();
+            foreach (var state in _columnState)
+            {
+                var column = _columns.FirstOrDefault(c => c.StableKey == state.Key);
+                if (column is not null && result.All(r => !ReferenceEquals(r.Item1, column)))
+                {
+                    result.Add((column, state.Visible));
+                }
+            }
+
+            result.AddRange(_columns.Where(c => result.All(r => !ReferenceEquals(r.Item1, c))).Select(c => (c, true)));
+            return result;
+        }
+    }
+
+    private List<HelixColumn<TItem>> VisibleColumns => OrderedColumns.Where(c => c.Visible).Select(c => c.Column).ToList();
+
+    private async Task CommitColumns(List<(HelixColumn<TItem> Column, bool Visible)> ordered)
+    {
+        var state = ordered.Select(c => new HelixColumnState(c.Column.StableKey, c.Visible)).ToList();
+        _columnState = state;
+        _lastColumnLayoutParam = state;
+        await ColumnLayoutChanged.InvokeAsync(state);
+    }
+
+    private Task SetColumnVisible(HelixColumn<TItem> column, bool visible) =>
+        CommitColumns(OrderedColumns.Select(c => ReferenceEquals(c.Column, column) ? (c.Column, visible) : c).ToList());
+
+    private async Task ResetColumns()
+    {
+        _columnState = null;
+        _lastColumnLayoutParam = null;
+        await ColumnLayoutChanged.InvokeAsync(_columns.Select(c => new HelixColumnState(c.StableKey, true)).ToList());
+    }
+
+    private async Task DropColumn()
+    {
+        if (_dragColumn is { } from && _dropColumn is { } to && !ReferenceEquals(from, to))
+        {
+            var ordered = OrderedColumns;
+            var moving = ordered.First(c => ReferenceEquals(c.Column, from));
+            var fromIndex = ordered.IndexOf(moving);
+            ordered.Remove(moving);
+            var toIndex = ordered.FindIndex(c => ReferenceEquals(c.Column, to));
+            ordered.Insert(fromIndex <= toIndex ? toIndex + 1 : toIndex, moving);
+            await CommitColumns(ordered);
+        }
+
+        (_dragColumn, _dropColumn) = (null, null);
+    }
+    private HashSet<TItem> _selected = [];
+    private Func<TItem, object>? _selectionKey;
+    private IReadOnlyCollection<TItem>? _lastSelectedParam;
+    private HelixColumn<TItem>? _sortColumn;
+    private bool _sortDescending;
+    private string? _search;
+    private int _page;
+    private int _pageSize;
+    private int? _lastPageSizeParam;
+
+    // Server mode state.
+    private HelixGridItemsProvider<TItem>? _lastProvider;
+    private CancellationTokenSource? _loadCts;
+    private IReadOnlyList<TItem> _serverItems = [];
+    private int _serverTotal;
+    private bool _loadingData;
+    private bool _hasLoaded;
+    private string? _error;
+    private bool _disposed;
+
+    private bool IsServerMode => ItemsProvider is not null;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private sealed record View(IReadOnlyList<TItem> Page, int Total, int PageCount, int From, int To, bool AllSelected, bool SomeSelected);
+
+    /// <summary>Reloads the current page from the ItemsProvider (call it after you add, edit or delete rows).</summary>
+    public Task RefreshAsync() => IsServerMode ? LoadAsync(TimeSpan.Zero) : InvokeAsync(StateHasChanged);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ReorderableColumns)
+        {
+            _module = await HelixJs.EnableDndAsync(JS);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!ReferenceEquals(ColumnLayout, _lastColumnLayoutParam))
+        {
+            _lastColumnLayoutParam = ColumnLayout;
+            _columnState = ColumnLayout?.ToList();
+        }
+
+        if (!ReferenceEquals(ItemKey, _selectionKey) && (ItemKey is not null || _selectionKey is not null))
+        {
+            _selectionKey = ItemKey;
+            _selected = ItemKey is null ? new HashSet<TItem>(_selected) : new HashSet<TItem>(_selected, new KeyComparer(ItemKey));
+        }
+
+        if (!ReferenceEquals(SelectedItems, _lastSelectedParam))
+        {
+            _lastSelectedParam = SelectedItems;
+            _selected.Clear();
+            if (SelectedItems is not null)
+            {
+                _selected.UnionWith(SelectedItems);
+            }
+        }
+
+        var reload = false;
+        if (_lastPageSizeParam != EffectivePageSize)
+        {
+            _lastPageSizeParam = EffectivePageSize;
+            _pageSize = EffectivePageSize;
+            _page = 0;
+            reload = true;
+        }
+
+        // Delegate equality: a method group passed again on re-render is equal, so it doesn't trigger a reload.
+        if (!Equals(ItemsProvider, _lastProvider))
+        {
+            _lastProvider = ItemsProvider;
+            reload = true;
+        }
+
+        // Not during static prerendering: it would delay the first paint by the API latency and the
+        // interactive render would query again anyway. Skeletons show until the interactive load.
+        if (reload && IsServerMode && RendererInfo.IsInteractive)
+        {
+            await LoadAsync(TimeSpan.Zero);
+        }
+    }
+
+    private async Task LoadAsync(TimeSpan delay)
+    {
+        if (ItemsProvider is null || _disposed)
+        {
+            return;
+        }
+
+        // A newer request always wins: cancel the one in flight (and its debounce delay).
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        var cts = new CancellationTokenSource();
+        _loadCts = cts;
+        var token = cts.Token;
+
+        _loadingData = true;
+        StateHasChanged();
+
+        try
+        {
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay, token);
+            }
+
+            var request = new HelixGridRequest(
+                Skip: _pageSize > 0 ? _page * _pageSize : 0,
+                Take: _pageSize,
+                SortBy: _sortColumn?.ServerSortName,
+                SortDescending: _sortColumn is not null && _sortDescending,
+                Search: string.IsNullOrWhiteSpace(_search) ? null : _search.Trim());
+
+            var result = await ItemsProvider(request, token);
+            token.ThrowIfCancellationRequested();
+
+            // The current page no longer exists (rows were deleted): jump to the last page.
+            if (result.Items.Count == 0 && result.TotalCount > 0 && _page > 0 && _pageSize > 0)
+            {
+                _page = (result.TotalCount - 1) / _pageSize;
+                await LoadAsync(TimeSpan.Zero);
+                return;
+            }
+
+            _serverItems = result.Items;
+            _serverTotal = result.TotalCount;
+            _error = null;
+            _hasLoaded = true;
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Superseded by a newer request or the grid was disposed: that request owns the state now.
+            return;
+        }
+        catch (Exception ex)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return; // A newer request owns the state; this failure is no longer relevant.
+            }
+
+            _error = ex.Message;
+            _hasLoaded = true;
+            await OnLoadError.InvokeAsync(ex);
+        }
+
+        if (ReferenceEquals(_loadCts, cts))
+        {
+            _loadingData = false;
+            StateHasChanged();
+        }
+    }
+
+    internal void AddColumn(HelixColumn<TItem> column)
+    {
+        _columns.Add(column);
+        StateHasChanged();
+    }
+
+    internal void RemoveColumn(HelixColumn<TItem> column)
+    {
+        if (_columns.Remove(column))
+        {
+            if (ReferenceEquals(_sortColumn, column))
+            {
+                _sortColumn = null;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private bool CanSort(HelixColumn<TItem> column) => IsServerMode ? column.CanSortOnServer : column.CanSort;
+
+    private object KeyOf(TItem item) => ItemKey?.Invoke(item) ?? item!;
+
+    /// <summary>In-memory mode: every row after search and sort. Server mode: the loaded page.</summary>
+    private List<TItem> Filtered()
+    {
+        if (IsServerMode)
+        {
+            return _serverItems.ToList();
+        }
+
+        IEnumerable<TItem> rows = Items ?? [];
+
+        if (!string.IsNullOrWhiteSpace(_search))
+        {
+            var term = _search.Trim();
+            var culture = EffectiveCulture;
+            var searchable = _columns.Where(c => c.CanSearch).ToArray();
+            rows = rows.Where(item => searchable.Any(c => c.Text(item, culture).Contains(term, StringComparison.CurrentCultureIgnoreCase)));
+        }
+
+        if (_sortColumn is not null)
+        {
+            var column = _sortColumn;
+            rows = _sortDescending
+                ? rows.OrderByDescending(column.SortValue, Comparer<object?>.Default)
+                : rows.OrderBy(column.SortValue, Comparer<object?>.Default);
+        }
+
+        return rows.ToList();
+    }
+
+    private View BuildView()
+    {
+        var rows = Filtered();
+        var total = IsServerMode ? _serverTotal : rows.Count;
+        var pageCount = _pageSize > 0 ? Math.Max(1, (int)Math.Ceiling(total / (double)_pageSize)) : 1;
+
+        IReadOnlyList<TItem> page;
+        if (IsServerMode)
+        {
+            page = rows;
+        }
+        else
+        {
+            _page = Math.Clamp(_page, 0, pageCount - 1);
+            page = _pageSize > 0 ? rows.Skip(_page * _pageSize).Take(_pageSize).ToList() : rows;
+        }
+
+        var from = total == 0 ? 0 : _page * Math.Max(_pageSize, 1) + 1;
+        var to = _pageSize > 0 ? Math.Min(total, _page * _pageSize + page.Count) : total;
+
+        // Server mode only knows the loaded page, so "select all" applies to the page.
+        var selectedInView = Selectable ? rows.Count(_selected.Contains) : 0;
+        return new View(page, total, pageCount, from, to,
+            AllSelected: rows.Count > 0 && selectedInView == rows.Count,
+            SomeSelected: selectedInView > 0 && selectedInView < rows.Count);
+    }
+
+    /// <summary>Page indexes to show; -1 is an ellipsis. Always first, last and the neighbours of the current page.</summary>
+    private List<int> PageNumbers(int count)
+    {
+        if (count <= 7)
+        {
+            return Enumerable.Range(0, count).ToList();
+        }
+
+        var start = Math.Clamp(_page - 1, 1, count - 4);
+        var end = Math.Clamp(_page + 1, 3, count - 2);
+        var pages = new List<int> { 0 };
+        if (start > 1)
+        {
+            pages.Add(-1);
+        }
+
+        for (var p = start; p <= end; p++)
+        {
+            pages.Add(p);
+        }
+
+        if (end < count - 2)
+        {
+            pages.Add(-1);
+        }
+
+        pages.Add(count - 1);
+        return pages;
+    }
+
+    private Task OnSearch(string? value)
+    {
+        _search = value;
+        _page = 0;
+        return IsServerMode ? LoadAsync(string.IsNullOrEmpty(value) ? TimeSpan.Zero : SearchDelay) : Task.CompletedTask;
+    }
+
+    private Task Sort(HelixColumn<TItem> column)
+    {
+        if (!CanSort(column))
+        {
+            return Task.CompletedTask;
+        }
+
+        if (!ReferenceEquals(_sortColumn, column))
+        {
+            _sortColumn = column;
+            _sortDescending = false;
+        }
+        else if (!_sortDescending)
+        {
+            _sortDescending = true;
+        }
+        else
+        {
+            _sortColumn = null;
+        }
+
+        _page = 0;
+        return IsServerMode ? LoadAsync(TimeSpan.Zero) : Task.CompletedTask;
+    }
+
+    private Task OnHeaderKey(KeyboardEventArgs e, HelixColumn<TItem> column) =>
+        e.Key is "Enter" or " " ? Sort(column) : Task.CompletedTask;
+
+    private Task GoTo(int page)
+    {
+        _page = page;
+        return IsServerMode ? LoadAsync(TimeSpan.Zero) : Task.CompletedTask;
+    }
+
+    private Task SetPageSize(int size)
+    {
+        _pageSize = size;
+        _page = 0;
+        return IsServerMode ? LoadAsync(TimeSpan.Zero) : Task.CompletedTask;
+    }
+
+    private async Task RowClicked(TItem item)
+    {
+        if (OnRowClick.HasDelegate)
+        {
+            await OnRowClick.InvokeAsync(item);
+        }
+        else if (Selectable)
+        {
+            await ToggleItem(item, !_selected.Contains(item));
+        }
+    }
+
+    private Task ToggleItem(TItem item, bool selected)
+    {
+        if (selected)
+        {
+            _selected.Add(item);
+        }
+        else
+        {
+            _selected.Remove(item);
+        }
+
+        return NotifySelection();
+    }
+
+    private Task ToggleAll(bool selected)
+    {
+        var rows = Filtered();
+        if (selected)
+        {
+            _selected.UnionWith(rows);
+        }
+        else
+        {
+            _selected.ExceptWith(rows);
+        }
+
+        return NotifySelection();
+    }
+
+    private Task NotifySelection()
+    {
+        var snapshot = _selected.ToArray();
+        _lastSelectedParam = snapshot;
+        return SelectedItemsChanged.InvokeAsync(snapshot);
+    }
+
+    private string ClassValue(bool showFooter) => new CssBuilder("helix-grid")
+        .Add($"helix-grid--{(Density ?? Defaults.DataGrid.Density ?? HelixSize.Md).Css()}")
+        .Add("helix-grid--striped", Striped ?? Defaults.DataGrid.Striped ?? false)
+        .Add("has-toolbar", HasToolbar)
+        .Add("has-footer", showFooter)
+        .Add("is-refreshing", _loadingData && _hasLoaded)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("grid", Color)
+        .Var("--helix-grid-header-bg", HeaderBackground)
+        .Var("--helix-grid-hover", HoverColor)
+        .Var("--helix-grid-stripe", StripeColor)
+        .Var("--helix-grid-selected", SelectedColor)
+        .Var("--helix-grid-radius", Radius)
+        .Var("--helix-grid-max-height", MaxHeight)
+        .Raw(Style)
+        .Build();
+
+    public async ValueTask DisposeAsync()
+    {
+        CancelLoads();
+        await HelixJs.DisposeQuietlyAsync(_module);
+    }
+
+    private void CancelLoads()
+    {
+        _disposed = true;
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = null;
+    }
+
+    private sealed class KeyComparer(Func<TItem, object> key) : IEqualityComparer<TItem>
+    {
+        public bool Equals(TItem? x, TItem? y) =>
+            x is null || y is null ? x is null && y is null : object.Equals(key(x), key(y));
+
+        public int GetHashCode(TItem obj) => key(obj).GetHashCode();
+    }
+}

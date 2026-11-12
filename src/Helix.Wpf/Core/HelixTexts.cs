@@ -1,0 +1,91 @@
+using System.Globalization;
+
+namespace Helix.Wpf;
+
+/// <summary>
+/// The texts the controls write on their own (tooltips, placeholders, dialog buttons).
+/// English and French are built in and picked from the UI culture; change them in one place:
+/// <code>HelixTexts.Current = HelixTexts.English with { Cancel = "Back" };</code>
+/// </summary>
+public sealed record HelixTexts
+{
+    public string Close { get; init; } = "Close";
+    public string Clear { get; init; } = "Clear";
+    public string Confirm { get; init; } = "Confirm";
+    public string Cancel { get; init; } = "Cancel";
+    public string Loading { get; init; } = "Loading";
+    public string NoData { get; init; } = "No data";
+    public string SelectPlaceholder { get; init; } = "Select…";
+    public string ChooseDate { get; init; } = "Choose a date";
+    public string Increase { get; init; } = "Increase";
+    public string Decrease { get; init; } = "Decrease";
+    public string Required { get; init; } = "required";
+    public string Previous { get; init; } = "Previous";
+    public string Next { get; init; } = "Next";
+    public string Search { get; init; } = "Search…";
+    /// <summary>{0} = the search text.</summary>
+    public string NoResultsFor { get; init; } = "No results for “{0}”";
+    public string LoadError { get; init; } = "The data could not be loaded.";
+    public string Retry { get; init; } = "Retry";
+    public string Columns { get; init; } = "Columns";
+    public string VisibleColumns { get; init; } = "Visible columns";
+    public string Reset { get; init; } = "Reset";
+    /// <summary>{0} = first row, {1} = last row, {2} = total.</summary>
+    public string RangeOf { get; init; } = "{0}–{1} of {2}";
+    /// <summary>{0} = number of rows.</summary>
+    public string ShowAll { get; init; } = "Show all ({0})";
+    public string ShowLess { get; init; } = "Show less";
+    public string StepError { get; init; } = "Needs fixing";
+    public string Others { get; init; } = "Others";
+    public string Total { get; init; } = "Total";
+    public string EditLayout { get; init; } = "Edit layout";
+    public string Done { get; init; } = "Done";
+    public string HiddenTiles { get; init; } = "Hidden tiles";
+    public string MoveBefore { get; init; } = "Move before";
+    public string MoveAfter { get; init; } = "Move after";
+    public string Narrower { get; init; } = "Narrower";
+    public string Wider { get; init; } = "Wider";
+    public string Hide { get; init; } = "Hide";
+    public string DropFilesHere { get; init; } = "Drop your files here";
+    public string ReleaseToAdd { get; init; } = "Release to add";
+    public string Browse { get; init; } = "Browse";
+    /// <summary>{0} = file name, {1} = size limit.</summary>
+    public string FileTooLarge { get; init; } = "{0} is larger than {1}.";
+    public string Add { get; init; } = "Add";
+    public string Now { get; init; } = "Now";
+    public string Expand { get; init; } = "Expand";
+    public string Collapse { get; init; } = "Collapse";
+    public string NothingPlanned { get; init; } = "Nothing planned in this period";
+    public string DropCardHere { get; init; } = "Drop a card here";
+    public string Hex { get; init; } = "Hex";
+    public string Opacity { get; init; } = "Opacity";
+
+    public static HelixTexts English { get; } = new();
+
+    public static HelixTexts French { get; } = new()
+    {
+        Close = "Fermer", Clear = "Effacer", Confirm = "Confirmer", Cancel = "Annuler", Loading = "Chargement",
+        NoData = "Aucune donnée", SelectPlaceholder = "Sélectionner…", ChooseDate = "Choisir une date",
+        Increase = "Augmenter", Decrease = "Diminuer", Required = "obligatoire",
+        Previous = "Précédent", Next = "Suivant", Search = "Rechercher…", NoResultsFor = "Aucun résultat pour « {0} »",
+        LoadError = "Impossible de charger les données.", Retry = "Réessayer", Columns = "Colonnes", VisibleColumns = "Colonnes affichées",
+        Reset = "Réinitialiser", RangeOf = "{0}–{1} sur {2}", ShowAll = "Voir tout ({0})", ShowLess = "Réduire", StepError = "Erreur à corriger",
+        Others = "Autres", Total = "Total", EditLayout = "Modifier la disposition", Done = "Terminé", HiddenTiles = "Tuiles masquées",
+        MoveBefore = "Déplacer avant", MoveAfter = "Déplacer après", Narrower = "Plus étroit", Wider = "Plus large", Hide = "Masquer",
+        DropFilesHere = "Glissez vos fichiers ici", ReleaseToAdd = "Relâchez pour ajouter", Browse = "Parcourir",
+        FileTooLarge = "{0} dépasse {1}.", Add = "Ajouter", Now = "Maintenant", Expand = "Déplier", Collapse = "Replier",
+        NothingPlanned = "Rien de planifié sur cette période", DropCardHere = "Déposez une carte ici", Hex = "Hex", Opacity = "Opacité",
+    };
+
+    /// <summary>Formats a text with {0}, {1}… placeholders.</summary>
+    public static string Format(string text, params object?[] args) => string.Format(CultureInfo.CurrentCulture, text, args);
+
+    private static HelixTexts? _current;
+
+    /// <summary>The texts in use. Null (default): French for a French UI culture, English otherwise.</summary>
+    public static HelixTexts Current
+    {
+        get => _current ?? (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fr" ? French : English);
+        set => _current = value;
+    }
+}

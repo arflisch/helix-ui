@@ -1,0 +1,71 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<div @attributes="Attributes" class="@ClassValue" style="@StyleValue">
+    @if (Header is not null)
+    {
+        <div class="helix-card__header">@Header</div>
+    }
+    else if (!string.IsNullOrEmpty(Title) || Actions is not null)
+    {
+        <div class="helix-card__header">
+            <div>
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h3 class="helix-card__title">@Title</h3>
+                }
+                @if (!string.IsNullOrEmpty(Subtitle))
+                {
+                    <p class="helix-card__subtitle">@Subtitle</p>
+                }
+            </div>
+            @Actions
+        </div>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="helix-card__body">@ChildContent</div>
+    }
+    @if (Footer is not null)
+    {
+        <div class="helix-card__footer">@Footer</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Content on the right of the title (buttons, badge…).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>Replaces the whole header.</summary>
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Shadow instead of border.</summary>
+    [Parameter] public bool? Elevated { get; set; }
+
+    /// <summary>Lifts on hover.</summary>
+    [Parameter] public bool Hoverable { get; set; }
+
+    [Parameter] public string? Padding { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private string ClassValue => new CssBuilder("helix-card")
+        .Add("helix-card--elevated", Elevated ?? Defaults.Card.Elevated ?? false)
+        .Add("is-hoverable", Hoverable)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--helix-card-padding", Padding)
+        .Var("--helix-card-radius", Radius)
+        .Var("--helix-card-bg", Background)
+        .Var("--helix-card-border", BorderColor)
+        .Raw(Style)
+        .Build();
+}

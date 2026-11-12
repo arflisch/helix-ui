@@ -1,0 +1,174 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@typeparam TItem
+@inject IJSRuntime JS
+
+<ul @attributes="Attributes" class="@(new CssBuilder("helix-sortable").Add("is-dragging", _dragIndex is not null).Add(Class).Build())" style="@Style"
+    aria-label="@(AriaLabel ?? Texts.SortableListHelp)">
+    @for (var i = 0; i < Items.Count; i++)
+    {
+        var index = i;
+        var item = Items[i];
+        <li @key="KeyOf(item)"
+            class="@ItemClass(index)"
+            draggable="@(Disabled ? "false" : "true")"
+            data-helix-drag
+            tabindex="0"
+            aria-roledescription="@Texts.DraggableItem"
+            aria-pressed="@(_grabbed == index ? "true" : "false")"
+            @ondragstart="() => DragStart(index)"
+            @ondragenter="() => DragEnter(index)"
+            @ondragover:preventDefault="true"
+            @ondrop="Drop"
+            @ondragend="DragEnd"
+            @onkeydown="e => OnKey(e, index)"
+            @onkeydown:preventDefault="_grabbed is not null">
+            @if (ShowHandle)
+            {
+                <span class="helix-sortable__handle" aria-hidden="true"><HelixIcon Name="grip" Size="16" /></span>
+            }
+            <div class="helix-sortable__content">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(item)
+                }
+                else
+                {
+                    @item
+                }
+            </div>
+        </li>
+    }
+</ul>
+<div class="helix-sr-only" aria-live="assertive">@_announcement</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    /// <summary>The reordered list, for @bind-Items.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> ItemsChanged { get; set; }
+
+    /// <summary>(from, to) indexes of the last move.</summary>
+    [Parameter] public EventCallback<(int From, int To)> OnReorder { get; set; }
+
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public Func<TItem, object>? ItemKey { get; set; }
+    [Parameter] public bool ShowHandle { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+
+    private int? _dragIndex;
+    private int? _dropIndex;
+    private int? _grabbed;
+    private IReadOnlyList<TItem>? _beforeGrab;
+    private string? _announcement;
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await HelixJs.EnableDndAsync(JS);
+        }
+    }
+
+    private object KeyOf(TItem item) => ItemKey?.Invoke(item) ?? item!;
+
+    private string ItemClass(int index) => new CssBuilder("helix-sortable__item")
+        .Add("is-dragged", index == _dragIndex)
+        .Add("is-grabbed", index == _grabbed)
+        .Add("is-drop-before", _dragIndex is { } from && index == _dropIndex && index < from)
+        .Add("is-drop-after", _dragIndex is { } from2 && index == _dropIndex && index > from2)
+        .Build();
+
+    private void DragStart(int index)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        _dragIndex = index;
+        _dropIndex = index;
+    }
+
+    private void DragEnter(int index)
+    {
+        if (_dragIndex is not null)
+        {
+            _dropIndex = index;
+        }
+    }
+
+    private async Task Drop()
+    {
+        if (_dragIndex is { } from && _dropIndex is { } to && from != to)
+        {
+            await Move(from, to);
+        }
+
+        DragEnd();
+    }
+
+    private void DragEnd()
+    {
+        _dragIndex = null;
+        _dropIndex = null;
+    }
+
+    private async Task Move(int from, int to)
+    {
+        var list = Items.ToList();
+        var item = list[from];
+        list.RemoveAt(from);
+        list.Insert(to, item);
+        Items = list;
+        await ItemsChanged.InvokeAsync(list);
+        await OnReorder.InvokeAsync((from, to));
+    }
+
+    private async Task OnKey(KeyboardEventArgs e, int index)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case "Enter" when _grabbed is null:
+                _grabbed = index;
+                _beforeGrab = Items.ToList();
+                _announcement = HelixTexts.Format(Texts.ItemGrabbed, index + 1);
+                break;
+            case "Enter" or " ":
+                _announcement = HelixTexts.Format(Texts.DroppedAt, _grabbed + 1);
+                _grabbed = null;
+                _beforeGrab = null;
+                break;
+            case "Escape" when _grabbed is not null:
+                if (_beforeGrab is not null)
+                {
+                    Items = _beforeGrab;
+                    await ItemsChanged.InvokeAsync(_beforeGrab);
+                }
+
+                _announcement = Texts.MoveCancelled;
+                _grabbed = null;
+                break;
+            case "ArrowUp" or "ArrowDown" when _grabbed is { } grabbed:
+                var target = Math.Clamp(grabbed + (e.Key == "ArrowUp" ? -1 : 1), 0, Items.Count - 1);
+                if (target != grabbed)
+                {
+                    await Move(grabbed, target);
+                    _grabbed = target;
+                    _announcement = HelixTexts.Format(Texts.PositionAnnouncement, target + 1, Items.Count);
+                }
+
+                break;
+        }
+    }
+
+    public ValueTask DisposeAsync() => HelixJs.DisposeQuietlyAsync(_module);
+}
