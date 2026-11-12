@@ -248,6 +248,11 @@ public partial class HelixDataGrid : DataGrid
         }
 
         IEnumerable<object> rows = Source.Cast<object>();
+        if (Filter is { } filter)
+        {
+            rows = rows.Where(r => filter(r));
+        }
+
         var search = SearchText?.Trim();
         if (!string.IsNullOrEmpty(search))
         {

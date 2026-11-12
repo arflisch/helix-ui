@@ -22,6 +22,10 @@ public partial class DataPage : UserControl
         InitializeComponent();
         Grid.Source = Enumerable.Range(1, 46).Select(Make).ToList();
         GroupedGrid.Source = Enumerable.Range(1, 18).Select(Make).ToList();
+        Filters.Presets = new System.Collections.ObjectModel.ObservableCollection<HelixFilterPreset>
+        {
+            new("En maintenance", new Dictionary<string, string> { ["status"] = "[\"Maintenance\"]" }),
+        };
         ServerGrid.ItemsProvider = QueryAsync;
     }
 

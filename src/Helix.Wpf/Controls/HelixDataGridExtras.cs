@@ -40,6 +40,17 @@ public partial class HelixDataGrid
     public static string? GetAggregateFormat(DependencyObject column) => (string?)column.GetValue(AggregateFormatProperty);
     public static void SetAggregateFormat(DependencyObject column, string? value) => column.SetValue(AggregateFormatProperty, value);
 
+    public static readonly DependencyProperty FilterProperty = HelixProperty.Register<HelixDataGrid, Predicate<object>?>(nameof(Filter), null, (d, _) => ((HelixDataGrid)d).OnFilterChanged());
+
+    /// <summary>Keeps only the rows it accepts (client mode, before search and paging); set by a HelixFilterBar's Target.</summary>
+    public Predicate<object>? Filter { get => (Predicate<object>?)GetValue(FilterProperty); set => SetValue(FilterProperty, value); }
+
+    private void OnFilterChanged()
+    {
+        SetCurrentValue(PageProperty, 1);
+        Reload();
+    }
+
     /// <summary>Property path that groups the rows (e.g. "Region"): collapsible headers with their count and subtotals.</summary>
     public string? GroupBy { get => (string?)GetValue(GroupByProperty); set => SetValue(GroupByProperty, value); }
 

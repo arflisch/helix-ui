@@ -8,6 +8,12 @@
                    Text="Recherche, tri sur toutes les pages, pagination, choix des colonnes, densité et lignes alternées. En mémoire avec Source, ou côté serveur avec ItemsProvider." />
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="En mémoire" />
+        <helix:HelixFilterBar x:Name="Filters" Target="{Binding ElementName=Grid}" Margin="0,0,0,8">
+            <helix:HelixTextFilter Key="q" Placeholder="Nom ou site" Paths="Name,Site" />
+            <helix:HelixChoiceFilter Key="status" Label="Statut" Path="Status" />
+            <helix:HelixChoiceFilter Key="site" Label="Site" Path="Site" IsSearchable="True" />
+            <helix:HelixDateFilter Key="updated" Label="Mise à jour" Path="Updated" />
+        </helix:HelixFilterBar>
         <helix:HelixDataGrid x:Name="Grid" IsSearchable="True" ShowColumnChooser="True" IsStriped="True" PageSize="8" AutoGenerateColumns="False"
                            Height="460" Margin="0,0,0,32" IsReadOnly="True">
             <helix:HelixDataGrid.Toolbar>
