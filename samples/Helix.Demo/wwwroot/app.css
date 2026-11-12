@@ -201,6 +201,14 @@ body { background: #fafafa; }
 }
 .pg + .code { border-radius: 0 0 14px 14px; }
 
+/* The playground stacks when its section is narrow (sidebar open, split screen…), whatever the window width. */
+.demo-section { container: section / inline-size; }
+@container section (max-width: 680px) {
+    .pg { grid-template-columns: minmax(0, 1fr); }
+    .pg__stage { padding: 28px 20px; border-top-right-radius: 14px; }
+    .pg__controls { max-height: none; border-left: 0; border-top: 1px solid var(--helix-border); border-top-right-radius: 0; }
+}
+
 .pg--wide { grid-template-columns: minmax(0, 1fr); }
 .pg--wide .pg__stage { border-top-right-radius: 14px; }
 .pg__stage--block { display: block; place-items: normal; min-height: 0; padding: 24px; }

@@ -588,6 +588,7 @@
 :where(.helix-card__body) { flex: 1; padding: var(--_p); color: var(--helix-text-muted); line-height: 1.55; }
 :where(.helix-card__footer) {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     align-items: center;
     gap: 8px;
