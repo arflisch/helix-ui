@@ -1,0 +1,51 @@
+@page "/components/multiselect"
+
+<DemoPage Title="MultiSelect" Description="Several choices from a list: chips in the field (× to remove one, Backspace removes the last), checkboxes in the list that stays open, “Select all” and “Clear”. Same search options as Select, including server search.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:420px">
+                <HelixMultiSelect TValue="string" Items="Sites" @bind-Values="_sites" Label="Sites" Searchable="_searchable" MaxChips="(int)_maxChips"
+                                  MaxSelected="@(_limit ? 4 : null)" ShowActions="_actions" Color="@_color"
+                                  Hint="@($"{_sites.Count} selected")" />
+            </div>
+        </Preview>
+        <Controls>
+            <HelixSlider Label="MaxChips" @bind-Value="_maxChips" Min="1" Max="6" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <HelixSwitch Label="Searchable" @bind-Checked="_searchable" Size="HelixSize.Sm" />
+            <HelixSwitch Label="ShowActions" @bind-Checked="_actions" Size="HelixSize.Sm" />
+            <HelixSwitch Label="MaxSelected = 4" @bind-Checked="_limit" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <ApiTable Title="HelixMultiSelect" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixMultiSelect Label="Sites" ItemsSource="{Binding Sites}" SelectedItems="{Binding ChosenSites}"
+                                IsSearchable="True" MaxChips="3" />
+        <!-- SelectedItems: an IList (ObservableCollection) kept in sync both ways. -->
+        """;
+
+    private static readonly string[] Sites = ["Lyon", "Grenoble", "Marseille", "Bordeaux", "Lille", "Nantes", "Toulouse", "Strasbourg", "Rennes", "Nice", "Dijon", "Brest"];
+
+    private IReadOnlyCollection<string> _sites = ["Lyon", "Lille"];
+    private double _maxChips = 3;
+    private string? _color;
+    private bool _searchable = true, _actions = true, _limit;
+
+    private string Code =>
+        $"<HelixMultiSelect Items=\"sites\" @bind-Values=\"chosen\" Label=\"Sites\"{(_searchable ? " Searchable" : "")}{(_maxChips == 3 ? "" : $" MaxChips=\"{_maxChips}\"")}{(_limit ? " MaxSelected=\"4\"" : "")}{(_actions ? "" : " ShowActions=\"false\"")}{(_color is null ? "" : $" Color=\"{_color}\"")} />\n\n@code {{\n    private IReadOnlyCollection<string> chosen = [];\n}}";
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items / Values", "IEnumerable<T> / IReadOnlyCollection<T>", null, "The options and the choices (@bind-Values), in the order picked."),
+        new("ItemText / ItemTemplate", "Func<T, string> / RenderFragment<T>", null, "Text of an option (field and search); custom content in the list."),
+        new("MaxChips / MaxSelected", "int / int?", null, "Chips shown before “+N” (3); most choices allowed."),
+        new("ShowActions", "bool", null, "“Select all” (the options shown) and “Clear” under the list (true)."),
+        new("Searchable / SearchProvider / SearchDelay", "bool / Func<…> / TimeSpan", null, "Search box; server search after a pause in typing."),
+        new("Label / Hint / Error / Placeholder / Required / Disabled", "", null, "Same as every field."),
+        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Same look as every field; defaults through Defaults.Field."),
+    ];
+}

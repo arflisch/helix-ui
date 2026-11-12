@@ -1,21 +1,21 @@
 @namespace Helix.Blazor
-@inherits HelixComponentBase
 @typeparam TValue
+@inherits HelixListPicker<TValue>
 
-<HelixFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
-    <div class="@(new CssBuilder("helix-select").Add("is-open", _open).Build())">
+<HelixFieldFrame Id="@Id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
+    <div class="@(new CssBuilder("helix-select").Add("is-open", IsOpen).Build())">
         <button @attributes="Attributes"
-                id="@_id"
+                id="@Id"
                 type="button"
                 class="helix-input helix-select__trigger"
                 disabled="@Disabled"
                 aria-haspopup="listbox"
-                aria-expanded="@(_open ? "true" : "false")"
+                aria-expanded="@(IsOpen ? "true" : "false")"
                 aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")"
-                aria-describedby="@HelixFieldFrame.DescribedBy(_id, Hint, Error)"
+                aria-describedby="@HelixFieldFrame.DescribedBy(Id, Hint, Error)"
                 @onclick="Toggle"
-                @onkeydown="OnKeyDown"
-                @onkeydown:preventDefault="_open">
+                @onkeydown="OnListKey"
+                @onkeydown:preventDefault="IsOpen">
             @Prefix
             <span class="@(new CssBuilder("helix-select__value").Add("is-placeholder", !HasValue).Build())">
                 @(HasValue ? TextOf(Value!) : Placeholder ?? Texts.SelectPlaceholder)
@@ -24,137 +24,64 @@
             <HelixIcon Name="chevron-down" Class="helix-select__chevron" />
         </button>
 
-        @if (_open)
+        @if (IsOpen)
         {
             <div class="helix-select__backdrop" @onclick="Close"></div>
-            <ul class="helix-select__menu" role="listbox">
-                @for (var i = 0; i < _items.Count; i++)
+            <div class="helix-select__menu" role="presentation">
+                @if (HasSearch)
                 {
-                    var index = i;
-                    var item = _items[i];
-                    var selected = IsSelected(item);
-                    <li role="option"
-                        aria-selected="@(selected ? "true" : "false")"
-                        class="@(new CssBuilder("helix-select__option").Add("is-selected", selected).Add("is-active", index == _active).Build())"
-                        @onclick="() => Select(item)"
-                        @onmouseenter="() => _active = index">
-                        <span>@TextOf(item)</span>
-                        @if (selected)
+                    <div class="helix-select__search">
+                        <HelixIcon Name="search" Size="14" />
+                        <input @ref="SearchBox" type="text" value="@SearchText" placeholder="@(SearchPlaceholder ?? Texts.Search)" aria-label="@(SearchPlaceholder ?? Texts.Search)"
+                               aria-controls="@($"{Id}-list")" autocomplete="off" @oninput="OnSearchInput" @onkeydown="OnListKey" />
+                        @if (Searching)
                         {
-                            <HelixIcon Name="check" Size="15" />
+                            <HelixSpinner Size="14px" />
                         }
-                    </li>
+                    </div>
                 }
-            </ul>
+                <ul class="helix-select__list" id="@($"{Id}-list")" role="listbox">
+                    @for (var i = 0; i < Visible.Count; i++)
+                    {
+                        var index = i;
+                        var item = Visible[i];
+                        var selected = IsSelected(item);
+                        <li role="option"
+                            aria-selected="@(selected ? "true" : "false")"
+                            class="@(new CssBuilder("helix-select__option").Add("is-selected", selected).Add("is-active", index == Active).Build())"
+                            @onclick="() => Choose(item)"
+                            @onmouseenter="() => Active = index">
+                            <span class="helix-select__option-text">@if (ItemTemplate is not null) { @ItemTemplate(item) } else { @TextOf(item) }</span>
+                            @if (selected)
+                            {
+                                <HelixIcon Name="check" Size="15" />
+                            }
+                        </li>
+                    }
+                    @if (Visible.Count == 0 && !Searching)
+                    {
+                        <li class="helix-select__empty" role="presentation">
+                            @(EmptyText ?? (string.IsNullOrWhiteSpace(SearchText) ? Texts.NoData : HelixTexts.Format(Texts.NoResultsFor, SearchText.Trim())))
+                        </li>
+                    }
+                </ul>
+            </div>
         }
     </div>
 </HelixFieldFrame>
 
 @code {
-    /// <summary>Content at the start of the input (icon, sign, currency…).</summary>
-    [Parameter] public RenderFragment? Prefix { get; set; }
-
-    /// <summary>Content at the end of the input (unit, button…).</summary>
-    [Parameter] public RenderFragment? Suffix { get; set; }
-
-    /// <summary>Help text under the field, announced with it.</summary>
-    [Parameter] public string? Hint { get; set; }
-
-    /// <summary>Shows the field in error state with this message (replaces the hint).</summary>
-    [Parameter] public string? Error { get; set; }
-    [Parameter] public bool Required { get; set; }
-
-    /// <summary>Focus color. Null: HelixOptions.Defaults.Field.Color, else primary.</summary>
-    [Parameter] public string? Color { get; set; }
-    [Parameter] public string? Radius { get; set; }
-    [Parameter] public string? Background { get; set; }
-    [Parameter] public string? BorderColor { get; set; }
-
-    private string? FieldStyle => new StyleBuilder()
-        .Color("input", Color)
-        .Var("--helix-input-radius", Radius)
-        .Var("--helix-input-bg", Background)
-        .Var("--helix-input-border", BorderColor)
-        .Raw(Style)
-        .Build();
-
-    [Parameter, EditorRequired] public IEnumerable<TValue> Items { get; set; } = [];
     [Parameter] public TValue? Value { get; set; }
     [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
 
-    /// <summary>How an item is displayed. Defaults to ToString().</summary>
-    [Parameter] public Func<TValue, string>? ItemText { get; set; }
+    private bool HasValue => Value is not null && (AllItems.Any(IsSelected) || SearchProvider is not null);
 
-    [Parameter] public string? Label { get; set; }
-    [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public bool Disabled { get; set; }
+    protected override bool IsSelected(TValue item) => EqualityComparer<TValue>.Default.Equals(item, Value);
 
-    private readonly string _id = HelixId.Next("select");
-    private List<TValue> _items = [];
-    private bool _open;
-    private int _active = -1;
-
-    private bool HasValue => Value is not null && _items.Any(IsSelected);
-
-    protected override void OnParametersSet() => _items = Items.ToList();
-
-    private string TextOf(TValue item) => ItemText?.Invoke(item) ?? item?.ToString() ?? "";
-
-    private bool IsSelected(TValue item) => EqualityComparer<TValue>.Default.Equals(item, Value);
-
-    private void Toggle()
-    {
-        if (_open)
-        {
-            Close();
-        }
-        else
-        {
-            Open();
-        }
-    }
-
-    private void Open()
-    {
-        _open = true;
-        _active = _items.FindIndex(i => IsSelected(i));
-    }
-
-    private void Close() => _open = false;
-
-    private async Task Select(TValue item)
+    protected override async Task Choose(TValue item)
     {
         Value = item;
-        _open = false;
+        Close();
         await ValueChanged.InvokeAsync(item);
-    }
-
-    private async Task OnKeyDown(KeyboardEventArgs e)
-    {
-        if (!_open)
-        {
-            if (e.Key is "ArrowDown" or "ArrowUp")
-            {
-                Open();
-            }
-
-            return;
-        }
-
-        switch (e.Key)
-        {
-            case "ArrowDown":
-                _active = Math.Min(_active + 1, _items.Count - 1);
-                break;
-            case "ArrowUp":
-                _active = Math.Max(_active - 1, 0);
-                break;
-            case "Enter" or " " when _active >= 0:
-                await Select(_items[_active]);
-                break;
-            case "Escape" or "Tab":
-                Close();
-                break;
-        }
     }
 }

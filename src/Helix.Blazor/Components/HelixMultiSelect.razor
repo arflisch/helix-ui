@@ -1,0 +1,189 @@
+@namespace Helix.Blazor
+@typeparam TValue
+@inherits HelixListPicker<TValue>
+
+<HelixFieldFrame Id="@Id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
+    <div class="@(new CssBuilder("helix-select helix-multi").Add("is-open", IsOpen).Build())">
+        <div @attributes="Attributes"
+             id="@Id"
+             role="combobox"
+             tabindex="@(Disabled ? "-1" : "0")"
+             class="@(new CssBuilder("helix-input helix-select__trigger helix-multi__trigger").Add("is-disabled", Disabled).Build())"
+             aria-haspopup="listbox"
+             aria-expanded="@(IsOpen ? "true" : "false")"
+             aria-disabled="@(Disabled ? "true" : null)"
+             aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")"
+             aria-describedby="@HelixFieldFrame.DescribedBy(Id, Hint, Error)"
+             @onclick="() => { if (!Disabled) Toggle(); }"
+             @onkeydown="OnTriggerKey"
+             @onkeydown:preventDefault="IsOpen">
+            @Prefix
+            <span class="helix-multi__chips">
+                @if (_selected.Count == 0)
+                {
+                    <span class="helix-select__value is-placeholder">@(Placeholder ?? Texts.SelectPlaceholder)</span>
+                }
+                else
+                {
+                    @foreach (var item in _selected.Take(MaxChips))
+                    {
+                        <span class="helix-multi__chip">
+                            <span class="helix-multi__chip-text">@TextOf(item)</span>
+                            @if (!Disabled)
+                            {
+                                <span class="helix-multi__chip-remove" role="button" tabindex="-1" aria-label="@HelixTexts.Format(Texts.RemoveItem, TextOf(item))"
+                                      @onclick="() => Remove(item)" @onclick:stopPropagation="true"><HelixIcon Name="x" Size="12" /></span>
+                            }
+                        </span>
+                    }
+                    @if (_selected.Count > MaxChips)
+                    {
+                        <span class="helix-multi__more">+@(_selected.Count - MaxChips)</span>
+                    }
+                }
+            </span>
+            @Suffix
+            <HelixIcon Name="chevron-down" Class="helix-select__chevron" />
+        </div>
+
+        @if (IsOpen)
+        {
+            <div class="helix-select__backdrop" @onclick="Close"></div>
+            <div class="helix-select__menu" role="presentation">
+                @if (HasSearch)
+                {
+                    <div class="helix-select__search">
+                        <HelixIcon Name="search" Size="14" />
+                        <input @ref="SearchBox" type="text" value="@SearchText" placeholder="@(SearchPlaceholder ?? Texts.Search)" aria-label="@(SearchPlaceholder ?? Texts.Search)"
+                               aria-controls="@($"{Id}-list")" autocomplete="off" @oninput="OnSearchInput" @onkeydown="OnListKey" />
+                        @if (Searching)
+                        {
+                            <HelixSpinner Size="14px" />
+                        }
+                    </div>
+                }
+                <ul class="helix-select__list" id="@($"{Id}-list")" role="listbox" aria-multiselectable="true">
+                    @for (var i = 0; i < Visible.Count; i++)
+                    {
+                        var index = i;
+                        var item = Visible[i];
+                        var selected = IsSelected(item);
+                        <li role="option"
+                            aria-selected="@(selected ? "true" : "false")"
+                            class="@(new CssBuilder("helix-select__option helix-multi__option").Add("is-selected", selected).Add("is-active", index == Active).Build())"
+                            @onclick="() => Choose(item)"
+                            @onmouseenter="() => Active = index">
+                            <span class="@(new CssBuilder("helix-multi__box").Add("is-checked", selected).Build())" aria-hidden="true">
+                                @if (selected) { <HelixIcon Name="check" Size="12" /> }
+                            </span>
+                            <span class="helix-select__option-text">@if (ItemTemplate is not null) { @ItemTemplate(item) } else { @TextOf(item) }</span>
+                        </li>
+                    }
+                    @if (Visible.Count == 0 && !Searching)
+                    {
+                        <li class="helix-select__empty" role="presentation">
+                            @(EmptyText ?? (string.IsNullOrWhiteSpace(SearchText) ? Texts.NoData : HelixTexts.Format(Texts.NoResultsFor, SearchText.Trim())))
+                        </li>
+                    }
+                </ul>
+                @if (ShowActions && Visible.Count > 0)
+                {
+                    <div class="helix-multi__actions">
+                        <button type="button" @onclick="SelectVisible">@Texts.SelectAll</button>
+                        <button type="button" disabled="@(_selected.Count == 0)" @onclick="ClearAll">@Texts.Clear</button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</HelixFieldFrame>
+
+@code {
+    /// <summary>The chosen options (@bind-Values), in the order they were picked.</summary>
+    [Parameter] public IReadOnlyCollection<TValue>? Values { get; set; }
+    [Parameter] public EventCallback<IReadOnlyCollection<TValue>> ValuesChanged { get; set; }
+
+    /// <summary>Chips shown in the field; the rest is summed up as "+N".</summary>
+    [Parameter] public int MaxChips { get; set; } = 3;
+
+    /// <summary>Most options that can be chosen (null: no limit).</summary>
+    [Parameter] public int? MaxSelected { get; set; }
+
+    /// <summary>"Select all" and "Clear" under the list (true). "Select all" takes the options shown, so after a search only the matches.</summary>
+    [Parameter] public bool ShowActions { get; set; } = true;
+
+    private List<TValue> _selected = [];
+    private IReadOnlyCollection<TValue>? _lastValues;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (!ReferenceEquals(Values, _lastValues))
+        {
+            _lastValues = Values;
+            _selected = Values?.ToList() ?? [];
+        }
+    }
+
+    protected override bool IsSelected(TValue item) => _selected.Contains(item);
+
+    /// <summary>Toggles the option; the list stays open to pick more.</summary>
+    protected override Task Choose(TValue item)
+    {
+        if (!_selected.Remove(item))
+        {
+            if (MaxSelected is { } max && _selected.Count >= max) return Task.CompletedTask;
+            _selected.Add(item);
+        }
+
+        return Notify();
+    }
+
+    private Task Remove(TValue item)
+    {
+        _selected.Remove(item);
+        return Notify();
+    }
+
+    private Task SelectVisible()
+    {
+        foreach (var item in Visible.Where(i => !_selected.Contains(i)))
+        {
+            if (MaxSelected is { } max && _selected.Count >= max) break;
+            _selected.Add(item);
+        }
+
+        return Notify();
+    }
+
+    private Task ClearAll()
+    {
+        _selected.Clear();
+        return Notify();
+    }
+
+    private Task Notify()
+    {
+        var snapshot = _selected.ToArray();
+        _lastValues = snapshot;
+        return ValuesChanged.InvokeAsync(snapshot);
+    }
+
+    /// <summary>Backspace on the closed field removes the last chip.</summary>
+    private async Task OnTriggerKey(KeyboardEventArgs e)
+    {
+        if (!IsOpen && e.Key is "Enter" or " ")
+        {
+            Open();
+            return;
+        }
+
+        if (!IsOpen && e.Key == "Backspace" && _selected.Count > 0)
+        {
+            await Remove(_selected[^1]);
+            return;
+        }
+
+        await OnListKey(e);
+    }
+}

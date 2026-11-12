@@ -76,6 +76,8 @@ public sealed record HelixTexts
     public string Columns { get; init; } = "Columns";
     public string VisibleColumns { get; init; } = "Visible columns";
     public string SelectAll { get; init; } = "Select all";
+    /// <summary>{0} = the option.</summary>
+    public string RemoveItem { get; init; } = "Remove {0}";
     public string SelectPage { get; init; } = "Select the page";
     public string SelectRow { get; init; } = "Select the row";
     /// <summary>{0} = number of selected rows.</summary>
@@ -190,7 +192,7 @@ public sealed record HelixTexts
         OrClickToBrowse = "ou cliquez pour parcourir", RemoveFile = "Retirer {0}",
 
         Search = "Rechercher…", NoResultsFor = "Aucun résultat pour « {0} »", LoadError = "Impossible de charger les données.",
-        Columns = "Colonnes", VisibleColumns = "Colonnes affichées", SelectAll = "Tout sélectionner", SelectPage = "Sélectionner la page",
+        Columns = "Colonnes", VisibleColumns = "Colonnes affichées", SelectAll = "Tout sélectionner", RemoveItem = "Retirer {0}", SelectPage = "Sélectionner la page",
         SelectRow = "Sélectionner la ligne", SelectedCount = "{0} sélectionné(s)", PreviousPage = "Page précédente", NextPage = "Page suivante",
         PageNumber = "Page {0}", RangeOf = "{0}–{1} sur {2}", RowsPerPage = "{0} / page", RowsPerPageLabel = "Lignes par page",
         Rows = "Lignes", Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",

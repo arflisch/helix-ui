@@ -25,6 +25,7 @@ public static class DemoNav
         [
             new("TextField", "components/textfield", "Text field with label, hint, error, icon and clear button.", "mail"),
             new("Select", "components/select", "Typed dropdown list, usable from the keyboard.", "chevron-down"),
+            new("MultiSelect", "components/multiselect", "Several choices: chips, checkboxes, search.", "check"),
             new("Checkbox", "components/checkbox", "Animated checkbox, any check color.", "check"),
             new("Switch", "components/switch", "Toggle switch: track and thumb customizable with one parameter.", "settings"),
             new("Slider", "components/slider", "Slider with fill, format and colors.", "minus"),

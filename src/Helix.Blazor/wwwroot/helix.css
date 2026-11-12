@@ -344,11 +344,12 @@
     top: calc(100% + 6px);
     left: 0;
     right: 0;
-    max-height: 264px;
+    display: flex;
+    flex-direction: column;
+    max-height: 300px;
     margin: 0;
-    padding: 4px;
-    overflow: auto;
-    list-style: none;
+    padding: 0;
+    overflow: hidden;
     background: var(--helix-select-menu-bg, var(--helix-surface));
     border: 1px solid var(--helix-border);
     border-radius: var(--helix-radius);
@@ -367,6 +368,47 @@
 }
 :where(.helix-select__option:hover, .helix-select__option.is-active) { background: var(--helix-surface-2); }
 :where(.helix-select__option.is-selected) { color: var(--_c); font-weight: 550; }
+:where(.helix-select__list) { flex: 1; min-height: 0; margin: 0; padding: 4px; overflow: auto; list-style: none; }
+:where(.helix-select__option-text) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+:where(.helix-select__empty) { padding: 12px 10px; font-size: 13px; text-align: center; color: var(--helix-text-muted); }
+:where(.helix-select__search) {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-bottom: 1px solid var(--helix-border); color: var(--helix-text-subtle);
+}
+:where(.helix-select__search input) {
+    flex: 1; min-width: 0; padding: 2px 0; border: 0; outline: none; background: transparent;
+    font: inherit; font-size: 13.5px; color: var(--helix-text);
+}
+:where(.helix-select__search input::placeholder) { color: var(--helix-text-subtle); }
+
+/* Multi-select: chips in the field, checkboxes in the list. */
+:where(.helix-multi__trigger) { height: auto; min-height: var(--helix-input-height, var(--helix-control-height)); padding-top: 4px; padding-bottom: 4px; }
+:where(.helix-multi__trigger.is-disabled) { opacity: .55; cursor: not-allowed; }
+:where(.helix-multi__chips) { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 4px; min-width: 0; }
+:where(.helix-multi__chip) {
+    display: inline-flex; align-items: center; gap: 2px; max-width: 100%; height: 24px; padding: 0 4px 0 8px;
+    border-radius: calc(var(--helix-radius) * .6); background: color-mix(in oklab, var(--_c) 11%, var(--helix-surface));
+    font-size: 12.5px; font-weight: 550; color: color-mix(in oklab, var(--_c) 85%, var(--helix-text));
+}
+:where(.helix-multi__chip-text) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:where(.helix-multi__chip-remove) { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; cursor: pointer; opacity: .7; }
+:where(.helix-multi__chip-remove:hover) { opacity: 1; background: color-mix(in oklab, var(--_c) 16%, transparent); }
+:where(.helix-multi__more) { padding: 0 6px; font-size: 12.5px; font-weight: 600; color: var(--helix-text-muted); }
+:where(.helix-multi__option) { justify-content: flex-start; gap: 10px; }
+:where(.helix-multi__option.is-selected) { color: var(--helix-text); font-weight: 400; }
+:where(.helix-multi__box) {
+    display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px;
+    border: 1.5px solid var(--helix-border-strong); border-radius: 5px; color: var(--helix-input-on-color, var(--helix-on-primary));
+    transition: background var(--helix-duration) var(--helix-ease), border-color var(--helix-duration) var(--helix-ease);
+}
+:where(.helix-multi__box.is-checked) { background: var(--_c); border-color: var(--_c); }
+:where(.helix-multi__actions) { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-top: 1px solid var(--helix-border); }
+:where(.helix-multi__actions button) {
+    padding: 4px 8px; border: 0; border-radius: 6px; background: transparent;
+    font: inherit; font-size: 12.5px; font-weight: 550; color: var(--_c); cursor: pointer;
+}
+:where(.helix-multi__actions button:hover:not(:disabled)) { background: color-mix(in oklab, var(--_c) 9%, transparent); }
+:where(.helix-multi__actions button:disabled) { color: var(--helix-text-subtle); cursor: not-allowed; }
 
 /* ---------- Checkbox ----------------------------------------------------- */
 

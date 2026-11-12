@@ -23,6 +23,18 @@
         </div>
     </Example>
 
+    <Example WpfCode="@Wpf3" Title="Search in the list" Description="Searchable adds a search box at the top of the list. SearchProvider asks your server instead, after a short pause in typing; the previous request is cancelled. ItemTemplate customizes each option." Code="@SearchCode">
+        <div class="grid-2">
+            <HelixSelect TValue="Country" Items="Countries" @bind-Value="_searched" ItemText="c => c.Name" Searchable="true" Label="Country (Searchable)">
+                <ItemTemplate>
+                    <span style="display:inline-flex;gap:10px;align-items:center"><code style="font-size:11.5px">@context.Code</code>@context.Name</span>
+                </ItemTemplate>
+            </HelixSelect>
+            <HelixSelect TValue="string" Items="@([])" @bind-Value="_city" SearchProvider="SearchCities" Label="City (SearchProvider)"
+                         Placeholder="Type to search…" Hint="Simulated server: 400 ms, 120 cities" />
+        </div>
+    </Example>
+
     <ApiTable Rows="Api" />
 </DemoPage>
 
@@ -73,6 +85,37 @@
         <HelixSelect Items="Enum.GetValues<HelixSeverity>()" @bind-Value="severity" Label="Severity" />
         """;
 
+    private Country? _searched;
+    private string? _city;
+
+    private static readonly string[] Cities = Enumerable.Range(0, 120)
+        .Select(i => new[] { "Port", "Saint", "New", "Old", "Lake", "North", "South", "Green", "Red", "Fair" }[i % 10] + " " + new[] { "Haven", "Ridge", "Field", "Bridge", "Town", "Bay", "Hill", "Wood", "Ford", "Mill", "Cross", "Gate" }[i / 10])
+        .ToArray();
+
+    private static async Task<IEnumerable<string>> SearchCities(string text, CancellationToken cancellationToken)
+    {
+        await Task.Delay(400, cancellationToken); // the network
+        return Cities.Where(c => c.Contains(text, StringComparison.OrdinalIgnoreCase)).Take(20);
+    }
+
+    private const string SearchCode = """
+        <HelixSelect Items="countries" @bind-Value="country" ItemText="c => c.Name" Searchable>
+            <ItemTemplate><code>@context.Code</code> @context.Name</ItemTemplate>
+        </HelixSelect>
+
+        <HelixSelect TValue="string" Items="@([])" @bind-Value="city" SearchProvider="SearchCities" />
+
+        @code {
+            private async Task<IEnumerable<string>> SearchCities(string text, CancellationToken ct) =>
+                await api.GetCitiesAsync(text, ct);   // cancelled when the user types again
+        }
+        """;
+
+    private const string Wpf3 = """
+        <helix:HelixSelect Label="Country" ItemsSource="{Binding Countries}" DisplayMemberPath="Name" IsSearchable="True" />
+        <!-- IsSearchable filters the list as you type (on DisplayMemberPath or ToString). -->
+        """;
+
     private static readonly ApiRow[] Api =
     [
         new("Items", "IEnumerable<T>", null, "The options, of any type."),
@@ -80,6 +123,9 @@
         new("ItemText", "Func<T, string>", null, "Text shown for an option (ToString by default)."),
         new("Label / Placeholder / Hint", "string", null, "Texts."),
         new("—", "", "--helix-select-menu-bg", "Background of the dropdown menu."),
+        new("Searchable / SearchPlaceholder", "bool / string", null, "A search box at the top of the list."),
+        new("SearchProvider / SearchDelay", "Func<string, CancellationToken, Task<IEnumerable<T>>> / TimeSpan", null, "Server search after a pause in typing (250 ms); the previous request is cancelled."),
+        new("ItemTemplate / EmptyText", "RenderFragment<T> / string", null, "Content of an option; text when nothing matches."),
         new("Prefix / Suffix", "RenderFragment", null, "Content at the start / end of the field (icon, sign, unit…). Same slots on every field."),
         new("Hint / Error", "string", null, "Hint under the field, or an error that replaces it; linked to the field for screen readers (aria-describedby)."),
         new("Required", "bool", null, "Asterisk after the label and required attribute."),
