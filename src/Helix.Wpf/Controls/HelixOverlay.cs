@@ -103,6 +103,14 @@ public class HelixHost : ContentControl
                 request.Resolve(false);
                 e.Handled = true;
                 break;
+            case HelixPromptRequest prompt:
+                prompt.Resolve(null);
+                e.Handled = true;
+                break;
+            case HelixViewRequest view:
+                view.Close(null);
+                e.Handled = true;
+                break;
         }
     }
 }
@@ -249,6 +257,22 @@ public static class HelixConfirm
         host.Overlays.Add(request);
         return request.Task;
     }
+
+    /// <summary>Asks for a short text: the typed text, or null when cancelled. Validate returns an error message, or null when the text is fine.</summary>
+    public static Task<string?> PromptAsync(string title, string? message = null, string? value = null, string? placeholder = null,
+        string? confirmText = null, Func<string, string?>? validate = null)
+    {
+        var host = HelixHost.Active;
+        if (host is null)
+        {
+            System.Diagnostics.Trace.TraceWarning("HelixConfirm.PromptAsync needs a HelixHost in the window.");
+            return Task.FromResult<string?>(null);
+        }
+
+        var request = new HelixPromptRequest(host, title, message, value, placeholder, confirmText, validate);
+        host.Overlays.Add(request);
+        return request.Task;
+    }
 }
 
 /// <summary>One toast notification.</summary>
@@ -329,4 +353,167 @@ internal sealed class HelixCommand(Action execute) : ICommand
     public event EventHandler? CanExecuteChanged { add { } remove { } }
     public bool CanExecute(object? parameter) => true;
     public void Execute(object? parameter) => execute();
+}
+
+/// <summary>An open text prompt (<see cref="HelixConfirm.PromptAsync"/>) in the host's overlay layer.</summary>
+public sealed class HelixPromptRequest : System.ComponentModel.INotifyPropertyChanged
+{
+    private readonly TaskCompletionSource<string?> _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly HelixHost _host;
+    private readonly Func<string, string?>? _validate;
+    private string _text;
+    private string? _error;
+
+    internal HelixPromptRequest(HelixHost host, string title, string? message, string? value, string? placeholder, string? confirmText, Func<string, string?>? validate)
+    {
+        _host = host;
+        _validate = validate;
+        _text = value ?? "";
+        Title = title;
+        Message = message;
+        Placeholder = placeholder;
+        ConfirmText = confirmText ?? HelixTexts.Current.Confirm;
+        CancelText = HelixTexts.Current.Cancel;
+        ConfirmCommand = new HelixCommand(Submit);
+        CancelCommand = new HelixCommand(() => Resolve(null));
+    }
+
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+    public string Title { get; }
+    public string? Message { get; }
+    public string? Placeholder { get; }
+    public string ConfirmText { get; }
+    public string CancelText { get; }
+    public ICommand ConfirmCommand { get; }
+    public ICommand CancelCommand { get; }
+
+    /// <summary>The typed text (two-way).</summary>
+    public string Text
+    {
+        get => _text;
+        set
+        {
+            _text = value;
+            Error = null;
+            PropertyChanged?.Invoke(this, new(nameof(Text)));
+        }
+    }
+
+    /// <summary>The validation message, shown under the field.</summary>
+    public string? Error
+    {
+        get => _error;
+        private set
+        {
+            _error = value;
+            PropertyChanged?.Invoke(this, new(nameof(Error)));
+        }
+    }
+
+    internal Task<string?> Task => _result.Task;
+
+    private void Submit()
+    {
+        Error = _validate?.Invoke(Text);
+        if (Error is null) Resolve(Text);
+    }
+
+    internal void Resolve(string? text)
+    {
+        _host.Overlays.Remove(this);
+        _result.TrySetResult(text);
+    }
+}
+
+/// <summary>A view shown by <see cref="HelixDialogs.ShowAsync{TResult}(object, string?, string?, double)"/> in the host's overlay layer.</summary>
+public sealed class HelixViewRequest
+{
+    private readonly TaskCompletionSource<object?> _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly HelixHost _host;
+
+    internal HelixViewRequest(HelixHost host, string? title, string? description, double width)
+    {
+        _host = host;
+        Title = title;
+        Description = description;
+        DialogWidth = width;
+        CloseCommand = new HelixCommand(() => Close(null));
+    }
+
+    public string? Title { get; }
+    public string? Description { get; }
+    public double DialogWidth { get; }
+    public object? View { get; internal set; }
+    public ICommand CloseCommand { get; }
+    internal Task<object?> Task => _result.Task;
+
+    /// <summary>Closes the dialog; ShowAsync completes with this result.</summary>
+    public void Close(object? result)
+    {
+        _host.Overlays.Remove(this);
+        _result.TrySetResult(result);
+    }
+}
+
+/// <summary>Closes the dialog it was given to (ShowAsync's builder overload).</summary>
+public sealed class HelixDialogHandle<TResult>(HelixViewRequest request)
+{
+    public void Close(TResult? result) => request.Close(result);
+
+    public void Cancel() => request.Close(null);
+}
+
+/// <summary>
+/// Opens any view in a Helix dialog and waits for its result, without Prism or a window style to repeat:
+/// <c>var site = await HelixDialogs.ShowAsync&lt;Site&gt;(new EditSiteView { DataContext = vm }, "Edit the site");</c>
+/// The view closes it with <see cref="Close"/>; Escape, the × and the backdrop cancel (null / default).
+/// </summary>
+public static class HelixDialogs
+{
+    public static async Task<TResult?> ShowAsync<TResult>(object view, string? title = null, string? description = null, double width = 480)
+    {
+        var request = Open(title, description, width);
+        if (request is null) return default;
+        request.View = view;
+        var result = await request.Task;
+        return result is TResult typed ? typed : default;
+    }
+
+    /// <summary>The builder receives a handle to close the dialog (pass it to your view model).</summary>
+    public static async Task<TResult?> ShowAsync<TResult>(Func<HelixDialogHandle<TResult>, object> build, string? title = null, string? description = null, double width = 480)
+    {
+        var request = Open(title, description, width);
+        if (request is null) return default;
+        request.View = build(new HelixDialogHandle<TResult>(request));
+        var result = await request.Task;
+        return result is TResult typed ? typed : default;
+    }
+
+    /// <summary>Closes the dialog that contains this element, with a result (null cancels).</summary>
+    public static void Close(DependencyObject fromInside, object? result = null)
+    {
+        for (var current = fromInside; current is not null; current = (current is System.Windows.Media.Visual ? System.Windows.Media.VisualTreeHelper.GetParent(current) : null) ?? LogicalTreeHelper.GetParent(current))
+        {
+            if (current is FrameworkElement { DataContext: HelixViewRequest request } && !ReferenceEquals(current, request.View))
+            {
+                request.Close(result);
+                return;
+            }
+        }
+    }
+
+    private static HelixViewRequest? Open(string? title, string? description, double width)
+    {
+        var host = HelixHost.Active;
+        if (host is null)
+        {
+            System.Diagnostics.Trace.TraceWarning("HelixDialogs.ShowAsync needs a HelixHost in the window.");
+            return null;
+        }
+
+        var request = new HelixViewRequest(host, title, description, width);
+        host.Overlays.Add(request);
+        return request;
+    }
 }

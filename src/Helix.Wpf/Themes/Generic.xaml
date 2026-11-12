@@ -4448,6 +4448,70 @@
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
 
+                                <DataTemplate DataType="{x:Type local:HelixPromptRequest}">
+                                    <Grid KeyboardNavigation.TabNavigation="Cycle">
+                                        <Border Background="{DynamicResource Helix.Overlay}">
+                                            <Border.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick" Command="{Binding CancelCommand}" />
+                                            </Border.InputBindings>
+                                        </Border>
+                                        <Border Width="420" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24,22,24,20"
+                                                Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="1"
+                                                CornerRadius="16" Effect="{StaticResource Helix.ShadowLg}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock x:Name="Message" Text="{Binding Message}" Margin="0,6,0,0" TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" />
+                                                <local:HelixTextField x:Name="Input" Margin="0,16,0,0" Placeholder="{Binding Placeholder}" Error="{Binding Error}"
+                                                                     Text="{Binding Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                     FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}" />
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                                                    <local:HelixButton Variant="Ghost" Tone="Neutral" Content="{Binding CancelText}" Command="{Binding CancelCommand}" IsCancel="True" />
+                                                    <local:HelixButton Margin="8,0,0,0" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" IsDefault="True" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Message}" Value="{x:Null}">
+                                            <Setter TargetName="Message" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+
+                                <DataTemplate DataType="{x:Type local:HelixViewRequest}">
+                                    <Grid KeyboardNavigation.TabNavigation="Cycle">
+                                        <Border Background="{DynamicResource Helix.Overlay}">
+                                            <Border.InputBindings>
+                                                <MouseBinding MouseAction="LeftClick" Command="{Binding CloseCommand}" />
+                                            </Border.InputBindings>
+                                        </Border>
+                                        <Border Width="{Binding DialogWidth}" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="1"
+                                                CornerRadius="16" Effect="{StaticResource Helix.ShadowLg}">
+                                            <DockPanel>
+                                                <DockPanel DockPanel.Dock="Top" Margin="24,22,18,0">
+                                                    <Button DockPanel.Dock="Right" Style="{StaticResource Helix.IconButton}" VerticalAlignment="Top" Command="{Binding CloseCommand}" Focusable="True">
+                                                        <local:HelixIcon Icon="x" />
+                                                    </Button>
+                                                    <StackPanel>
+                                                        <TextBlock x:Name="Title" Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                        <TextBlock x:Name="Description" Text="{Binding Description}" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                                <ContentPresenter Margin="24,16,24,20" Content="{Binding View}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Title}" Value="{x:Null}">
+                                            <Setter TargetName="Title" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                            <Setter TargetName="Description" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+
                                 <DataTemplate DataType="{x:Type local:HelixConfirmRequest}">
                                     <Grid KeyboardNavigation.TabNavigation="Cycle">
                                         <Border Background="{DynamicResource Helix.Overlay}">

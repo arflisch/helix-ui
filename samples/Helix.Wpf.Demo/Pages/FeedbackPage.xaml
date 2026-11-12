@@ -37,6 +37,16 @@
             </StackPanel>
         </Border>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Saisie et vue dans un dialogue" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HelixConfirm.PromptAsync demande un texte avec validation ; HelixDialogs.ShowAsync ouvre n'importe quelle vue et attend son résultat." />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel Orientation="Horizontal">
+                <helix:HelixButton Content="Enregistrer la vue…" Icon="plus" Variant="Outline" Tone="Neutral" Click="OnPrompt" Margin="0,0,10,0" />
+                <helix:HelixButton Content="Modifier le site…" Icon="settings" Variant="Outline" Tone="Neutral" Click="OnShowView" Margin="0,0,14,0" />
+                <TextBlock x:Name="DialogResult" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextMuted}" />
+            </StackPanel>
+        </Border>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Busy, cible et détail" />
         <TextBlock Style="{StaticResource SectionText}" Text="HelixBusy voile une zone pendant un chargement ; HelixTargetBar compare une valeur à sa cible ; HelixDescriptionList aligne des paires libellé / valeur." />
         <Border Style="{StaticResource Stage}">

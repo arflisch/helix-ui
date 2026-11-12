@@ -35,6 +35,28 @@ public partial class FeedbackPage : UserControl
         _log.Add(new HelixLogEntry(time, s.Level, s.Message, s.Source));
     }
 
+    private async void OnPrompt(object sender, RoutedEventArgs e)
+    {
+        var name = await HelixConfirm.PromptAsync("Enregistrer la vue", "Donnez-lui un nom pour la retrouver.", placeholder: "ex. En attente à Lyon",
+            confirmText: "Enregistrer", validate: text => text.Trim().Length < 3 ? "Au moins 3 caractères." : null);
+        if (name is not null) DialogResult.Text = $"Vue « {name} » enregistrée";
+    }
+
+    private async void OnShowView(object sender, RoutedEventArgs e)
+    {
+        var name = await HelixDialogs.ShowAsync<string>(dialog =>
+        {
+            var field = new HelixTextField { Label = "Nom", Text = "Usine de Lyon" };
+            var save = new HelixButton { Content = "Enregistrer", Icon = "check", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
+            save.Click += (_, _) => dialog.Close(field.Text);
+            var panel = new StackPanel();
+            panel.Children.Add(field);
+            panel.Children.Add(save);
+            return panel;
+        }, "Modifier le site", width: 420);
+        if (name is not null) DialogResult.Text = $"Site renommé : {name}";
+    }
+
     private async void OnBusy(object sender, RoutedEventArgs e)
     {
         Busy.IsBusy = true;
