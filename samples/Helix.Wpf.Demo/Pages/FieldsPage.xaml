@@ -56,6 +56,16 @@
             </UniformGrid>
         </Border>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Date et heure, période" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HelixDateTimePicker : calendrier et liste des heures au pas choisi (15 min par défaut). HelixDateRangePicker : raccourcis et période en deux clics." />
+        <Border Style="{StaticResource Stage}">
+            <UniformGrid Columns="3">
+                <helix:HelixDateTimePicker Label="Début de livraison" Hint="Au quart d'heure" Margin="0,0,16,0" />
+                <helix:HelixDateTimePicker Label="Heure pleine" MinuteStep="60" Margin="0,0,16,0" />
+                <helix:HelixDateRangePicker Label="Période du rapport" MaxDays="31" Hint="31 jours au plus" />
+            </UniformGrid>
+        </Border>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="HelixField autour de vos contrôles" />
         <TextBlock Style="{StaticResource SectionText}" Text="La même coque (libellé, aide, erreur) autour de n'importe quel contenu." />
         <Border Style="{StaticResource Stage}">

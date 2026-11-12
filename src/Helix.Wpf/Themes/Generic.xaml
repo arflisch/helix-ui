@@ -1164,6 +1164,253 @@
         </Setter>
     </Style>
 
+    <!-- Calendar without its own frame, inside the panels of the pickers. -->
+    <Style x:Key="Helix.CalendarPlain" TargetType="{x:Type Calendar}" BasedOn="{StaticResource Helix.Calendar}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Calendar}">
+                    <CalendarItem x:Name="PART_CalendarItem" Style="{StaticResource Helix.CalendarItem}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== DateTimePicker -->
+
+    <Style TargetType="{x:Type local:HelixDateTimePicker}" BasedOn="{StaticResource Helix.FieldBase}">
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Helix.Radius}" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:HelixDateTimePicker}">
+                    <local:HelixField x:Name="Field" Label="{TemplateBinding Label}" Hint="{TemplateBinding Hint}" Error="{TemplateBinding Error}" IsRequired="{TemplateBinding IsRequired}">
+                        <Grid>
+                            <Border x:Name="Ring" Margin="-3" CornerRadius="{TemplateBinding CornerRadius}" BorderThickness="3" BorderBrush="{TemplateBinding Accent}" Opacity="0" />
+                            <Border x:Name="PART_Chrome" MinHeight="{DynamicResource Helix.ControlHeight}" CornerRadius="{TemplateBinding CornerRadius}" Cursor="Hand"
+                                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                <DockPanel Margin="12,0,6,0">
+                                    <local:HelixIcon DockPanel.Dock="Left" Icon="calendar" Size="16" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextSubtle}" />
+                                    <Button x:Name="PART_Clear" DockPanel.Dock="Right" Style="{StaticResource Helix.IconButton}" ToolTip="{x:Static local:HelixPanelPicker.ClearText}" Visibility="Collapsed">
+                                        <local:HelixIcon Icon="x" Size="14" />
+                                    </Button>
+                                    <Grid VerticalAlignment="Center">
+                                        <TextBlock x:Name="Placeholder" Text="{TemplateBinding Placeholder}" Foreground="{DynamicResource Helix.TextSubtle}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock x:Name="Value" Text="{TemplateBinding DisplayText}" TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
+                                    </Grid>
+                                </DockPanel>
+                            </Border>
+                            <Popup x:Name="PART_Popup" Placement="Bottom" PlacementTarget="{Binding ElementName=PART_Chrome}" StaysOpen="False" AllowsTransparency="True"
+                                   PopupAnimation="Fade" VerticalOffset="2" HorizontalOffset="-8"
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <Border Margin="8" Padding="12" Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="1"
+                                        CornerRadius="14" Effect="{StaticResource Helix.ShadowLg}">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Calendar x:Name="PART_Calendar" Style="{StaticResource Helix.CalendarPlain}" IsTodayHighlighted="True" />
+                                            <DockPanel Margin="10,0,0,0" Width="88">
+                                                <TextBlock DockPanel.Dock="Top" Text="{x:Static local:HelixDateTimePicker.TimeText}" FontSize="11.5" FontWeight="SemiBold"
+                                                           HorizontalAlignment="Center" Margin="0,4,0,6" Foreground="{DynamicResource Helix.TextSubtle}" />
+                                                <ListBox x:Name="PART_Times" Height="270" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource Helix.Border}" Background="Transparent"
+                                                         Padding="8,0,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Text}" HorizontalAlignment="Center" />
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="{x:Type ListBoxItem}">
+                                                            <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+                                                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                                            <Setter Property="Cursor" Value="Hand" />
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                                        <Border x:Name="Bg" Height="32" Margin="0,1" CornerRadius="8" Background="Transparent">
+                                                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                                        </Border>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                                                                            </Trigger>
+                                                                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                                                                            </Trigger>
+                                                                            <Trigger Property="IsSelected" Value="True">
+                                                                                <Setter TargetName="Bg" Property="Background" Value="{Binding Accent, RelativeSource={RelativeSource AncestorType={x:Type local:HelixDateTimePicker}}}" />
+                                                                                <Setter Property="Foreground" Value="{Binding OnAccent, RelativeSource={RelativeSource AncestorType={x:Type local:HelixDateTimePicker}}}" />
+                                                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                                                            </Trigger>
+                                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                                <Setter Property="Opacity" Value="0.4" />
+                                                                            </Trigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
+                                                </ListBox>
+                                            </DockPanel>
+                                        </StackPanel>
+                                        <Border Margin="0,10,0,0" Padding="0,8,0,0" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,1,0,0">
+                                            <local:HelixButton x:Name="PART_Now" Content="{x:Static local:HelixDateTimePicker.NowText}" Variant="Ghost" Size="Sm" HorizontalAlignment="Left" />
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </local:HelixField>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasValue" Value="True">
+                            <Setter TargetName="Placeholder" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Value" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="HasValue" Value="True" />
+                                <Condition Property="IsClearable" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_Clear" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{DynamicResource Helix.TextSubtle}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Ring" Property="Opacity" Value="0.22" />
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Ring" Property="Opacity" Value="0.22" />
+                        </Trigger>
+                        <Trigger Property="HasError" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{DynamicResource Helix.Danger}" />
+                            <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource Helix.Danger}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Field" Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================================================================== DateRangePicker -->
+
+    <Style TargetType="{x:Type local:HelixDateRangePicker}" BasedOn="{StaticResource Helix.FieldBase}">
+        <Style.Resources>
+            <Style x:Key="Helix.RangePreset" TargetType="{x:Type Button}">
+                <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Bg" Padding="10,7" Margin="0,1" CornerRadius="8" Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
+        <Setter Property="Accent" Value="{Binding ToneBrush, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="OnAccent" Value="{Binding AutoOnAccent, RelativeSource={RelativeSource Self}}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Helix.Radius}" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:HelixDateRangePicker}">
+                    <local:HelixField x:Name="Field" Label="{TemplateBinding Label}" Hint="{TemplateBinding Hint}" Error="{TemplateBinding Error}" IsRequired="{TemplateBinding IsRequired}">
+                        <Grid>
+                            <Border x:Name="Ring" Margin="-3" CornerRadius="{TemplateBinding CornerRadius}" BorderThickness="3" BorderBrush="{TemplateBinding Accent}" Opacity="0" />
+                            <Border x:Name="PART_Chrome" MinHeight="{DynamicResource Helix.ControlHeight}" CornerRadius="{TemplateBinding CornerRadius}" Cursor="Hand"
+                                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                <DockPanel Margin="12,0,6,0">
+                                    <local:HelixIcon DockPanel.Dock="Left" Icon="calendar" Size="16" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextSubtle}" />
+                                    <Button x:Name="PART_Clear" DockPanel.Dock="Right" Style="{StaticResource Helix.IconButton}" ToolTip="{x:Static local:HelixPanelPicker.ClearText}" Visibility="Collapsed">
+                                        <local:HelixIcon Icon="x" Size="14" />
+                                    </Button>
+                                    <Grid VerticalAlignment="Center">
+                                        <TextBlock x:Name="Placeholder" Text="{TemplateBinding Placeholder}" Foreground="{DynamicResource Helix.TextSubtle}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock x:Name="Value" Text="{TemplateBinding DisplayText}" TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
+                                    </Grid>
+                                </DockPanel>
+                            </Border>
+                            <Popup x:Name="PART_Popup" Placement="Bottom" PlacementTarget="{Binding ElementName=PART_Chrome}" StaysOpen="False" AllowsTransparency="True"
+                                   PopupAnimation="Fade" VerticalOffset="2" HorizontalOffset="-8"
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <Border Margin="8" Padding="12" Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="1"
+                                        CornerRadius="14" Effect="{StaticResource Helix.ShadowLg}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border x:Name="PresetsHost" Padding="0,0,12,0" Margin="0,0,12,0" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,1,0">
+                                            <ItemsControl x:Name="PART_Presets" MinWidth="130" />
+                                        </Border>
+                                        <StackPanel>
+                                            <Calendar x:Name="PART_Calendar" Style="{StaticResource Helix.CalendarPlain}" IsTodayHighlighted="True" SelectionMode="SingleRange" />
+                                            <TextBlock x:Name="Status" Text="{x:Static local:HelixDateRangePicker.PeriodText}" Margin="0,8,0,0" FontSize="11.5" Foreground="{DynamicResource Helix.TextSubtle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </local:HelixField>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasValue" Value="True">
+                            <Setter TargetName="Placeholder" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Value" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="HasValue" Value="True" />
+                                <Condition Property="IsClearable" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_Clear" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{DynamicResource Helix.TextSubtle}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Ring" Property="Opacity" Value="0.22" />
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{Binding Accent, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Ring" Property="Opacity" Value="0.22" />
+                        </Trigger>
+                        <Trigger Property="HasError" Value="True">
+                            <Setter TargetName="PART_Chrome" Property="BorderBrush" Value="{DynamicResource Helix.Danger}" />
+                            <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource Helix.Danger}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Field" Property="Opacity" Value="0.55" />
+                        </Trigger>
+                        <Trigger Property="ShowPresets" Value="False">
+                            <Setter TargetName="PresetsHost" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="IsPickingEnd" Value="True">
+                            <Setter TargetName="Status" Property="Text" Value="{x:Static local:HelixDateRangePicker.PickEndText}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ===================================================================== Badge -->
 
     <Style TargetType="{x:Type local:HelixBadge}">
