@@ -25,6 +25,9 @@
     /// <summary>Size of the first pane, in percent. @bind-Size to keep it.</summary>
     [Parameter] public double Size { get; set; } = 50;
     [Parameter] public EventCallback<double> SizeChanged { get; set; }
+
+    /// <summary>Remembers the size chosen by the user under this key.</summary>
+    [Parameter] public string? RememberAs { get; set; }
     [Parameter] public double Min { get; set; } = 15;
     [Parameter] public double Max { get; set; } = 85;
 
@@ -58,6 +61,12 @@
             var key = (Min, Max, Vertical, KeyboardStep);
             if (firstRender)
             {
+                if (RememberAs is { Length: > 0 } remember && Settings is { } settings && await settings.LoadAsync<double?>("splitter:" + remember) is { } saved)
+                {
+                    Size = Math.Clamp(saved, Min, Max);
+                    StateHasChanged();
+                }
+
                 _module = await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
                 _self = DotNetObjectReference.Create(this);
                 _handle = await _module.InvokeAsync<IJSObjectReference>("attachSplitter", _root, _self, Options);
@@ -79,6 +88,7 @@
     public async Task OnResized(double size)
     {
         Size = Math.Round(Math.Clamp(size, Min, Max), 1);
+        if (RememberAs is { Length: > 0 } key && Settings is { } settings) await settings.SaveAsync("splitter:" + key, Size);
         await SizeChanged.InvokeAsync(Size);
         StateHasChanged();
     }

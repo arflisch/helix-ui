@@ -54,6 +54,9 @@
     [Parameter] public IReadOnlyList<HelixTileState>? Layout { get; set; }
     [Parameter] public EventCallback<IReadOnlyList<HelixTileState>> LayoutChanged { get; set; }
 
+    /// <summary>Remembers the user's layout under this key (browser or your store, see HelixOptions.SettingsStore).</summary>
+    [Parameter] public string? RememberAs { get; set; }
+
     [Parameter] public bool Editing { get; set; }
     [Parameter] public EventCallback<bool> EditingChanged { get; set; }
 
@@ -63,6 +66,7 @@
     private readonly List<HelixDashboardTile> _tiles = [];
     private List<HelixTileState> _layout = [];
     private IReadOnlyList<HelixTileState>? _lastLayoutParam;
+    private IReadOnlyList<HelixTileState>? _remembered;
     private bool _editing;
     private bool? _lastEditingParam;
     private string? _dragId;
@@ -100,6 +104,13 @@
         if (firstRender)
         {
             _module = await HelixJs.EnableDndAsync(JS);
+            if (RememberAs is { Length: > 0 } key && Layout is null && Settings is { } settings
+                && await settings.LoadAsync<List<HelixTileState>>("dashboard:" + key) is { Count: > 0 } saved)
+            {
+                _remembered = saved;
+                Merge();
+                StateHasChanged();
+            }
         }
     }
 
@@ -122,7 +133,7 @@
     private void Merge()
     {
         var known = _tiles.Select(t => t.Id).ToHashSet();
-        var merged = (Layout ?? []).Where(s => known.Contains(s.Id)).DistinctBy(s => s.Id).ToList();
+        var merged = (Layout ?? _remembered ?? []).Where(s => known.Contains(s.Id)).DistinctBy(s => s.Id).ToList();
         foreach (var tile in _tiles.Where(t => merged.All(s => s.Id != t.Id)))
         {
             merged.Add(new HelixTileState(tile.Id, tile.DefaultSpan));
@@ -150,6 +161,12 @@
         _layout = layout;
         _lastLayoutParam = layout;
         StateHasChanged();
+        if (RememberAs is { Length: > 0 } key && Settings is { } settings)
+        {
+            _remembered = layout;
+            await settings.SaveAsync("dashboard:" + key, layout);
+        }
+
         await LayoutChanged.InvokeAsync(layout);
     }
 

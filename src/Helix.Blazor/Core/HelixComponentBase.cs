@@ -16,6 +16,11 @@ public abstract class HelixComponentBase : ComponentBase
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? Attributes { get; set; }
 
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    /// <summary>The settings service, when AddHelix() registered it (components remember their state with RememberAs).</summary>
+    protected HelixSettingsService? Settings => Services.GetService(typeof(HelixSettingsService)) as HelixSettingsService;
+
     /// <summary>Set by <see cref="HelixProvider"/>.</summary>
     [CascadingParameter] private HelixOptions? CascadedOptions { get; set; }
 

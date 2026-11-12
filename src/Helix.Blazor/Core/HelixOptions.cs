@@ -26,6 +26,12 @@ public sealed class HelixOptions
 
     public HelixDefaults Defaults { get; } = new();
 
+    /// <summary>
+    /// Where components with RememberAs keep their settings. Null: the browser's localStorage.
+    /// E.g. o.SettingsStore = sp => sp.GetRequiredService&lt;MyUserSettingsStore&gt;();
+    /// </summary>
+    public Func<IServiceProvider, IHelixSettingsStore>? SettingsStore { get; set; }
+
     /// <summary>How long a toast stays visible by default.</summary>
     public TimeSpan ToastDuration { get; set; } = TimeSpan.FromSeconds(4);
 

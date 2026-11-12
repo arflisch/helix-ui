@@ -10,7 +10,7 @@
         {
             <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" Icon="x" OnClick="ClearAll">@Texts.ClearFilters</HelixButton>
         }
-        @if (PresetsChanged.HasDelegate || Presets is { Count: > 0 })
+        @if (CanSave || EffectivePresets is { Count: > 0 })
         {
             <HelixMenu Align="HelixAlign.End" MinWidth="220px">
                 <Trigger>
@@ -18,18 +18,18 @@
                 </Trigger>
                 <ChildContent>
                     <HelixMenuLabel>@Texts.SavedFilters</HelixMenuLabel>
-                    @if (Presets is not { Count: > 0 })
+                    @if (EffectivePresets is not { Count: > 0 })
                     {
                         <HelixMenuItem Disabled="true">@Texts.NoSavedFilters</HelixMenuItem>
                     }
                     else
                     {
-                        @foreach (var preset in Presets)
+                        @foreach (var preset in EffectivePresets)
                         {
                             <HelixMenuItem Checked="@(ReferenceEquals(preset, CurrentPreset))" OnClick="() => Apply(preset)">@preset.Name</HelixMenuItem>
                         }
                     }
-                    @if (PresetsChanged.HasDelegate)
+                    @if (CanSave)
                     {
                         <HelixMenuSeparator />
                         <HelixMenuItem Icon="plus" Disabled="@(ActiveCount == 0)" OnClick="() => { _presetName = CurrentPreset?.Name ?? string.Empty; _saving = true; }">@Texts.SaveFilters</HelixMenuItem>
@@ -71,6 +71,38 @@
 
     [Parameter] public string? AriaLabel { get; set; }
 
+    /// <summary>Remembers the saved filters under this key (when Presets is not bound).</summary>
+    [Parameter] public string? RememberAs { get; set; }
+
+    private List<HelixFilterPreset>? _rememberedPresets;
+
+    private sealed record StoredPreset(string Name, Dictionary<string, string> State);
+
+    private IReadOnlyList<HelixFilterPreset>? EffectivePresets => Presets ?? _rememberedPresets;
+
+    private bool CanSave => PresetsChanged.HasDelegate || RememberAs is { Length: > 0 };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && RememberAs is { Length: > 0 } key && Presets is null && Settings is { } settings
+            && await settings.LoadAsync<List<StoredPreset>>("filters:" + key) is { } stored)
+        {
+            _rememberedPresets = stored.Select(p => new HelixFilterPreset(p.Name, p.State)).ToList();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangePresets(List<HelixFilterPreset> presets)
+    {
+        if (RememberAs is { Length: > 0 } key && Presets is null && Settings is { } settings)
+        {
+            _rememberedPresets = presets;
+            await settings.SaveAsync("filters:" + key, presets.Select(p => new StoredPreset(p.Name, p.State.ToDictionary(kv => kv.Key, kv => kv.Value))).ToList());
+        }
+
+        await PresetsChanged.InvokeAsync(presets);
+    }
+
     private readonly List<IHelixFilter<TItem>> _filters = [];
     private Dictionary<string, string> _state = [];
     private IReadOnlyDictionary<string, string>? _lastState;
@@ -100,7 +132,7 @@
         return items.Where(predicate);
     }
 
-    private HelixFilterPreset? CurrentPreset => Presets?.FirstOrDefault(p => SameState(p.State, _state));
+    private HelixFilterPreset? CurrentPreset => EffectivePresets?.FirstOrDefault(p => SameState(p.State, _state));
 
     private static bool SameState(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, string> b) =>
         a.Count == b.Count && a.All(kv => b.TryGetValue(kv.Key, out var v) && v == kv.Value);
@@ -165,11 +197,11 @@
         var name = _presetName?.Trim();
         if (string.IsNullOrEmpty(name)) return;
         var preset = new HelixFilterPreset(name, new Dictionary<string, string>(_state));
-        var list = (Presets ?? []).Where(p => !string.Equals(p.Name, name, StringComparison.CurrentCultureIgnoreCase)).Append(preset).ToList();
+        var list = (EffectivePresets ?? []).Where(p => !string.Equals(p.Name, name, StringComparison.CurrentCultureIgnoreCase)).Append(preset).ToList();
         _saving = false;
-        await PresetsChanged.InvokeAsync(list);
+        await ChangePresets(list);
     }
 
     private Task DeletePreset(HelixFilterPreset preset) =>
-        PresetsChanged.InvokeAsync((Presets ?? []).Where(p => !ReferenceEquals(p, preset)).ToList());
+        ChangePresets((EffectivePresets ?? []).Where(p => !ReferenceEquals(p, preset)).ToList());
 }

@@ -341,6 +341,15 @@
     /// <summary>Scroll height with a sticky header, e.g. "420px".</summary>
     [Parameter] public string? MaxHeight { get; set; }
 
+    /// <summary>Remembers the column order and visibility and the page size chosen by the user, under this key.</summary>
+    [Parameter] public string? RememberAs { get; set; }
+
+    private sealed record Remembered(List<HelixColumnState>? Columns, int? PageSize);
+
+    private Task Remember() => RememberAs is { Length: > 0 } key && Settings is { } settings
+        ? settings.SaveAsync("grid:" + key, new Remembered(_columnState, _pageSize))
+        : Task.CompletedTask;
+
     /// <summary>Drag the headers to reorder the columns.</summary>
     [Parameter] public bool ReorderableColumns { get; set; }
 
@@ -521,6 +530,7 @@
         var state = ordered.Select(c => new HelixColumnState(c.Column.StableKey, c.Visible)).ToList();
         _columnState = state;
         _lastColumnLayoutParam = state;
+        await Remember();
         await ColumnLayoutChanged.InvokeAsync(state);
     }
 
@@ -531,6 +541,7 @@
     {
         _columnState = null;
         _lastColumnLayoutParam = null;
+        await Remember();
         await ColumnLayoutChanged.InvokeAsync(_columns.Select(c => new HelixColumnState(c.StableKey, true)).ToList());
     }
 
@@ -583,6 +594,19 @@
         if (firstRender && ReorderableColumns)
         {
             _module = await HelixJs.EnableDndAsync(JS);
+        }
+
+        if (firstRender && RememberAs is { Length: > 0 } key && Settings is { } settings && await settings.LoadAsync<Remembered>("grid:" + key) is { } saved)
+        {
+            if (saved.Columns is { Count: > 0 } && ColumnLayout is null) _columnState = saved.Columns;
+            if (saved.PageSize is { } size && size >= 0 && size != _pageSize)
+            {
+                _pageSize = size;
+                _page = 0;
+                if (IsServerMode) await LoadAsync(TimeSpan.Zero);
+            }
+
+            StateHasChanged();
         }
     }
 
@@ -879,11 +903,12 @@
         return IsServerMode ? LoadAsync(TimeSpan.Zero) : Task.CompletedTask;
     }
 
-    private Task SetPageSize(int size)
+    private async Task SetPageSize(int size)
     {
         _pageSize = size;
         _page = 0;
-        return IsServerMode ? LoadAsync(TimeSpan.Zero) : Task.CompletedTask;
+        await Remember();
+        if (IsServerMode) await LoadAsync(TimeSpan.Zero);
     }
 
     private async Task RowClicked(TItem item)

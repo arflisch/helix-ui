@@ -1,0 +1,98 @@
+@page "/user-settings"
+
+<DemoPage Title="Remembering user settings" Eyebrow="Guide"
+          Description="Users arrange their screens: column order, page size, dashboard tiles, saved filters, pane sizes. Add RememberAs=“key” and the component keeps it, with no code: in the browser by default, or in your own store (database, API) for every device.">
+    <section class="demo-section">
+        <h2 class="demo-section__title">Try it</h2>
+        <p class="demo-section__text">Reorder the columns (drag the headers), hide one, change the page size, move the divider, then reload the page.</p>
+        <HelixSplitter RememberAs="docs-settings-split" Size="62" Min="35" Max="80" Height="420px">
+            <First>
+                <div style="padding:14px">
+                    <HelixDataGrid Items="SampleData.Employees" RememberAs="docs-settings-grid" ReorderableColumns="true" ColumnChooser="true"
+                                   PageSize="5" PageSizes="@([5, 10, 25])" Density="HelixSize.Sm" Culture="English">
+                        <HelixColumn Field="e => e.Name" />
+                        <HelixColumn Field="e => e.Department" />
+                        <HelixColumn Field="e => e.Role" />
+                        <HelixColumn Field="e => e.StartDate" Title="Start" Format="MMM yyyy" />
+                    </HelixDataGrid>
+                </div>
+            </First>
+            <Second>
+                <div style="padding:20px" class="muted">The divider position is remembered too (RememberAs on HelixSplitter).</div>
+            </Second>
+        </HelixSplitter>
+        <CodeBlock Code="@Code" WpfCode="@WpfCode" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Your own store</h2>
+        <p class="demo-section__text">
+            By default the settings stay in the browser (localStorage). To keep them per user on every device, implement
+            <code>IHelixSettingsStore</code> (two methods: get and set a text value) and give it to AddHelix. Your own pages can use the same service.
+        </p>
+        <CodeBlock Language="c#" Code="@StoreCode" WpfCode="@WpfStoreCode" />
+    </section>
+
+    <ApiTable Title="RememberAs" Rows="Api" ShowIntro="false" />
+</DemoPage>
+
+@code {
+    private static readonly System.Globalization.CultureInfo English = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
+
+    private const string Code = """
+        <HelixDataGrid Items="orders" RememberAs="orders-grid" ReorderableColumns ColumnChooser>…</HelixDataGrid>
+        <HelixDashboard RememberAs="home-dashboard">…</HelixDashboard>
+        <HelixFilterBar Items="orders" RememberAs="orders-filters">…</HelixFilterBar>
+        <HelixSplitter RememberAs="orders-split">…</HelixSplitter>
+        """;
+
+    private const string WpfCode = """
+        <helix:HelixDataGrid Source="{Binding Orders}" helix:HelixSettings.RememberAs="orders-grid" … />
+        <helix:HelixDashboard helix:HelixSettings.RememberAs="overview" … />
+        <helix:HelixFilterBar helix:HelixSettings.RememberAs="orders-filters" … />
+        <!-- Saved in %LOCALAPPDATA%\<your app>\helix-settings.json by default. -->
+        """;
+
+    private const string StoreCode = """
+        // Program.cs: per-user settings in your database
+        builder.Services.AddScoped<DbSettingsStore>();
+        builder.Services.AddHelix(o => o.SettingsStore = sp => sp.GetRequiredService<DbSettingsStore>());
+
+        public sealed class DbSettingsStore(AppDb db, ICurrentUser user) : IHelixSettingsStore
+        {
+            public async ValueTask<string?> GetAsync(string key, CancellationToken ct = default) =>
+                (await db.UserSettings.FindAsync([user.Id, key], ct))?.Value;
+
+            public async ValueTask SetAsync(string key, string? value, CancellationToken ct = default) { … }
+        }
+
+        // Your own pages: @inject HelixSettingsService Settings
+        await Settings.SaveAsync("report-options", options);
+        var options = await Settings.LoadAsync<ReportOptions>("report-options");
+        """;
+
+    private const string WpfStoreCode = """
+        // App.xaml.cs: another store (e.g. a shared database), before the first window
+        HelixSettings.Store = new MyDatabaseSettingsStore(currentUser);
+
+        public sealed class MyDatabaseSettingsStore(User user) : IHelixSettingsStore
+        {
+            public string? Get(string key) => …;
+            public void Set(string key, string? value) { … }
+        }
+
+        // Your own code
+        HelixSettings.Save("report-options", options);
+        var options = HelixSettings.Load<ReportOptions>("report-options");
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("HelixDataGrid", "RememberAs", null, "Column order and visibility (ReorderableColumns / ColumnChooser), page size. WPF: also column widths."),
+        new("HelixDashboard", "RememberAs", null, "Tile order, width, hidden tiles (and column, in WPF columns mode)."),
+        new("HelixFilterBar", "RememberAs", null, "The saved filters of the menu (when Presets is not bound)."),
+        new("HelixSplitter", "RememberAs", null, "The divider position (Blazor)."),
+        new("IHelixSettingsStore", "GetAsync / SetAsync", null, "Your store: text values by key. Set with AddHelix(o => o.SettingsStore = …)."),
+        new("HelixSettingsService", "LoadAsync<T> / SaveAsync<T>", null, "JSON settings for your own pages, through the same store."),
+    ];
+}

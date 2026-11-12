@@ -14,6 +14,7 @@ public static class DemoNav
             new("Installation", "getting-started"),
             new("Customization", "customization"),
             new("Light and dark themes", "themes"),
+            new("Remembering user settings", "user-settings"),
         ]),
         new("Actions",
         [
