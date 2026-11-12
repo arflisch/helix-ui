@@ -58,6 +58,9 @@ public sealed class HelixDefaults
 
     public sealed class ButtonDefaults
     {
+        /// <summary>Every button shows its spinner while its OnClick task runs.</summary>
+        public bool? AutoLoading { get; set; }
+
         public HelixVariant? Variant { get; set; }
         public HelixSize? Size { get; set; }
         public string? Color { get; set; }

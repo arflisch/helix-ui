@@ -5,10 +5,10 @@
         type="@Type"
         class="@ClassValue"
         style="@StyleValue"
-        disabled="@(Disabled || Loading)"
-        aria-busy="@(Loading ? "true" : null)"
-        @onclick="OnClick">
-    @if (Loading)
+        disabled="@(Disabled || IsLoading)"
+        aria-busy="@(IsLoading ? "true" : null)"
+        @onclick="Click">
+    @if (IsLoading)
     {
         <span class="helix-btn__spinner" aria-hidden="true"></span>
     }
@@ -52,6 +52,33 @@
     [Parameter] public string Type { get; set; } = "button";
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+    /// <summary>Shows the spinner and blocks the button while the OnClick task runs (no double submit). Null: Defaults.Button.AutoLoading, else false.</summary>
+    [Parameter] public bool? AutoLoading { get; set; }
+
+    private bool _running;
+
+    private bool IsLoading => Loading || _running;
+
+    private async Task Click(MouseEventArgs e)
+    {
+        if (!(AutoLoading ?? Defaults.Button.AutoLoading ?? false))
+        {
+            await OnClick.InvokeAsync(e);
+            return;
+        }
+
+        if (_running) return;
+        _running = true;
+        try
+        {
+            await OnClick.InvokeAsync(e);
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
     private int IconSize => EffectiveSize switch { HelixSize.Sm => 14, HelixSize.Lg => 18, _ => 16 };
 
     private string ClassValue => new CssBuilder("helix-btn")
@@ -59,7 +86,7 @@
         .Add($"helix-btn--{EffectiveSize.Css()}")
         .Add("helix-btn--block", Block)
         .Add("helix-btn--icon-only", ChildContent is null && (Icon is not null || IconEnd is not null))
-        .Add("is-loading", Loading)
+        .Add("is-loading", IsLoading)
         .Add(Class)
         .Build();
 

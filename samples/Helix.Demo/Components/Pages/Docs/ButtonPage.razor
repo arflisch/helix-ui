@@ -53,10 +53,38 @@
         </div>
     </Example>
 
+    <Example WpfCode="@WpfAsync" Title="Async work" Description="AutoLoading shows the spinner and blocks the button for the whole OnClick task: no double submit, no Loading flag to manage. Turn it on everywhere with Defaults.Button.AutoLoading." Code="@AsyncCode">
+        <div class="row">
+            <HelixButton Icon="check" AutoLoading="true" OnClick="SaveAsync">Save (1.5 s)</HelixButton>
+            <span class="muted" style="font-size:13px">Saved @_saves time(s)</span>
+        </div>
+    </Example>
+
     <ApiTable Rows="Api" />
 </DemoPage>
 
 @code {
+    private int _saves;
+
+    private async Task SaveAsync()
+    {
+        await Task.Delay(1500);
+        _saves++;
+    }
+
+    private const string AsyncCode = """
+        <HelixButton AutoLoading OnClick="SaveAsync">Save</HelixButton>
+
+        // Or for every button: builder.Services.AddHelix(o => o.Defaults.Button.AutoLoading = true);
+        """;
+
+    private const string WpfAsync = """
+        <helix:HelixButton Content="Save" Command="{Binding SaveCommand}" />
+
+        // ViewModel: disabled while it runs, spinner on the button, errors shown as a toast, cancellable
+        SaveCommand = new HelixAsyncCommand(async ct => await api.SaveAsync(model, ct));
+        """;
+
     private const string Wpf1 = """
         <helix:HelixButton Content="Save" Variant="Solid" Tone="Primary" Size="Md"
                          Icon="check" CornerRadius="10" Click="OnSave" />
@@ -128,5 +156,6 @@
         new("Loading", "bool", null, "Shows a spinner and disables the button."),
         new("Block", "bool", null, "Takes the full width."),
         new("OnClick", "EventCallback", null, "Click."),
+        new("AutoLoading", "bool?", null, "Spinner and blocked button while the OnClick task runs. Null: Defaults.Button.AutoLoading."),
     ];
 }

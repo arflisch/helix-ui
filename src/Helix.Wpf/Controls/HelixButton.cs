@@ -13,6 +13,23 @@ public class HelixButton : Button
 
     public HelixButton() => HelixAccent.Init(this);
 
+    /// <summary>With a <see cref="HelixAsyncCommand"/>, the button shows its spinner while the command runs.</summary>
+    protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (e.Property != CommandProperty) return;
+        if (e.OldValue is HelixAsyncCommand oldCommand) oldCommand.PropertyChanged -= OnCommandRunning;
+        if (e.NewValue is HelixAsyncCommand newCommand) newCommand.PropertyChanged += OnCommandRunning;
+    }
+
+    private void OnCommandRunning(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (sender is HelixAsyncCommand command && e.PropertyName == nameof(HelixAsyncCommand.IsRunning))
+        {
+            SetCurrentValue(IsLoadingProperty, command.IsRunning);
+        }
+    }
+
     // ----- Color -----
     public static readonly DependencyProperty ToneProperty = HelixAccent.Tone(typeof(HelixButton));
     public static readonly DependencyProperty AccentProperty = HelixAccent.Accent(typeof(HelixButton));
