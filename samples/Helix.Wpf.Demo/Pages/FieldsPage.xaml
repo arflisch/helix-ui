@@ -31,6 +31,8 @@
             <UniformGrid Columns="3">
                 <helix:HelixNumberField Label="Puissance" Value="120" Unit="MW" Step="5" Minimum="0" Maximum="250" Hint="Entre 0 et 250 MW" Margin="0,0,16,0" />
                 <helix:HelixNumberField Label="Prix plafond" Value="95.5" Unit="€/MWh" Decimals="1" Step="0.5" ShowSteppers="False" Margin="0,0,16,0" />
+                <helix:HelixNumberField Label="Correction (signée)" Value="-15" Unit="MW" Step="5" IsSigned="True" Margin="0,0,16,0" />
+                <helix:HelixNumberField Label="Volume (tapez 120*0,8)" Value="96" Unit="MWh" Decimals="1" AllowExpressions="True" Margin="0,0,16,0" />
                 <helix:HelixNumberField Label="Volume" Value="-30" Unit="MW" ShowSteppers="False" Accent="#FF8A00">
                     <helix:HelixNumberField.Prefix>
                         <helix:HelixIcon Icon="arrow-down" Foreground="{DynamicResource Helix.Danger}" />

@@ -216,6 +216,28 @@ public class HelixNumberField : Control
     public static readonly DependencyProperty ShowSteppersProperty = HelixProperty.Register<HelixNumberField, bool>(nameof(ShowSteppers), true);
     public static readonly DependencyProperty IsReadOnlyProperty = HelixProperty.Register<HelixNumberField, bool>(nameof(IsReadOnly), false);
     public static readonly DependencyProperty TextProperty = HelixProperty.Register<HelixNumberField, string>(nameof(Text), "");
+    public static readonly DependencyProperty IsSignedProperty = HelixProperty.Register<HelixNumberField, bool>(nameof(IsSigned), false, (d, _) => ((HelixNumberField)d).ShowValue());
+    public static readonly DependencyProperty HigherIsBetterProperty = HelixProperty.Register<HelixNumberField, bool>(nameof(HigherIsBetter), true, (d, _) => ((HelixNumberField)d).ShowValue());
+    public static readonly DependencyProperty AllowExpressionsProperty = HelixProperty.Register<HelixNumberField, bool>(nameof(AllowExpressions), false);
+    private static readonly DependencyPropertyKey SignStateKey = DependencyProperty.RegisterReadOnly(nameof(SignState), typeof(string), typeof(HelixNumberField), new PropertyMetadata("flat"));
+    private static readonly DependencyPropertyKey SignDirectionKey = DependencyProperty.RegisterReadOnly(nameof(SignDirection), typeof(int), typeof(HelixNumberField), new PropertyMetadata(0));
+    public static readonly DependencyProperty SignStateProperty = SignStateKey.DependencyProperty;
+    public static readonly DependencyProperty SignDirectionProperty = SignDirectionKey.DependencyProperty;
+
+    /// <summary>Shows the sign, an up / down arrow and a color: green when positive, red when negative (HigherIsBetter=False swaps them).</summary>
+    public bool IsSigned { get => (bool)GetValue(IsSignedProperty); set => SetValue(IsSignedProperty, value); }
+
+    /// <summary>With IsSigned: false when a decrease is the good news (costs, delays…).</summary>
+    public bool HigherIsBetter { get => (bool)GetValue(HigherIsBetterProperty); set => SetValue(HigherIsBetterProperty, value); }
+
+    /// <summary>Accepts a calculation, e.g. "120*0.8" or "=1000/4+20" (+ - * / %, parentheses); the result is kept.</summary>
+    public bool AllowExpressions { get => (bool)GetValue(AllowExpressionsProperty); set => SetValue(AllowExpressionsProperty, value); }
+
+    /// <summary>"good", "bad" or "flat" (IsSigned): drives the color.</summary>
+    public string SignState => (string)GetValue(SignStateProperty);
+
+    /// <summary>1, -1 or 0 (IsSigned): drives the arrow.</summary>
+    public int SignDirection => (int)GetValue(SignDirectionProperty);
 
     public double? Value { get => (double?)GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
     public double? Minimum { get => (double?)GetValue(MinimumProperty); set => SetValue(MinimumProperty, value); }
@@ -313,8 +335,9 @@ public class HelixNumberField : Control
         {
             Set(null);
         }
-        else if (double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value)
-                 || double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+        else if (AllowExpressions ? HelixExpression.TryEvaluate(text, CultureInfo.CurrentCulture, out var value)
+                 : double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value)
+                   || double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
         {
             Set(value);
         }
@@ -343,7 +366,11 @@ public class HelixNumberField : Control
         var text = Value is { } v
             ? Decimals is { } d ? v.ToString("F" + d, CultureInfo.CurrentCulture) : v.ToString(CultureInfo.CurrentCulture)
             : "";
+        if (IsSigned && Value > 0) text = "+" + text;
         SetCurrentValue(TextProperty, text);
+        var direction = !IsSigned || Value is null or 0 ? 0 : Math.Sign(Value.Value);
+        SetValue(SignDirectionKey, direction);
+        SetValue(SignStateKey, direction == 0 ? "flat" : direction > 0 == HigherIsBetter ? "good" : "bad");
     }
 }
 

@@ -37,6 +37,33 @@
             </StackPanel>
         </Border>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Busy, cible et détail" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HelixBusy voile une zone pendant un chargement ; HelixTargetBar compare une valeur à sa cible ; HelixDescriptionList aligne des paires libellé / valeur." />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <helix:HelixButton x:Name="BusyButton" Content="Recharger" Icon="download" HorizontalAlignment="Left" Click="OnBusy" Margin="0,0,0,12" />
+                <helix:HelixBusy x:Name="Busy" Text="Chargement…">
+                    <helix:HelixDescriptionList Columns="3">
+                        <helix:HelixDescription Label="Demande" Content="DR-2026-11-0042" Icon="copy" />
+                        <helix:HelixDescription Label="Statut">
+                            <helix:HelixBadge Content="Confirmée" Tone="Success" ShowDot="True" />
+                        </helix:HelixDescription>
+                        <helix:HelixDescription Label="Volume" Content="120 MW" />
+                        <helix:HelixDescription Label="Motif" Content="Prévision de déséquilibre au-dessus de 300 MW sur la pointe du soir." Span="2" />
+                        <helix:HelixDescription Label="Commentaire" Content="—" />
+                    </helix:HelixDescriptionList>
+                </helix:HelixBusy>
+                <StackPanel Margin="0,20,0,0" MaxWidth="520" HorizontalAlignment="Left">
+                    <helix:HelixTargetBar Label="Unité A" Value="118" Target="120" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
+                    <helix:HelixTargetBar Label="Unité B" Value="64" Target="80" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
+                    <helix:HelixTargetBar Label="Unité C" Value="152" Target="110" Maximum="200" Unit="MW" Tolerance="10" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Journal" />
+        <helix:HelixLogViewer x:Name="Log" Height="300" Margin="0,0,0,32" />
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Progress et Spinner" />
         <Border Style="{StaticResource Stage}">
             <StackPanel MaxWidth="520" HorizontalAlignment="Left">

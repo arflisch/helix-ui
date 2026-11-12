@@ -38,6 +38,11 @@ public sealed record HelixTexts
     public string StepError { get; init; } = "Needs fixing";
     public string Others { get; init; } = "Others";
     public string Total { get; init; } = "Total";
+    public string LogDebug { get; init; } = "Debug";
+    public string LogInfo { get; init; } = "Info";
+    public string LogWarning { get; init; } = "Warning";
+    public string LogError { get; init; } = "Error";
+    public string FollowLog { get; init; } = "Follow";
     public string Save { get; init; } = "Save";
     public string Name { get; init; } = "Name";
     public string ClearFilters { get; init; } = "Clear filters";
@@ -92,6 +97,7 @@ public sealed record HelixTexts
         Today = "Aujourd'hui", ChooseDateTime = "Choisir une date et une heure", ChooseTime = "Heure", ChoosePeriod = "Choisir une période", Yesterday = "Hier", Last7Days = "7 derniers jours", Last30Days = "30 derniers jours", ThisWeek = "Cette semaine", ThisMonth = "Ce mois-ci", LastMonth = "Le mois dernier", PickEndDate = "Choisissez maintenant le dernier jour",
         SelectAll = "Tout sélectionner",
         Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés", SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »",
+        LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre",
         Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",
         Close = "Fermer", Clear = "Effacer", Confirm = "Confirmer", Cancel = "Annuler", Loading = "Chargement",
         NoData = "Aucune donnée", SelectPlaceholder = "Sélectionner…", ChooseDate = "Choisir une date",
