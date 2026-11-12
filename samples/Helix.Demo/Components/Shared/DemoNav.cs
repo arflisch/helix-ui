@@ -38,6 +38,7 @@ public static class DemoNav
             new("DateRangePicker", "components/daterangepicker", "A period of days, with shortcuts.", "calendar"),
             new("ColorPicker", "components/colorpicker", "Color: area, hue, opacity, eyedropper.", "sparkles"),
             new("Rating", "components/rating", "Rating with stars or hearts.", "star"),
+            new("AutoForm", "components/autoform", "A whole form from a class and its attributes.", "check"),
         ]),
         new("Data",
         [

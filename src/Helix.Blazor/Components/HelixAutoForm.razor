@@ -1,0 +1,229 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@typeparam TModel where TModel : class
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using System.Reflection
+
+@* A form built from a model: one field per property, labels and rules from the usual attributes ([Display], [Required], [Range]…). *@
+<form @attributes="Attributes" class="@(new CssBuilder("helix-autoform").Add(Class).Build())" style="@StyleValue" novalidate
+      @onsubmit="Submit" @onsubmit:preventDefault="true">
+    <div class="helix-autoform__grid">
+        @foreach (var field in _fields)
+        {
+            <div class="helix-autoform__field" style="@(field.Span > 1 ? $"--_span:{Math.Min(field.Span, Columns)}" : null)">
+                @RenderField(field)
+            </div>
+        }
+    </div>
+    @if (ShowActions)
+    {
+        <div class="helix-autoform__actions">
+            @if (OnCancel.HasDelegate)
+            {
+                <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => OnCancel.InvokeAsync()">@(CancelText ?? Texts.Cancel)</HelixButton>
+            }
+            <HelixButton Type="submit" Icon="check" Loading="_submitting">@(SubmitText ?? Texts.Save)</HelixButton>
+        </div>
+    }
+</form>
+
+@code {
+    /// <summary>The object edited in place.</summary>
+    [Parameter, EditorRequired] public TModel Model { get; set; } = default!;
+
+    /// <summary>Called with the model when every rule passes.</summary>
+    [Parameter] public EventCallback<TModel> OnValidSubmit { get; set; }
+
+    /// <summary>Shows a Cancel button.</summary>
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    /// <summary>Columns of the form (2). One on small screens.</summary>
+    [Parameter] public int Columns { get; set; } = 2;
+
+    /// <summary>Only these properties, in this order (null: every editable property, by [Display(Order)]).</summary>
+    [Parameter] public IReadOnlyList<string>? Fields { get; set; }
+
+    [Parameter] public string? SubmitText { get; set; }
+    [Parameter] public string? CancelText { get; set; }
+
+    /// <summary>Submit / Cancel buttons (true). Without them, call SubmitAsync from your own button.</summary>
+    [Parameter] public bool ShowActions { get; set; } = true;
+
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private sealed record Field(PropertyInfo Property, string Label, string? Description, bool Required, bool ReadOnly, int Span, HelixFieldAttribute? Hints, DataType? DataType);
+
+    private List<Field> _fields = [];
+    private readonly Dictionary<string, string?> _errors = [];
+    private bool _submitting;
+    private Type? _builtFor;
+
+    private string? StyleValue => new StyleBuilder().Var("--helix-autoform-cols", Columns.ToString(CultureInfo.InvariantCulture)).Raw(Style).Build();
+
+    protected override void OnParametersSet()
+    {
+        if (_builtFor == typeof(TModel) && Fields is null) return;
+        _builtFor = typeof(TModel);
+        var properties = typeof(TModel).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanRead && p.CanWrite && p.GetIndexParameters().Length == 0)
+            .Where(p => p.GetCustomAttribute<ScaffoldColumnAttribute>()?.Scaffold != false && p.GetCustomAttribute<HelixFieldAttribute>()?.Hidden != true)
+            .Select(p =>
+            {
+                var display = p.GetCustomAttribute<DisplayAttribute>();
+                var hints = p.GetCustomAttribute<HelixFieldAttribute>();
+                return (Order: display?.GetOrder() ?? 0, Field: new Field(p, display?.GetName() ?? Humanize(p.Name), display?.GetDescription(),
+                    p.GetCustomAttribute<RequiredAttribute>() is not null, p.GetCustomAttribute<EditableAttribute>()?.AllowEdit == false,
+                    hints?.Span ?? 1, hints, p.GetCustomAttribute<DataTypeAttribute>()?.DataType));
+            })
+            .ToList();
+        _fields = Fields is null
+            ? properties.OrderBy(x => x.Order).Select(x => x.Field).ToList()
+            : Fields.Select(name => properties.FirstOrDefault(x => x.Field.Property.Name == name).Field).OfType<Field>().ToList();
+    }
+
+    private static string Humanize(string name) =>
+        string.Concat(name.Select((c, i) => i > 0 && char.IsUpper(c) ? " " + char.ToLowerInvariant(c) : c.ToString()));
+
+    private object? Get(Field field) => field.Property.GetValue(Model);
+
+    private void Set(Field field, object? value)
+    {
+        var type = field.Property.PropertyType;
+        var target = Nullable.GetUnderlyingType(type) ?? type;
+        try
+        {
+            object? converted = value switch
+            {
+                null => null,
+                _ when target.IsInstanceOfType(value) => value,
+                DateOnly day when target == typeof(DateTime) => day.ToDateTime(TimeOnly.MinValue),
+                _ when target.IsEnum => Enum.ToObject(target, value),
+                IConvertible convertible => convertible.ToType(target, CultureInfo.InvariantCulture),
+                _ => value,
+            };
+            if (converted is null && type.IsValueType && Nullable.GetUnderlyingType(type) is null) converted = Activator.CreateInstance(type);
+            field.Property.SetValue(Model, converted);
+        }
+        catch (Exception ex) when (ex is InvalidCastException or OverflowException or FormatException)
+        {
+            _errors[field.Property.Name] = ex.Message;
+            return;
+        }
+
+        Validate(field);
+    }
+
+    private bool Validate(Field field)
+    {
+        var results = new List<ValidationResult>();
+        var context = new ValidationContext(Model) { MemberName = field.Property.Name, DisplayName = field.Label };
+        Validator.TryValidateProperty(field.Property.GetValue(Model), context, results);
+        _errors[field.Property.Name] = results.FirstOrDefault()?.ErrorMessage;
+        return results.Count == 0;
+    }
+
+    /// <summary>Validates every field (and IValidatableObject rules); true when the model is valid.</summary>
+    public bool Validate()
+    {
+        var valid = true;
+        foreach (var field in _fields) valid &= Validate(field);
+        var results = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(Model, new ValidationContext(Model), results, validateAllProperties: true))
+        {
+            foreach (var result in results)
+            {
+                foreach (var member in result.MemberNames.DefaultIfEmpty(""))
+                {
+                    if (_fields.Any(f => f.Property.Name == member)) _errors[member] ??= result.ErrorMessage;
+                }
+            }
+
+            valid = false;
+        }
+
+        StateHasChanged();
+        return valid;
+    }
+
+    /// <summary>Validates, then calls OnValidSubmit.</summary>
+    public async Task SubmitAsync()
+    {
+        if (!Validate()) return;
+        _submitting = true;
+        try
+        {
+            await OnValidSubmit.InvokeAsync(Model);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private Task Submit() => SubmitAsync();
+
+    private string? ErrorOf(Field field) => _errors.GetValueOrDefault(field.Property.Name);
+
+    private static bool IsNumber(Type t) => t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) || t == typeof(double) || t == typeof(float) || t == typeof(decimal);
+
+    private static bool IsInteger(Type t) => t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte);
+
+    private RenderFragment RenderField(Field field) => __builder =>
+    {
+        var type = Nullable.GetUnderlyingType(field.Property.PropertyType) ?? field.Property.PropertyType;
+        var value = Get(field);
+        var range = field.Property.GetCustomAttribute<RangeAttribute>();
+        var hint = field.Description;
+        var error = ErrorOf(field);
+        if (type == typeof(bool))
+        {
+            <HelixSwitch Label="@field.Label" Description="@hint" Checked="@(value is true)" Disabled="field.ReadOnly" CheckedChanged="v => Set(field, v)" />
+            @if (error is not null) { <p class="helix-autoform__error">@error</p> }
+        }
+        else if (IsNumber(type))
+        {
+            <HelixNumberField Label="@field.Label" Hint="@hint" Error="@error" Required="field.Required" Disabled="field.ReadOnly"
+                              Value="@(value is null ? null : Convert.ToDouble(value, CultureInfo.InvariantCulture))" ValueChanged="v => Set(field, v)"
+                              Unit="@field.Hints?.Unit" Placeholder="@field.Hints?.Placeholder" Step="@(field.Hints?.Step ?? 1)"
+                              Decimals="@(IsInteger(type) ? 0 : field.Hints?.Decimals is >= 0 ? field.Hints.Decimals : null)"
+                              Min="@(range?.Minimum is { } min ? Convert.ToDouble(min, CultureInfo.InvariantCulture) : null)"
+                              Max="@(range?.Maximum is { } max ? Convert.ToDouble(max, CultureInfo.InvariantCulture) : null)" Culture="Culture" />
+        }
+        else if (type.IsEnum)
+        {
+            <HelixSelect TValue="object" Label="@field.Label" Hint="@hint" Error="@error" Required="field.Required" Disabled="field.ReadOnly"
+                         Items="Enum.GetValues(type).Cast<object>()" Value="value" ValueChanged="v => Set(field, v)" ItemText="EnumText" />
+        }
+        else if (type == typeof(DateOnly) || type == typeof(DateTime) && field.Hints?.WithTime == false)
+        {
+            <HelixDatePicker Label="@field.Label" Hint="@hint" Error="@error" Required="field.Required" Disabled="field.ReadOnly" Culture="Culture"
+                             Value="@(value switch { DateOnly d => d, DateTime t => DateOnly.FromDateTime(t), _ => (DateOnly?)null })"
+                             ValueChanged="v => Set(field, v)" />
+        }
+        else if (type == typeof(DateTime))
+        {
+            <HelixDateTimePicker Label="@field.Label" Hint="@hint" Error="@error" Required="field.Required" Disabled="field.ReadOnly" Culture="Culture"
+                                 Value="@(value as DateTime?)" ValueChanged="v => Set(field, v)" />
+        }
+        else
+        {
+            var inputType = field.DataType switch
+            {
+                DataType.Password => "password",
+                DataType.EmailAddress => "email",
+                DataType.PhoneNumber => "tel",
+                DataType.Url => "url",
+                _ => field.Property.GetCustomAttribute<EmailAddressAttribute>() is not null ? "email" : "text",
+            };
+            <HelixTextField Label="@field.Label" Hint="@hint" Error="@error" Required="field.Required" Disabled="field.ReadOnly" Type="@inputType"
+                            Placeholder="@field.Hints?.Placeholder" Value="@(value?.ToString())" ValueChanged="v => Set(field, v)" />
+        }
+    };
+
+    private static string EnumText(object value)
+    {
+        var member = value.GetType().GetField(value.ToString()!);
+        return member?.GetCustomAttribute<DisplayAttribute>()?.GetName() ?? Humanize(value.ToString()!);
+    }
+}

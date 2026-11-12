@@ -1,0 +1,100 @@
+@page "/components/autoform"
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+
+<DemoPage Title="AutoForm" Description="A complete form from a class: one field per property, with the right control for its type (text, number, switch, date, date and time, list), labels and rules from the usual attributes, and validation. Change the class, the form follows.">
+    <Example WpfCode="@Wpf1" Title="A request form in a few lines" Code="@Code">
+        <div class="grid-2" style="align-items:start">
+            <HelixCard>
+                <HelixAutoForm TModel="ReserveRequest" Model="_request" OnValidSubmit="Send" Culture="English" SubmitText="Send request" />
+            </HelixCard>
+            <div>
+                <p class="muted" style="margin:0 0 8px;font-size:12.5px">Last valid submit</p>
+                <pre style="margin:0;font-size:12px;white-space:pre-wrap">@(_sent ?? "—")</pre>
+            </div>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixAutoForm" Rows="Api" />
+    <ApiTable Title="Attributes" Rows="AttributeApi" ShowIntro="false" />
+</DemoPage>
+
+@code {
+    private static readonly System.Globalization.CultureInfo English = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
+
+    public enum Direction { Upward, Downward }
+
+    public sealed class ReserveRequest
+    {
+        [Required, StringLength(40, MinimumLength = 3), Display(Name = "Site", Order = 1)]
+        public string Site { get; set; } = "";
+
+        [Display(Name = "Direction", Order = 2)]
+        public Direction Direction { get; set; }
+
+        [Range(1, 250), HelixField(Unit = "MW", Step = 5), Display(Name = "Power", Order = 3, Description = "Between 1 and 250 MW")]
+        public double Power { get; set; } = 50;
+
+        [Range(0, 500), HelixField(Unit = "€/MWh", Decimals = 2), Display(Name = "Price cap", Order = 4)]
+        public decimal? PriceCap { get; set; }
+
+        [Required, Display(Name = "Start", Order = 5)]
+        public DateTime? Start { get; set; }
+
+        [Display(Name = "Confirm automatically", Order = 6)]
+        public bool AutoConfirm { get; set; } = true;
+
+        [EmailAddress, Display(Name = "Notify", Order = 7), HelixField(Placeholder = "name@example.com")]
+        public string? NotifyEmail { get; set; }
+
+        [StringLength(200), Display(Name = "Comment", Order = 8), HelixField(Span = 2)]
+        public string? Comment { get; set; }
+
+        [ScaffoldColumn(false)]
+        public Guid Id { get; set; } = Guid.NewGuid();
+    }
+
+    private readonly ReserveRequest _request = new();
+    private string? _sent;
+
+    private void Send(ReserveRequest request) =>
+        _sent = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } });
+
+    private const string Code = """
+        <HelixAutoForm Model="request" OnValidSubmit="Send" SubmitText="Send request" />
+
+        public sealed class ReserveRequest
+        {
+            [Required, StringLength(40, MinimumLength = 3)] public string Site { get; set; } = "";
+            public Direction Direction { get; set; }
+            [Range(1, 250), HelixField(Unit = "MW", Step = 5)] public double Power { get; set; }
+            [Required] public DateTime? Start { get; set; }
+            [Display(Name = "Confirm automatically")] public bool AutoConfirm { get; set; }
+            [StringLength(200), HelixField(Span = 2)] public string? Comment { get; set; }
+        }
+        """;
+
+    private const string Wpf1 = """
+        <helix:HelixAutoForm Model="{Binding Request}" Columns="2" Submitted="OnSubmitted" SubmitText="Send request" />
+
+        // Same attributes as in Blazor ([Display], [Required], [Range], [HelixField]…); two-way bindings to the model.
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Model", "TModel", null, "The object edited in place."),
+        new("OnValidSubmit / OnCancel", "EventCallback<TModel> / EventCallback", null, "Called when every rule passes; a Cancel button when set."),
+        new("Columns / Fields", "int / IReadOnlyList<string>", "--helix-autoform-cols", "Columns (2, one on small screens); only these properties, in this order."),
+        new("SubmitText / CancelText / ShowActions", "string / string / bool", null, "Button texts; hide them and call SubmitAsync() or Validate() yourself."),
+        new("Culture", "CultureInfo", null, "Numbers and dates."),
+    ];
+
+    private static readonly ApiRow[] AttributeApi =
+    [
+        new("[Display(Name, Description, Order)]", "DataAnnotations", null, "Label, hint under the field, order."),
+        new("[Required] [Range] [StringLength] [EmailAddress] [RegularExpression]…", "DataAnnotations", null, "Rules, checked on change and on submit (IValidatableObject too)."),
+        new("[DataType(Password / EmailAddress / Url…)]", "DataAnnotations", null, "Input type of a text."),
+        new("[Editable(false)] / [ScaffoldColumn(false)]", "DataAnnotations", null, "Read-only field / not in the form."),
+        new("[HelixField(Unit, Placeholder, Span, Step, Decimals, WithTime, Hidden)]", "Helix", null, "Unit of a number, columns taken, date only for a DateTime…"),
+    ];
+}
