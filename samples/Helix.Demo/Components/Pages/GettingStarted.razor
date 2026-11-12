@@ -3,9 +3,18 @@
 <DemoPage Title="Installation" Eyebrow="Guide" Description="A few steps, and every component is available in your Blazor or WPF app. The Blazor / WPF switch on code blocks changes the examples across the whole site.">
     <div class="steps">
         <div class="step">
-            <p class="step__title">Reference the library</p>
-            <p class="step__text">Add the project (or, later, the NuGet package) to your app.</p>
-            <CodeBlock Language="bash" Code="dotnet add reference ../Helix.Blazor/Helix.Blazor.csproj" WpfCode="dotnet add reference ../Helix.Wpf/Helix.Wpf.csproj" />
+            <p class="step__title">Install the NuGet package</p>
+            <p class="step__text">
+                <code>Helix.Blazor</code> needs .NET 10. <code>Helix.Wpf</code> works with .NET 8 and later (Windows).
+                From a terminal in your project folder:
+            </p>
+            <CodeBlock Language="bash" Code="dotnet add package Helix.Blazor" WpfCode="dotnet add package Helix.Wpf" />
+            <p class="step__text" style="margin-top:14px">
+                Or search for <code>Helix.Blazor</code> / <code>Helix.Wpf</code> in Visual Studio's NuGet package manager,
+                or add the reference to your <code>.csproj</code> yourself.
+                With central package management, the version goes in <code>Directory.Packages.props</code> instead.
+            </p>
+            <CodeBlock Language="xml" Code="@PackageReferenceCode" WpfCode="@WpfPackageReferenceCode" />
         </div>
         <div class="step">
             <p class="step__title">Register the services</p>
@@ -31,6 +40,30 @@
 </DemoPage>
 
 @code {
+    private const string PackageReferenceCode = """
+        <!-- YourApp.csproj -->
+        <ItemGroup>
+            <PackageReference Include="Helix.Blazor" Version="0.1.0" />
+        </ItemGroup>
+
+        <!-- Or, with central package management: Directory.Packages.props -->
+        <PackageVersion Include="Helix.Blazor" Version="0.1.0" />
+        <!-- and in YourApp.csproj -->
+        <PackageReference Include="Helix.Blazor" />
+        """;
+
+    private const string WpfPackageReferenceCode = """
+        <!-- YourApp.csproj (net8.0-windows or later, UseWPF) -->
+        <ItemGroup>
+            <PackageReference Include="Helix.Wpf" Version="0.1.0" />
+        </ItemGroup>
+
+        <!-- Or, with central package management: Directory.Packages.props -->
+        <PackageVersion Include="Helix.Wpf" Version="0.1.0" />
+        <!-- and in YourApp.csproj -->
+        <PackageReference Include="Helix.Wpf" />
+        """;
+
     private const string WpfAppCode = """
         <!-- WPF · App.xaml: the theme (light, dark or like Windows) -->
         <Application.Resources>

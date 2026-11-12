@@ -101,7 +101,7 @@ Ajouter une option de personnalisation = un `[Parameter]` + une ligne `StyleBuil
   la forme `SegmentedBar` l'est aussi pour montrer d'un coup d'œil comment se répartit un tout.
 - `HelixRating` : saisie par valeurs entières ; les fractions (4,3) ne sont qu'en lecture seule.
 - `HelixColorPicker` : la pipette (prendre une couleur à l'écran) n'existe que dans Chrome et Edge ; le bouton n'apparaît pas ailleurs.
-- Pas encore de tests (bUnit) ni de package NuGet.
+- Pas encore de tests (bUnit).
 - La partie WPF n'est pas commencée.
 
 ## WPF
