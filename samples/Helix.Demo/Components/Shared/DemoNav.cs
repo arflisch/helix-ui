@@ -15,6 +15,7 @@ public static class DemoNav
             new("Customization", "customization"),
             new("Light and dark themes", "themes"),
             new("Remembering user settings", "user-settings"),
+            new("Developer helpers", "helpers"),
         ]),
         new("Actions",
         [

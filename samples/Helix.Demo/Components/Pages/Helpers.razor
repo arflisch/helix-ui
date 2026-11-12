@@ -1,0 +1,64 @@
+@page "/helpers"
+
+<DemoPage Title="Developer helpers" Eyebrow="Guide" Description="Small tools that remove repetitive code around the components: live data in batches, time slots that survive daylight saving days, calculations in number fields, async buttons, prompts and dialogs.">
+    <section class="demo-section">
+        <h2 class="demo-section__title">Live data, in batches</h2>
+        <p class="demo-section__text">
+            Messages from SignalR or a queue can arrive dozens of times per second. <code>HelixLiveCollection</code> collects them from any thread
+            and publishes them a few times per second (250 ms by default), optionally keeping only the last N items: grids, charts and logs stay smooth.
+        </p>
+        <CodeBlock Language="c#" Code="@LiveCode" WpfCode="@LiveWpf" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Time slots and daylight saving</h2>
+        <p class="demo-section__text">
+            A day has 96 quarter hours… except twice a year: 92 in spring, 100 in autumn (the repeated hour appears twice).
+            <code>HelixTimeSlots.ForDay</code> returns the real slots of a day in a time zone, with UTC instants and local times.
+        </p>
+        <CodeBlock Language="c#" Code="@SlotsCode" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">More helpers</h2>
+        <HelixDescriptionList Columns="2" Bordered="true">
+            <HelixDescription Label="Calculations in number fields"><code>AllowExpressions</code> on NumberField: “120*0.8”, “=1000/4+20”. <code>HelixExpression.TryEvaluate</code> for your code.</HelixDescription>
+            <HelixDescription Label="Async buttons">Blazor: <code>AutoLoading</code> on HelixButton. WPF: <code>HelixAsyncCommand</code> (busy, errors as toasts, cancel).</HelixDescription>
+            <HelixDescription Label="Ask for a text"><code>Confirm.PromptAsync(…)</code> (Blazor), <code>HelixConfirm.PromptAsync(…)</code> (WPF), with validation.</HelixDescription>
+            <HelixDescription Label="Your view in a dialog"><code>HelixDialogService.ShowAsync&lt;T&gt;</code> (Blazor), <code>HelixDialogs.ShowAsync&lt;T&gt;</code> (WPF).</HelixDescription>
+            <HelixDescription Label="Remember user settings"><code>RememberAs</code> on grid, dashboard, filters, splitter: see the guide page.</HelixDescription>
+            <HelixDescription Label="Filters as text"><code>HelixFilterBar.State</code>: a key → text dictionary to save or send to a server.</HelixDescription>
+        </HelixDescriptionList>
+    </section>
+</DemoPage>
+
+@code {
+    private const string LiveCode = """
+        private readonly HelixLiveCollection<HelixLogEntry> log = new(maxCount: 5000);
+
+        protected override void OnInitialized()
+        {
+            log.Changed += () => InvokeAsync(StateHasChanged);       // a few times per second at most
+            hub.On<LogMessage>("log", m => log.Add(m.ToEntry()));   // any thread
+        }
+
+        <HelixLogViewer Entries="log.Items" />
+        """;
+
+    private const string LiveWpf = """
+        // An ObservableCollection filled from any thread, flushed on the UI thread every 250 ms
+        public HelixLiveCollection<Reading> Readings { get; } = new(maxCount: 10_000);
+
+        hub.On<Reading>("reading", r => Readings.Enqueue(r));   // from SignalR's thread
+        """;
+
+    private const string SlotsCode = """
+        var slots = HelixTimeSlots.ForDay(new DateOnly(2026, 10, 25), TimeSpan.FromMinutes(15),
+                                          TimeZoneInfo.FindSystemTimeZoneById("Europe/Brussels"));
+        // 100 slots; slots[8] and slots[12] are both 02:00–02:15 (different StartUtc)
+        foreach (var slot in slots) Console.WriteLine($"{slot.Index}: {slot.Label()} ({slot.StartUtc:HH:mm} UTC)");
+
+        HelixTimeSlots.HoursIn(day, zone);                        // 24, or 23 / 25
+        HelixTimeSlots.Floor(DateTime.Now, TimeSpan.FromMinutes(15));   // 14:37 → 14:30
+        """;
+}
