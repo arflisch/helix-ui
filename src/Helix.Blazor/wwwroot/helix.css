@@ -2669,3 +2669,17 @@
     :where(.helix-root *) { animation-duration: 1ms !important; transition-duration: 1ms !important; }
     :where(.helix-spinner, .helix-btn__spinner) { animation-duration: 1.2s !important; }
 }
+
+/* ===================================================================== Filter bar */
+:where(.helix-filters) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+:where(.helix-filters__item) { width: auto; min-width: 0; }
+:where(.helix-filters__item .helix-input) { --helix-input-height: 34px; }
+:where(.helix-filters__text) { flex: 0 1 240px; }
+:where(.helix-filters__choice) { flex: 0 1 220px; }
+:where(.helix-filters__date) { flex: 0 1 250px; }
+:where(.helix-filters__toggle) { flex: none; }
+:where(.helix-filters__end) { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+@media (max-width: 640px) {
+    :where(.helix-filters__text, .helix-filters__choice, .helix-filters__date) { flex: 1 1 100%; }
+    :where(.helix-filters__end) { margin-left: 0; }
+}

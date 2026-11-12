@@ -1,0 +1,101 @@
+@page "/components/filterbar"
+@using System.Globalization
+
+<DemoPage Title="FilterBar" Description="A row of filters above a list or a grid, built from the fields you already know: text search, choices, period, on/off rules. Its state is a plain dictionary of strings, easy to save, to put in a URL or to send to a server. Users can save a set of filters under a name and get it back from the “Saved filters” menu.">
+    <Example WpfCode="@Wpf1" Title="Filters on a grid" Code="@Code">
+        <div class="stack" style="gap:14px">
+            <HelixFilterBar @ref="_bar" TItem="Delivery" Items="Deliveries" @bind-State="_state" @bind-Presets="_presets">
+                <HelixTextFilter Key="q" Placeholder="Search site or product" Fields="@(d => [d.Site, d.Product])" />
+                <HelixChoiceFilter Key="status" Label="Status" Field="d => d.Status" />
+                <HelixChoiceFilter Key="site" Label="Site" Field="d => d.Site" Searchable="true" />
+                <HelixDateFilter Key="date" Label="Period" Field="d => d.Date" Culture="English" />
+                <HelixToggleFilter Key="late" Label="Late only" Predicate="d => d.Late" />
+            </HelixFilterBar>
+            <HelixDataGrid Items="Filtered" PageSize="8" Culture="English" Density="HelixSize.Sm">
+                <HelixColumn Field="d => d.Date" Format="d MMM" />
+                <HelixColumn Field="d => d.Site" />
+                <HelixColumn Field="d => d.Product" />
+                <HelixColumn Field="d => d.Status" BadgeColor="@(d => d.Status switch { "Delivered" => "success", "Pending" => "warning", _ => "danger" })" />
+                <HelixColumn Field="d => d.Volume" Format="N0" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
+            </HelixDataGrid>
+            <p class="muted" style="margin:0;font-size:12.5px">State: <code>@(_state is null || _state.Count == 0 ? "{}" : string.Join(", ", _state.Select(kv => $"{kv.Key}={kv.Value}")))</code></p>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixFilterBar" Rows="Api" />
+    <ApiTable Title="Filters" Rows="FilterApi" ShowIntro="false" />
+</DemoPage>
+
+@code {
+    public sealed record Delivery(DateTime Date, string Site, string Product, string Status, double Volume, bool Late);
+
+    private static readonly string[] Sites = ["Lyon", "Lille", "Nantes", "Bordeaux", "Grenoble"];
+    private static readonly string[] Products = ["Baseload", "Peak", "Off-peak"];
+    private static readonly string[] Statuses = ["Delivered", "Delivered", "Pending", "Cancelled"];
+
+    private static readonly IReadOnlyList<Delivery> Deliveries = Enumerable.Range(0, 60).Select(i => new Delivery(
+        DateTime.Today.AddDays(-(i * 7 % 45)), Sites[i * 3 % Sites.Length], Products[i % Products.Length], Statuses[i * 5 % Statuses.Length],
+        120 + i * 37 % 900, i % 6 == 0)).ToList();
+
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
+
+    private HelixFilterBar<Delivery>? _bar;
+    private IReadOnlyDictionary<string, string>? _state;
+    private IReadOnlyList<HelixFilterPreset> _presets =
+    [
+        new("Late deliveries", new Dictionary<string, string> { ["late"] = "1" }),
+        new("Pending in Lyon", new Dictionary<string, string> { ["status"] = "[\"Pending\"]", ["site"] = "[\"Lyon\"]" }),
+    ];
+
+    private IEnumerable<Delivery> Filtered => _bar?.Apply(Deliveries) ?? Deliveries;
+
+    private const string Code = """
+        <HelixFilterBar @ref="bar" Items="deliveries" @bind-State="filters" @bind-Presets="saved">
+            <HelixTextFilter Key="q" Placeholder="Search" Fields="@(d => [d.Site, d.Product])" />
+            <HelixChoiceFilter Key="status" Label="Status" Field="d => d.Status" />
+            <HelixDateFilter Key="date" Label="Period" Field="d => d.Date" />
+            <HelixToggleFilter Key="late" Label="Late only" Predicate="d => d.Late" />
+        </HelixFilterBar>
+
+        <HelixDataGrid Items="@(bar?.Apply(deliveries) ?? deliveries)">…</HelixDataGrid>
+
+        @code {
+            private HelixFilterBar<Delivery>? bar;
+            private IReadOnlyDictionary<string, string>? filters;   // e.g. { "status": "[\"Pending\"]", "late": "1" }
+            private IReadOnlyList<HelixFilterPreset> saved = [];     // store it per user (database, localStorage…)
+
+            // Server data: read `filters` in your ItemsProvider and call grid.RefreshAsync() when they change.
+        }
+        """;
+
+    private const string Wpf1 = """
+        <helix:HelixFilterBar Target="{Binding ElementName=Grid}" Presets="{Binding SavedFilters}">
+            <helix:HelixTextFilter Key="q" Placeholder="Search" Paths="Site,Product" />
+            <helix:HelixChoiceFilter Key="status" Label="Status" Path="Status" />
+            <helix:HelixDateFilter Key="date" Label="Period" Path="Date" />
+            <helix:HelixToggleFilter Key="late" Label="Late only" Path="Late" />
+        </helix:HelixFilterBar>
+        <helix:HelixDataGrid x:Name="Grid" Source="{Binding Deliveries}" … />
+
+        <!-- Target receives the filter (HelixDataGrid.Filter); State is the same key → text dictionary as in Blazor. -->
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("ChildContent", "filters", null, "HelixTextFilter, HelixChoiceFilter, HelixDateFilter, HelixToggleFilter, or your own (HelixFilter<T>)."),
+        new("State", "IReadOnlyDictionary<string, string>", null, "Values, key → text (@bind-State): save it, put it in a URL, send it to a server."),
+        new("Items", "IEnumerable<T>", null, "The rows: lets choice filters list the existing values."),
+        new("Presets", "IReadOnlyList<HelixFilterPreset>", null, "Saved filters (Name, State) in the menu; @bind-Presets lets users save and delete them."),
+        new("Apply(items) / Predicate / ActiveCount", "method / Func<T, bool> / int", null, "Filters a list in memory; the combined rule; filters in use."),
+    ];
+
+    private static readonly ApiRow[] FilterApi =
+    [
+        new("Key", "string", null, "Stable key of the value (required)."),
+        new("HelixTextFilter", "Fields, Placeholder", null, "Text found in any of the fields (case-insensitive)."),
+        new("HelixChoiceFilter", "Field, Options, OptionText, Searchable", null, "Rows whose field is one of the chosen options; options from Items by default."),
+        new("HelixDateFilter", "Field, Presets, MaxDays", null, "Rows whose date is in the period (both days included)."),
+        new("HelixToggleFilter", "Predicate, Label", null, "Your rule, applied while the switch is on."),
+        new("Label / Width", "string", null, "Placeholder or label; field width."),
+    ];
+}

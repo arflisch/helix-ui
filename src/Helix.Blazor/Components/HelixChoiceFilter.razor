@@ -1,0 +1,43 @@
+@namespace Helix.Blazor
+@typeparam TItem
+@typeparam TValue
+@inherits HelixFilter<TItem>
+
+<HelixMultiSelect TValue="string" Class="@(new CssBuilder("helix-filters__item helix-filters__choice").Add(Class).Build())" Style="@FieldStyle"
+                  Items="OptionKeys" ItemText="TextOfKey" Values="DecodeList(Value)" ValuesChanged="v => Set(v.Count == 0 ? null : EncodeList(v))"
+                  Placeholder="@(Label ?? Placeholder)" Searchable="Searchable" MaxChips="MaxChips" aria-label="@Label" />
+
+@code {
+    /// <summary>The value of a row compared with the chosen options, e.g. o => o.Status.</summary>
+    [Parameter, EditorRequired] public Func<TItem, TValue> Field { get; set; } = default!;
+
+    /// <summary>The options. Null: the distinct values of the bar's Items.</summary>
+    [Parameter] public IEnumerable<TValue>? Options { get; set; }
+
+    /// <summary>Text of an option (ToString by default).</summary>
+    [Parameter] public Func<TValue, string>? OptionText { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Searchable { get; set; }
+    [Parameter] public int MaxChips { get; set; } = 2;
+
+    private Dictionary<string, TValue> _byKey = [];
+
+    private IEnumerable<string> OptionKeys => _byKey.Keys;
+
+    private static string KeyOf(TValue value) => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+
+    private string TextOfKey(string key) => _byKey.TryGetValue(key, out var value) ? OptionText?.Invoke(value) ?? value?.ToString() ?? key : key;
+
+    protected override void OnParametersSet()
+    {
+        IEnumerable<TValue> options = Options ?? Bar?.Items?.Select(Field).Distinct().OrderBy(v => v) ?? Enumerable.Empty<TValue>();
+        _byKey = options.GroupBy(KeyOf).ToDictionary(g => g.Key, g => g.First());
+    }
+
+    public override Func<TItem, bool>? CreatePredicate(string value)
+    {
+        var chosen = DecodeList(value).ToHashSet();
+        return chosen.Count == 0 ? null : item => chosen.Contains(KeyOf(Field(item)));
+    }
+}

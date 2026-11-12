@@ -218,7 +218,7 @@
                 @if (PageSizes.Length > 1)
                 {
                     <span class="helix-grid__rows-label">@Texts.Rows</span>
-                    <HelixSelect TValue="int" Class="helix-grid__size" Items="PageSizes" Value="_pageSize" ValueChanged="SetPageSize" aria-label="@Texts.RowsPerPageLabel" />
+                    <HelixSelect TValue="int" Class="helix-grid__size" Items="PageSizeChoices" Value="_pageSize" ValueChanged="SetPageSize" aria-label="@Texts.RowsPerPageLabel" />
                 }
                 <button type="button" class="helix-grid__page" disabled="@(_page == 0)" aria-label="@Texts.PreviousPage" @onclick="() => GoTo(_page - 1)">
                     <HelixIcon Name="chevron-left" Size="15" />
@@ -278,6 +278,9 @@
     /// <summary>Rows per page. 0 shows every row.</summary>
     /// <summary>Rows per page; 0 shows all. Null: HelixOptions.Defaults.DataGrid.PageSize, else 10.</summary>
     [Parameter] public int? PageSize { get; set; }
+
+    /// <summary>The page-size choices, always including the current size (e.g. PageSize="8" with the default 10 / 25 / 50).</summary>
+    private IEnumerable<int> PageSizeChoices => PageSizes.Append(_pageSize).Where(n => n > 0).Distinct().Order();
 
     private int EffectivePageSize => PageSize ?? Defaults.DataGrid.PageSize ?? 10;
     [Parameter] public int[] PageSizes { get; set; } = [10, 25, 50];

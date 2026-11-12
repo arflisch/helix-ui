@@ -1,0 +1,175 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@typeparam TItem
+@attribute [CascadingTypeParameter(nameof(TItem))]
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-filters").Add(Class).Build())" style="@Style" role="search" aria-label="@(AriaLabel ?? Texts.Search)">
+    <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+    <div class="helix-filters__end">
+        @if (ActiveCount > 0)
+        {
+            <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" Icon="x" OnClick="ClearAll">@Texts.ClearFilters</HelixButton>
+        }
+        @if (PresetsChanged.HasDelegate || Presets is { Count: > 0 })
+        {
+            <HelixMenu Align="HelixAlign.End" MinWidth="220px">
+                <Trigger>
+                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="star" IconEnd="chevron-down">@(CurrentPreset?.Name ?? Texts.SavedFilters)</HelixButton>
+                </Trigger>
+                <ChildContent>
+                    <HelixMenuLabel>@Texts.SavedFilters</HelixMenuLabel>
+                    @if (Presets is not { Count: > 0 })
+                    {
+                        <HelixMenuItem Disabled="true">@Texts.NoSavedFilters</HelixMenuItem>
+                    }
+                    else
+                    {
+                        @foreach (var preset in Presets)
+                        {
+                            <HelixMenuItem Checked="@(ReferenceEquals(preset, CurrentPreset))" OnClick="() => Apply(preset)">@preset.Name</HelixMenuItem>
+                        }
+                    }
+                    @if (PresetsChanged.HasDelegate)
+                    {
+                        <HelixMenuSeparator />
+                        <HelixMenuItem Icon="plus" Disabled="@(ActiveCount == 0)" OnClick="() => { _presetName = CurrentPreset?.Name ?? string.Empty; _saving = true; }">@Texts.SaveFilters</HelixMenuItem>
+                        @if (CurrentPreset is { } current)
+                        {
+                            <HelixMenuItem Icon="trash" Danger="true" OnClick="() => DeletePreset(current)">@HelixTexts.Format(Texts.DeleteSavedFilter, current.Name)</HelixMenuItem>
+                        }
+                    }
+                </ChildContent>
+            </HelixMenu>
+        }
+    </div>
+</div>
+
+<HelixDialog @bind-Open="_saving" Title="@Texts.SaveFilters" Width="380px">
+    <ChildContent>
+        <HelixTextField Label="@Texts.Name" @bind-Value="_presetName" Required="true" />
+    </ChildContent>
+    <Footer>
+        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => _saving = false">@Texts.Cancel</HelixButton>
+        <HelixButton Icon="check" Disabled="@string.IsNullOrWhiteSpace(_presetName)" OnClick="SavePreset">@Texts.Save</HelixButton>
+    </Footer>
+</HelixDialog>
+
+@code {
+    /// <summary>The filters: HelixTextFilter, HelixChoiceFilter, HelixDateFilter, HelixToggleFilter (or your own HelixFilter).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Current values, key → encoded value (@bind-State). Plain strings: easy to save, put in a URL or send to a server.</summary>
+    [Parameter] public IReadOnlyDictionary<string, string>? State { get; set; }
+    [Parameter] public EventCallback<IReadOnlyDictionary<string, string>> StateChanged { get; set; }
+
+    /// <summary>The rows the filters apply to; lets HelixChoiceFilter list the existing values when it has no Options.</summary>
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>Saved filters shown in the "Saved filters" menu (@bind-Presets to let the user save and delete them).</summary>
+    [Parameter] public IReadOnlyList<HelixFilterPreset>? Presets { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<HelixFilterPreset>> PresetsChanged { get; set; }
+
+    [Parameter] public string? AriaLabel { get; set; }
+
+    private readonly List<IHelixFilter<TItem>> _filters = [];
+    private Dictionary<string, string> _state = [];
+    private IReadOnlyDictionary<string, string>? _lastState;
+    private bool _saving;
+    private string? _presetName;
+
+    /// <summary>The values of the filters, as set by the user.</summary>
+    public IReadOnlyDictionary<string, string> Values => _state;
+
+    /// <summary>Number of filters with a value.</summary>
+    public int ActiveCount => _filters.Count(f => _state.ContainsKey(f.Key));
+
+    /// <summary>Keeps the rows that pass every active filter.</summary>
+    public Func<TItem, bool> Predicate
+    {
+        get
+        {
+            var active = _filters.Where(f => _state.ContainsKey(f.Key)).Select(f => f.CreatePredicate(_state[f.Key])).OfType<Func<TItem, bool>>().ToArray();
+            return item => active.All(p => p(item));
+        }
+    }
+
+    /// <summary>The rows that pass every active filter.</summary>
+    public IEnumerable<TItem> Apply(IEnumerable<TItem> items)
+    {
+        var predicate = Predicate;
+        return items.Where(predicate);
+    }
+
+    private HelixFilterPreset? CurrentPreset => Presets?.FirstOrDefault(p => SameState(p.State, _state));
+
+    private static bool SameState(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, string> b) =>
+        a.Count == b.Count && a.All(kv => b.TryGetValue(kv.Key, out var v) && v == kv.Value);
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(State, _lastState))
+        {
+            _lastState = State;
+            _state = State?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? [];
+        }
+    }
+
+    internal void Register(IHelixFilter<TItem> filter)
+    {
+        _filters.Add(filter);
+        StateHasChanged();
+    }
+
+    internal void Unregister(IHelixFilter<TItem> filter) => _filters.Remove(filter);
+
+    internal string? ValueOf(string key) => _state.GetValueOrDefault(key);
+
+    /// <summary>Sets (or clears, with null or empty) one filter value.</summary>
+    public Task SetValue(string key, string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            if (!_state.Remove(key)) return Task.CompletedTask;
+        }
+        else
+        {
+            if (_state.TryGetValue(key, out var old) && old == value) return Task.CompletedTask;
+            _state[key] = value;
+        }
+
+        return Notify();
+    }
+
+    private Task ClearAll()
+    {
+        _state.Clear();
+        return Notify();
+    }
+
+    private Task Apply(HelixFilterPreset preset)
+    {
+        _state = preset.State.ToDictionary(kv => kv.Key, kv => kv.Value);
+        return Notify();
+    }
+
+    private async Task Notify()
+    {
+        var snapshot = new Dictionary<string, string>(_state);
+        _lastState = snapshot;
+        StateHasChanged();
+        await StateChanged.InvokeAsync(snapshot);
+    }
+
+    private async Task SavePreset()
+    {
+        var name = _presetName?.Trim();
+        if (string.IsNullOrEmpty(name)) return;
+        var preset = new HelixFilterPreset(name, new Dictionary<string, string>(_state));
+        var list = (Presets ?? []).Where(p => !string.Equals(p.Name, name, StringComparison.CurrentCultureIgnoreCase)).Append(preset).ToList();
+        _saving = false;
+        await PresetsChanged.InvokeAsync(list);
+    }
+
+    private Task DeletePreset(HelixFilterPreset preset) =>
+        PresetsChanged.InvokeAsync((Presets ?? []).Where(p => !ReferenceEquals(p, preset)).ToList());
+}

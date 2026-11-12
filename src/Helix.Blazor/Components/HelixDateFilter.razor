@@ -1,0 +1,24 @@
+@namespace Helix.Blazor
+@typeparam TItem
+@inherits HelixFilter<TItem>
+
+<HelixDateRangePicker Class="@(new CssBuilder("helix-filters__item helix-filters__date").Add(Class).Build())" Style="@FieldStyle"
+                      Value="DecodeRange(Value)" ValueChanged="r => Set(r is null ? null : EncodeRange(r))"
+                      Placeholder="@(Label ?? Texts.ChoosePeriod)" Presets="Presets" MaxDays="MaxDays" Culture="Culture" aria-label="@Label" />
+
+@code {
+    /// <summary>The date of a row, e.g. o => o.Date (null: the row never matches a period).</summary>
+    [Parameter, EditorRequired] public Func<TItem, DateTime?> Field { get; set; } = _ => null;
+
+    /// <summary>Shortcuts of the picker (null: the built-in ones).</summary>
+    [Parameter] public IReadOnlyList<HelixDateRangePreset>? Presets { get; set; }
+    [Parameter] public int? MaxDays { get; set; }
+    [Parameter] public System.Globalization.CultureInfo? Culture { get; set; }
+
+    public override Func<TItem, bool>? CreatePredicate(string value)
+    {
+        if (DecodeRange(value) is not { } range) return null;
+        var (from, to) = range.ToDateTimes();
+        return item => Field(item) is { } date && date >= from && date < to;
+    }
+}

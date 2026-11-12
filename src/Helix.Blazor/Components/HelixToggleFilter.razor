@@ -1,0 +1,17 @@
+@namespace Helix.Blazor
+@typeparam TItem
+@inherits HelixFilter<TItem>
+
+<HelixSwitch Class="@(new CssBuilder("helix-filters__item helix-filters__toggle").Add(Class).Build())" Style="@Style" Size="HelixSize.Sm"
+             Label="@Label" Checked="IsOn" CheckedChanged="Toggle" />
+
+@code {
+    /// <summary>The rule applied while the switch is on, e.g. o => o.IsLate.</summary>
+    [Parameter, EditorRequired] public Func<TItem, bool> Predicate { get; set; } = _ => true;
+
+    private bool IsOn => Value == "1";
+
+    private Task Toggle(bool on) => Set(on ? "1" : null);
+
+    public override Func<TItem, bool>? CreatePredicate(string value) => value == "1" ? Predicate : null;
+}

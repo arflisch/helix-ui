@@ -1,0 +1,20 @@
+@namespace Helix.Blazor
+@typeparam TItem
+@inherits HelixFilter<TItem>
+
+<HelixTextField Class="@(new CssBuilder("helix-filters__item helix-filters__text").Add(Class).Build())" Style="@FieldStyle" Icon="search" Clearable="true"
+                Placeholder="@(Placeholder ?? Label ?? Texts.Search)" aria-label="@(Label ?? Placeholder ?? Texts.Search)"
+                Value="@Value" ValueChanged="Set" />
+
+@code {
+    /// <summary>The texts searched in a row (any of them may contain the typed text), e.g. o => [o.Product, o.Region].</summary>
+    [Parameter, EditorRequired] public Func<TItem, IEnumerable<string?>> Fields { get; set; } = _ => [];
+
+    [Parameter] public string? Placeholder { get; set; }
+
+    public override Func<TItem, bool>? CreatePredicate(string value)
+    {
+        var term = value.Trim();
+        return term.Length == 0 ? null : item => Fields(item).Any(f => f?.Contains(term, StringComparison.CurrentCultureIgnoreCase) == true);
+    }
+}

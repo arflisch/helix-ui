@@ -40,6 +40,7 @@ public static class DemoNav
         new("Data",
         [
             new("DataGrid", "components/datagrid", "Table: sorting, search, paging, selection, templates.", "calendar"),
+            new("FilterBar", "components/filterbar", "Filters above a list, with saved filters.", "search"),
             new("Chart", "components/chart", "Lines, areas, steps, bars, thresholds, real time and zoom.", "arrow-up"),
             new("Timeline", "components/timeline", "Schedule with statuses, lanes and a live current-time line.", "calendar"),
             new("Stat", "components/stat", "Key indicator with change and sparkline.", "trending-up"),

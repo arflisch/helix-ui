@@ -19,6 +19,14 @@ public sealed record HelixTexts
     public string NoData { get; init; } = "No data";
     public string Confirm { get; init; } = "Confirm";
     public string Cancel { get; init; } = "Cancel";
+    public string Save { get; init; } = "Save";
+    public string Name { get; init; } = "Name";
+    public string ClearFilters { get; init; } = "Clear filters";
+    public string SavedFilters { get; init; } = "Saved filters";
+    public string SaveFilters { get; init; } = "Save these filters…";
+    public string NoSavedFilters { get; init; } = "No saved filters yet";
+    /// <summary>{0} = the saved filter name.</summary>
+    public string DeleteSavedFilter { get; init; } = "Delete “{0}”";
     public string Delete { get; init; } = "Delete?";
     public string Previous { get; init; } = "Previous";
     public string Next { get; init; } = "Next";
@@ -176,7 +184,8 @@ public sealed record HelixTexts
     public static HelixTexts French { get; } = new()
     {
         Close = "Fermer", Clear = "Effacer", Loading = "Chargement", NoData = "Aucune donnée",
-        Confirm = "Confirmer", Cancel = "Annuler", Delete = "Supprimer ?", Previous = "Précédent", Next = "Suivant",
+        Confirm = "Confirmer", Cancel = "Annuler", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
+        SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »", Delete = "Supprimer ?", Previous = "Précédent", Next = "Suivant",
         Expand = "Déplier", Collapse = "Replier", Retry = "Réessayer", Reset = "Réinitialiser",
         PositionOf = "{0} sur {1}", Required = "obligatoire",
 

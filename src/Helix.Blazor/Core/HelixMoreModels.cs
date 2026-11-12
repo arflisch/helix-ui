@@ -138,3 +138,6 @@ public sealed record HelixDateRange(DateOnly Start, DateOnly End)
 
 /// <summary>A shortcut of HelixDateRangePicker, e.g. "Last 7 days". Range receives today.</summary>
 public sealed record HelixDateRangePreset(string Label, Func<DateOnly, HelixDateRange> Range);
+
+/// <summary>A named set of filter values (key → encoded value), saved by the user in a <see cref="HelixFilterBar{TItem}"/>.</summary>
+public sealed record HelixFilterPreset(string Name, IReadOnlyDictionary<string, string> State);
