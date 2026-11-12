@@ -1,0 +1,19 @@
+@page "/"
+
+<PageTitle>Overview</PageTitle>
+<h1 class="app__title">Overview</h1>
+
+<HelixDashboard Title="Today" Columns="3" RememberAs="home">
+    <HelixDashboardTile Id="orders" Plain="true">
+        <HelixStat Label="Orders" Value="128" Delta="12" DeltaLabel="vs yesterday" Icon="trending-up" />
+    </HelixDashboardTile>
+    <HelixDashboardTile Id="volume" Plain="true">
+        <HelixStat Label="Volume" Value="5810" Unit="MWh" Delta="3.4" DeltaFormat="+0.0 '%';-0.0 '%'" DeltaLabel="vs last week" />
+    </HelixDashboardTile>
+    <HelixDashboardTile Id="late" Plain="true">
+        <HelixStat Label="Late" Value="3" Delta="-2" HigherIsBetter="false" DeltaLabel="vs yesterday" Icon="warning" />
+    </HelixDashboardTile>
+    <HelixDashboardTile Id="target" Title="Delivery against target" DefaultSpan="3">
+        <HelixTargetBar Label="This week" Value="5810" Target="6000" Max="8000" Unit="MWh" Tolerance="300" />
+    </HelixDashboardTile>
+</HelixDashboard>

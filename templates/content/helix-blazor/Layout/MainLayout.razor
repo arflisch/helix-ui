@@ -1,0 +1,25 @@
+@inherits LayoutComponentBase
+
+<HelixProvider Theme="_theme">
+    <div class="app">
+        <aside class="app__nav">
+            <a class="app__brand" href="">HelixApp</a>
+            <NavLink class="app__link" href="" Match="NavLinkMatch.All">Overview</NavLink>
+            <NavLink class="app__link" href="report">Report</NavLink>
+        </aside>
+        <div class="app__main">
+            <header class="app__top">
+                <HelixButtonGroup Label="Theme">
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" Icon="sun" aria-label="Light" OnClick="() => _theme.Mode = HelixThemeMode.Light" />
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" Icon="moon" aria-label="Dark" OnClick="() => _theme.Mode = HelixThemeMode.Dark" />
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" Icon="settings" aria-label="System" OnClick="() => _theme.Mode = HelixThemeMode.System" />
+                </HelixButtonGroup>
+            </header>
+            <main class="app__content">@Body</main>
+        </div>
+    </div>
+</HelixProvider>
+
+@code {
+    private readonly HelixTheme _theme = new() { Mode = HelixThemeMode.System };
+}

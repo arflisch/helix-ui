@@ -144,6 +144,8 @@ Pages › « Upload assets », glisser ce dossier, puis « Deploy ». Pour une m
 
 ## Packages NuGet
 
+Nouveau projet : `dotnet new install Helix.Templates`, puis `dotnet new helix-blazor -n MonApp` ou `dotnet new helix-wpf -n MonApp`.
+
 | Package | Installation |
 |---|---|
 | `Helix.Blazor` | `dotnet add package Helix.Blazor` |

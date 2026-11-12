@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Helix UI",
+  "classifications": ["Desktop", "WPF", "Helix"],
+  "identity": "Helix.Templates.WpfApp",
+  "name": "Helix UI WPF app",
+  "shortName": "helix-wpf",
+  "sourceName": "HelixApp",
+  "preferNameDirectory": true,
+  "tags": { "language": "C#", "type": "project" },
+  "symbols": {
+    "HelixVersion": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "0.3.0",
+      "replaces": "HELIX_VERSION",
+      "description": "Version of the Helix.Wpf package."
+    },
+    "Framework": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [ { "choice": "net8.0-windows" }, { "choice": "net10.0-windows" } ],
+      "defaultValue": "net8.0-windows",
+      "replaces": "TARGET_FRAMEWORK",
+      "description": "Target framework."
+    }
+  }
+}

@@ -1,6 +1,12 @@
 @page "/getting-started"
 
 <DemoPage Title="Installation" Eyebrow="Guide" Description="A few steps, and every component is available in your Blazor or WPF app. The Blazor / WPF switch on code blocks changes the examples across the whole site.">
+    <section class="demo-section" style="margin-bottom:28px">
+        <h2 class="demo-section__title">Start a new app</h2>
+        <p class="demo-section__text">The templates create an app with the Helix theme (light, dark or system), a layout and a ready-made report page: filters, a grid with totals and CSV export, preferences remembered per user.</p>
+        <CodeBlock Language="bash" Code="@TemplateCode" WpfCode="@WpfTemplateCode" />
+        <p class="demo-section__text" style="margin-top:14px">Or add Helix to an existing app, in a few steps:</p>
+    </section>
     <div class="steps">
         <div class="step">
             <p class="step__title">Install the NuGet package</p>
@@ -43,11 +49,11 @@
     private const string PackageReferenceCode = """
         <!-- YourApp.csproj -->
         <ItemGroup>
-            <PackageReference Include="Helix.Blazor" Version="0.2.0" />
+            <PackageReference Include="Helix.Blazor" Version="0.3.0" />
         </ItemGroup>
 
         <!-- Or, with central package management: Directory.Packages.props -->
-        <PackageVersion Include="Helix.Blazor" Version="0.2.0" />
+        <PackageVersion Include="Helix.Blazor" Version="0.3.0" />
         <!-- and in YourApp.csproj -->
         <PackageReference Include="Helix.Blazor" />
         """;
@@ -55,13 +61,23 @@
     private const string WpfPackageReferenceCode = """
         <!-- YourApp.csproj (net8.0-windows or later, UseWPF) -->
         <ItemGroup>
-            <PackageReference Include="Helix.Wpf" Version="0.2.0" />
+            <PackageReference Include="Helix.Wpf" Version="0.3.0" />
         </ItemGroup>
 
         <!-- Or, with central package management: Directory.Packages.props -->
-        <PackageVersion Include="Helix.Wpf" Version="0.2.0" />
+        <PackageVersion Include="Helix.Wpf" Version="0.3.0" />
         <!-- and in YourApp.csproj -->
         <PackageReference Include="Helix.Wpf" />
+        """;
+
+    private const string TemplateCode = """
+        dotnet new install Helix.Templates
+        dotnet new helix-blazor -n MyApp
+        """;
+
+    private const string WpfTemplateCode = """
+        dotnet new install Helix.Templates
+        dotnet new helix-wpf -n MyApp            # .NET 8 by default; --Framework net10.0-windows
         """;
 
     private const string WpfAppCode = """

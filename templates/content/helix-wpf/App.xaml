@@ -1,0 +1,14 @@
+<Application x:Class="HelixApp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Light, Dark or System (follows Windows). Follow="MaterialDesign" takes an existing MaterialDesign theme. -->
+                <helix:HelixResources Mode="System" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

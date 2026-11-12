@@ -1,0 +1,24 @@
+<UserControl x:Class="HelixApp.Views.ReportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf">
+    <!-- A ready-made report page: filters (with saved filters), a grid with totals and export, preferences remembered per user. -->
+    <DockPanel>
+        <helix:HelixFilterBar DockPanel.Dock="Top" Target="{Binding ElementName=Grid}" helix:HelixSettings.RememberAs="report-filters" Margin="0,0,0,10">
+            <helix:HelixTextFilter Key="q" Placeholder="Search" Paths="Customer,Product" />
+            <helix:HelixChoiceFilter Key="status" Label="Status" Path="Status" />
+            <helix:HelixDateFilter Key="date" Label="Period" Path="Date" />
+        </helix:HelixFilterBar>
+        <helix:HelixDataGrid x:Name="Grid" PageSize="15" IsExportable="True" ExportFileName="report" ShowColumnChooser="True"
+                             AutoGenerateColumns="False" IsReadOnly="True" helix:HelixSettings.RememberAs="report-grid">
+            <helix:HelixDataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=d}" Width="110" helix:HelixDataGrid.Aggregate="Count" />
+                <DataGridTextColumn Header="Customer" Binding="{Binding Customer}" Width="*" />
+                <DataGridTextColumn Header="Product" Binding="{Binding Product}" Width="140" />
+                <helix:HelixBadgeColumn Header="Status" Binding="{Binding Status}" ToneBinding="{Binding Tone}" Width="130" SortMemberPath="Status" />
+                <DataGridTextColumn Header="Volume" Binding="{Binding Volume, StringFormat=N0}" Width="130"
+                                    helix:HelixDataGrid.Aggregate="Sum" helix:HelixDataGrid.Unit="MWh" />
+            </helix:HelixDataGrid.Columns>
+        </helix:HelixDataGrid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,22 @@
+<Window x:Class="HelixApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helix="https://helix-ui.dev/wpf"
+        xmlns:views="clr-namespace:HelixApp.Views"
+        Title="HelixApp" Width="1200" Height="780" WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Helix.Background}" FontFamily="{DynamicResource Helix.FontFamily}">
+    <!-- HelixHost shows toasts, dialogs, confirmations and prompts. -->
+    <helix:HelixHost>
+        <DockPanel Margin="24">
+            <TextBlock DockPanel.Dock="Top" Text="HelixApp" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" Foreground="{DynamicResource Helix.Text}" />
+            <helix:HelixTabs>
+                <helix:HelixTab Header="Report" Icon="columns">
+                    <views:ReportView Margin="0,16,0,0" />
+                </helix:HelixTab>
+                <helix:HelixTab Header="Log" Icon="bell">
+                    <helix:HelixLogViewer x:Name="Log" Margin="0,16,0,0" Height="480" />
+                </helix:HelixTab>
+            </helix:HelixTabs>
+        </DockPanel>
+    </helix:HelixHost>
+</Window>

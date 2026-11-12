@@ -1,0 +1,14 @@
+/* Your layout. Helix components follow the theme set on HelixProvider. */
+body { margin: 0; font-family: "Inter", system-ui, sans-serif; }
+.app { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; background: var(--helix-bg); color: var(--helix-text); }
+.app__nav { display: flex; flex-direction: column; gap: 2px; padding: 18px 12px; border-right: 1px solid var(--helix-border); background: var(--helix-surface); }
+.app__brand { margin: 0 8px 14px; font-weight: 700; font-size: 16px; color: var(--helix-text); text-decoration: none; }
+.app__link { padding: 8px 10px; border-radius: 8px; color: var(--helix-text-muted); text-decoration: none; font-size: 14px; }
+.app__link:hover { background: var(--helix-surface-2); color: var(--helix-text); }
+.app__link.active { background: color-mix(in oklab, var(--helix-primary) 12%, transparent); color: var(--helix-primary); font-weight: 600; }
+.app__main { min-width: 0; }
+.app__top { display: flex; justify-content: flex-end; padding: 10px 24px; border-bottom: 1px solid var(--helix-border); }
+.app__content { padding: 24px; }
+.app__title { margin: 0 0 18px; font-size: 24px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+@media (max-width: 720px) { .app { grid-template-columns: 1fr; } .app__nav { flex-direction: row; } }

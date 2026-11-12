@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- dotnet new install Helix.Templates  →  dotnet new helix-blazor / dotnet new helix-wpf -->
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>Helix.Templates</PackageId>
+    <Title>Helix UI project templates</Title>
+    <Description>Project templates for Helix UI: a Blazor WebAssembly app and a WPF app with the Helix theme, layout and a ready-made report page (filters, grid, export).</Description>
+    <PackageTags>dotnet-new;templates;blazor;wpf;helix</PackageTags>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <IsPackable>true</IsPackable>
+    <IncludeSymbols>false</IncludeSymbols>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content/**/*" Exclude="content/**/bin/**;content/**/obj/**" />
+    <Compile Remove="**/*" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

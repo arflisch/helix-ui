@@ -1,0 +1,38 @@
+@page "/report"
+
+<PageTitle>Report</PageTitle>
+<h1 class="app__title">Report</h1>
+
+@* A ready-made report page: filters (with saved filters), a grid with totals and export, preferences remembered per user. *@
+<div class="stack">
+    <HelixFilterBar @ref="_filters" TItem="Order" Items="_orders" @bind-State="_state" RememberAs="report-filters">
+        <HelixTextFilter Key="q" Placeholder="Search" Fields="@(o => [o.Customer, o.Product])" />
+        <HelixChoiceFilter Key="status" Label="Status" Field="o => o.Status" />
+        <HelixDateFilter Key="date" Label="Period" Field="o => o.Date" />
+    </HelixFilterBar>
+
+    <HelixDataGrid Items="Filtered" RememberAs="report-grid" Searchable="false" Exportable="true" ExportFileName="report"
+                   ReorderableColumns="true" ColumnChooser="true" PageSize="10">
+        <HelixColumn Field="o => o.Date" Format="d" Aggregate="HelixAggregate.Count" />
+        <HelixColumn Field="o => o.Customer" />
+        <HelixColumn Field="o => o.Product" />
+        <HelixColumn Field="o => o.Status" BadgeColor="@(o => o.Status == "Delivered" ? "success" : o.Status == "Pending" ? "warning" : "danger")" />
+        <HelixColumn Field="o => o.Volume" Format="N0" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
+    </HelixDataGrid>
+</div>
+
+@code {
+    public sealed record Order(DateTime Date, string Customer, string Product, string Status, double Volume);
+
+    private static readonly string[] Customers = ["Acme", "Globex", "Initech", "Umbrella"];
+    private static readonly string[] Statuses = ["Delivered", "Pending", "Cancelled"];
+
+    // Replace with your data (HttpClient, a service…), or use ItemsProvider for server paging.
+    private readonly List<Order> _orders = Enumerable.Range(0, 80).Select(i => new Order(
+        DateTime.Today.AddDays(-i % 40), Customers[i % Customers.Length], i % 2 == 0 ? "Baseload" : "Peak", Statuses[i % Statuses.Length], 100 + i * 13 % 700)).ToList();
+
+    private HelixFilterBar<Order>? _filters;
+    private IReadOnlyDictionary<string, string>? _state;
+
+    private IEnumerable<Order> Filtered => _filters?.Apply(_orders) ?? _orders;
+}

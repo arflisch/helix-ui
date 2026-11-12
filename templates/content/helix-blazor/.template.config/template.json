@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Helix UI",
+  "classifications": ["Web", "Blazor", "WebAssembly", "Helix"],
+  "identity": "Helix.Templates.BlazorApp",
+  "name": "Helix UI Blazor app",
+  "shortName": "helix-blazor",
+  "sourceName": "HelixApp",
+  "preferNameDirectory": true,
+  "tags": { "language": "C#", "type": "project" },
+  "symbols": {
+    "HelixVersion": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "0.3.0",
+      "replaces": "HELIX_VERSION",
+      "description": "Version of the Helix.Blazor package."
+    }
+  }
+}
