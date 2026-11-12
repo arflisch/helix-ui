@@ -58,6 +58,12 @@
             </UniformGrid>
         </Border>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Formulaire généré (HelixAutoForm)" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Un formulaire complet à partir d'une classe et de ses attributs [Display], [Required], [Range], [HelixField] : liaisons dans les deux sens et validation." />
+        <Border Style="{StaticResource Stage}">
+            <helix:HelixAutoForm x:Name="RequestForm" Columns="2" SubmitText="Envoyer la demande" Submitted="OnFormSubmitted" />
+        </Border>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Recherche et choix multiple" />
         <TextBlock Style="{StaticResource SectionText}" Text="IsSearchable ajoute une recherche en haut de la liste. HelixMultiSelect : puces (× pour retirer), cases à cocher, « Tout sélectionner » et « Effacer »." />
         <Border Style="{StaticResource Stage}">

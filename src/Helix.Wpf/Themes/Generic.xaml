@@ -1702,6 +1702,33 @@
         </Setter>
     </Style>
 
+    <!-- ===================================================================== Auto form -->
+
+    <Style TargetType="{x:Type local:HelixAutoForm}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:HelixAutoForm}">
+                    <StackPanel>
+                        <local:HelixAutoFormPanel x:Name="PART_Fields" />
+                        <StackPanel x:Name="Actions" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                            <local:HelixButton x:Name="PART_Cancel" Content="{TemplateBinding CancelText}" Variant="Ghost" Tone="Neutral" Margin="0,0,8,0" Visibility="Collapsed" />
+                            <local:HelixButton x:Name="PART_Submit" Content="{TemplateBinding SubmitText}" Icon="check" IsDefault="True" />
+                        </StackPanel>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ShowActions" Value="False">
+                            <Setter TargetName="Actions" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="ShowCancel" Value="True">
+                            <Setter TargetName="PART_Cancel" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Calendar without its own frame, inside the panels of the pickers. -->
     <Style x:Key="Helix.CalendarPlain" TargetType="{x:Type Calendar}" BasedOn="{StaticResource Helix.Calendar}">
         <Setter Property="Template">
