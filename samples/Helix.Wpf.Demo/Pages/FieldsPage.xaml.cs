@@ -9,6 +9,8 @@ public partial class FieldsPage : UserControl
     public FieldsPage()
     {
         InitializeComponent();
+        Sites.ItemsSource = new[] { "Lyon", "Grenoble", "Marseille", "Bordeaux", "Lille", "Nantes", "Toulouse", "Strasbourg", "Rennes", "Nice" };
+        Sites.SelectedItems = new System.Collections.ObjectModel.ObservableCollection<string> { "Lyon", "Lille" };
         Validate();
     }
 

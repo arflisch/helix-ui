@@ -413,6 +413,75 @@ public class HelixSelect : ComboBox
     public static readonly DependencyProperty PlaceholderProperty = HelixProperty.Register<HelixSelect, string?>(nameof(Placeholder), null);
 
     public string? Placeholder { get => (string?)GetValue(PlaceholderProperty); set => SetValue(PlaceholderProperty, value); }
+
+    public static readonly DependencyProperty IsSearchableProperty = HelixProperty.Register<HelixSelect, bool>(nameof(IsSearchable), false);
+    public static readonly DependencyProperty SearchTextProperty = HelixProperty.Register<HelixSelect, string>(nameof(SearchText), "", (d, _) => ((HelixSelect)d).ApplySearch());
+
+    /// <summary>A search box at the top of the list that filters the options as you type (on DisplayMemberPath or ToString).</summary>
+    public bool IsSearchable { get => (bool)GetValue(IsSearchableProperty); set => SetValue(IsSearchableProperty, value); }
+
+    /// <summary>The text typed in the search box (emptied when the list closes).</summary>
+    public string SearchText { get => (string)GetValue(SearchTextProperty); set => SetValue(SearchTextProperty, value); }
+
+    public static string SearchPlaceholderText => HelixTexts.Current.Search;
+
+    private TextBox? _search;
+
+    public override void OnApplyTemplate()
+    {
+        if (_search is not null) _search.PreviewKeyDown -= OnSearchKey;
+        base.OnApplyTemplate();
+        _search = GetTemplateChild("PART_Search") as TextBox;
+        if (_search is not null) _search.PreviewKeyDown += OnSearchKey;
+    }
+
+    protected override void OnDropDownOpened(EventArgs e)
+    {
+        base.OnDropDownOpened(e);
+        if (IsSearchable && _search is not null) Dispatcher.BeginInvoke(() => _search.Focus(), System.Windows.Threading.DispatcherPriority.Input);
+    }
+
+    protected override void OnDropDownClosed(EventArgs e)
+    {
+        base.OnDropDownClosed(e);
+        if (SearchText.Length > 0) SetCurrentValue(SearchTextProperty, "");
+    }
+
+    /// <summary>Text of an option: DisplayMemberPath, ComboBoxItem content, or ToString.</summary>
+    internal static string TextOf(object? item, string? path) => item switch
+    {
+        null => "",
+        ContentControl content => content.Content?.ToString() ?? "",
+        _ when !string.IsNullOrEmpty(path) => HelixDataGrid.Value(item, path)?.ToString() ?? "",
+        _ => item.ToString() ?? "",
+    };
+
+    /// <summary>Filters the options; with ItemsSource the filter is set on its default view while the list is open.</summary>
+    private void ApplySearch()
+    {
+        var term = SearchText?.Trim();
+        Items.Filter = string.IsNullOrEmpty(term) ? null : item => TextOf(item, DisplayMemberPath).Contains(term, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    private void OnSearchKey(object sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Down:
+                if (ItemContainerGenerator.ContainerFromIndex(0) is ComboBoxItem first) first.Focus();
+                e.Handled = true;
+                break;
+            case Key.Enter:
+                if (Items.Count > 0) SetCurrentValue(SelectedItemProperty, Items[0]);
+                SetCurrentValue(IsDropDownOpenProperty, false);
+                e.Handled = true;
+                break;
+            case Key.Escape:
+                SetCurrentValue(IsDropDownOpenProperty, false);
+                e.Handled = true;
+                break;
+        }
+    }
 }
 
 /// <summary>A date picker with the Helix field shell and calendar: Label, Hint, Error, Accent, CornerRadius.</summary>

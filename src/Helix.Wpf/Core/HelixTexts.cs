@@ -38,6 +38,7 @@ public sealed record HelixTexts
     public string StepError { get; init; } = "Needs fixing";
     public string Others { get; init; } = "Others";
     public string Total { get; init; } = "Total";
+    public string SelectAll { get; init; } = "Select all";
     public string Today { get; init; } = "Today";
     public string ChooseDateTime { get; init; } = "Choose a date and time";
     public string ChooseTime { get; init; } = "Time";
@@ -82,6 +83,7 @@ public sealed record HelixTexts
     public static HelixTexts French { get; } = new()
     {
         Today = "Aujourd'hui", ChooseDateTime = "Choisir une date et une heure", ChooseTime = "Heure", ChoosePeriod = "Choisir une période", Yesterday = "Hier", Last7Days = "7 derniers jours", Last30Days = "30 derniers jours", ThisWeek = "Cette semaine", ThisMonth = "Ce mois-ci", LastMonth = "Le mois dernier", PickEndDate = "Choisissez maintenant le dernier jour",
+        SelectAll = "Tout sélectionner",
         Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",
         Close = "Fermer", Clear = "Effacer", Confirm = "Confirmer", Cancel = "Annuler", Loading = "Chargement",
         NoData = "Aucune donnée", SelectPlaceholder = "Sélectionner…", ChooseDate = "Choisir une date",

@@ -56,6 +56,24 @@
             </UniformGrid>
         </Border>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Recherche et choix multiple" />
+        <TextBlock Style="{StaticResource SectionText}" Text="IsSearchable ajoute une recherche en haut de la liste. HelixMultiSelect : puces (× pour retirer), cases à cocher, « Tout sélectionner » et « Effacer »." />
+        <Border Style="{StaticResource Stage}">
+            <UniformGrid Columns="2">
+                <helix:HelixSelect Label="Ville (recherche)" IsSearchable="True" Margin="0,0,16,0">
+                    <ComboBoxItem Content="Lyon" />
+                    <ComboBoxItem Content="Grenoble" />
+                    <ComboBoxItem Content="Marseille" />
+                    <ComboBoxItem Content="Bordeaux" />
+                    <ComboBoxItem Content="Lille" />
+                    <ComboBoxItem Content="Nantes" />
+                    <ComboBoxItem Content="Toulouse" />
+                    <ComboBoxItem Content="Strasbourg" />
+                </helix:HelixSelect>
+                <helix:HelixMultiSelect x:Name="Sites" Label="Sites" IsSearchable="True" MaxChips="2" Hint="Plusieurs choix possibles" />
+            </UniformGrid>
+        </Border>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Date et heure, période" />
         <TextBlock Style="{StaticResource SectionText}" Text="HelixDateTimePicker : calendrier et liste des heures au pas choisi (15 min par défaut). HelixDateRangePicker : raccourcis et période en deux clics." />
         <Border Style="{StaticResource Stage}">
