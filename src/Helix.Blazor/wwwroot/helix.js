@@ -382,6 +382,11 @@ export function downloadText(name, text, type) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/** Downloads bytes (a .NET byte[] arrives as a Uint8Array) as a file. */
+export function downloadBytes(name, bytes, type) {
+    downloadText(name, bytes, type);
+}
+
 /** Scrolls an element marked data-helix-key into the middle of its scroll container, without moving the focus. */
 export function scrollToKey(root, key) {
     const el = root?.querySelector(`[data-helix-key="${CSS.escape(key)}"]`);

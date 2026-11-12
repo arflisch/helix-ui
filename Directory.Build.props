@@ -1,6 +1,6 @@
 <Project>
 
-  <!-- Shared package metadata for Helix.Blazor and Helix.Wpf. -->
+  <!-- Shared package metadata for Helix.Blazor, Helix.Wpf and Helix.Export. -->
   <PropertyGroup>
     <Version>0.3.0</Version>
     <Authors>arflisch</Authors>

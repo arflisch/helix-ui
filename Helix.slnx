@@ -5,6 +5,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Helix.Blazor/Helix.Blazor.csproj" />
+    <Project Path="src/Helix.Export/Helix.Export.csproj" />
     <Project Path="src/Helix.Wpf/Helix.Wpf.csproj" />
   </Folder>
 </Solution>

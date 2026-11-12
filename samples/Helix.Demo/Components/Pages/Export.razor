@@ -1,0 +1,156 @@
+@page "/export"
+@using System.Globalization
+@inject IJSRuntime JS
+
+<DemoPage Title="Export: Excel, Word, CSV" Eyebrow="Guide" Description="Helix.Export writes real .xlsx and .docx files from your lists: typed cells, formats, totals, frozen header, filters, headings, tables and page numbers. No dependency and no Office needed; it is plain .NET, so it works the same in Blazor, WPF, an API or a background job.">
+    <section class="demo-section">
+        <h2 class="demo-section__title">Try it</h2>
+        <p class="demo-section__text">These files are generated in your browser from the 48 demo employees.</p>
+        <div class="row" style="gap:10px;flex-wrap:wrap">
+            <HelixButton Icon="download" OnClick="Excel">Excel (.xlsx)</HelixButton>
+            <HelixButton Icon="download" Variant="HelixVariant.Soft" OnClick="Word">Word report (.docx)</HelixButton>
+            <HelixButton Icon="download" Variant="HelixVariant.Outline" Color="neutral" OnClick="Csv">CSV</HelixButton>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Install</h2>
+        <CodeBlock Language="bash" Code="dotnet add package Helix.Export" />
+        <p class="demo-section__text">Helix.Blazor already brings it (the grid uses it); for WPF or any other project, add the package.</p>
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">One line</h2>
+        <p class="demo-section__text">
+            Without columns, every public property becomes a column (<code>[Display(Name, Order)]</code>, <code>[DisplayFormat]</code>
+            and <code>[Browsable(false)]</code> are honoured). With columns, you pick the header, the value, the format and the total.
+        </p>
+        <CodeBlock Language="c#" Code="@OneLine" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Excel: several sheets</h2>
+        <p class="demo-section__text">
+            Numbers, dates, durations and booleans are real Excel values (sortable, summable); .NET formats are translated
+            (<code>N2</code> → <code>#,##0.00</code>, <code>P0</code> → <code>0%</code>, <code>dd/MM/yyyy</code> → <code>dd/mm/yyyy</code>),
+            or give <code>excelFormat</code> yourself. Totals are formulas, so they follow the user's edits.
+        </p>
+        <CodeBlock Language="c#" Code="@ExcelCode" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Word: a report</h2>
+        <p class="demo-section__text">Blocks one after the other: title, headings, paragraphs, lists, label/value details, tables with a repeated header and totals, page breaks. Portrait or landscape A4, page numbers, a header text.</p>
+        <CodeBlock Language="c#" Code="@WordCode" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">From a grid</h2>
+        <p class="demo-section__text">
+            <code>ExportFormats</code> on HelixDataGrid adds Excel and Word to the Export button (a menu when there are several).
+            <code>grid.ToExportTable()</code> gives the visible columns and filtered rows to your own report.
+        </p>
+        <CodeBlock Language="razor" Code="@GridCode" WpfCode="@GridWpf" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Saving the file</h2>
+        <HelixDescriptionList Columns="1" Bordered="true">
+            <HelixDescription Label="Blazor"><code>await JS.HelixDownloadAsync("report.xlsx", bytes);</code> (content type from the extension)</HelixDescription>
+            <HelixDescription Label="WPF / desktop"><code>excel.Save(path)</code>, or <code>grid.ExportFile(HelixExportFormat.Excel)</code> which asks where to save.</HelixDescription>
+            <HelixDescription Label="ASP.NET Core API"><code>Results.File(bytes, HelixExport.ExcelContentType, "report.xlsx")</code></HelixDescription>
+            <HelixDescription Label="Stream"><code>WriteTo(stream)</code>: an HTTP response, a blob, an e-mail attachment.</HelixDescription>
+        </HelixDescriptionList>
+    </section>
+</DemoPage>
+
+@code {
+    private static IReadOnlyList<Employee> People => SampleData.Employees;
+
+    private async Task Excel()
+    {
+        var bytes = new HelixExcel()
+            .Sheet("Employees", People, c => c
+                .Add("Name", e => e.Name)
+                .Add("Department", e => e.Department)
+                .Add("Role", e => e.Role)
+                .Add("Status", e => e.Status)
+                .Add("Salary", e => e.Salary, "N0", HelixTotal.Sum)
+                .Add("Start date", e => e.StartDate, "dd/MM/yyyy"), title: "Employees")
+            .Sheet("By department", People.GroupBy(e => e.Department).Select(g => new { Department = g.Key, Headcount = g.Count(), Payroll = g.Sum(e => e.Salary) }),
+                c => c.Add("Department", d => d.Department).Add("Headcount", d => d.Headcount, total: HelixTotal.Sum).Add("Payroll", d => d.Payroll, "N0", HelixTotal.Sum))
+            .ToBytes();
+        await JS.HelixDownloadAsync("employees.xlsx", bytes);
+    }
+
+    private async Task Word()
+    {
+        var departments = People.GroupBy(e => e.Department).OrderBy(g => g.Key).ToList();
+        var word = new HelixWord { PageNumbers = true, HeaderText = "Helix UI · demo report", Culture = CultureInfo.GetCultureInfo("en-GB") }
+            .Title("Team report")
+            .Paragraph("Headcount and payroll by department, generated with Helix.Export.")
+            .Details(("Employees", People.Count), ("Departments", departments.Count), ("Payroll", People.Sum(e => e.Salary).ToString("N0", CultureInfo.GetCultureInfo("en-GB"))), ("Generated", DateTime.Now))
+            .Heading("Highlights")
+            .Bullets([$"Largest team: {departments.MaxBy(g => g.Count())!.Key}", $"On leave: {People.Count(e => e.Status == EmployeeStatus.Leave)}"]);
+        foreach (var department in departments)
+        {
+            word.Heading(department.Key, 2)
+                .Table(department, c => c.Add("Name", e => e.Name).Add("Role", e => e.Role).Add("Status", e => e.Status).Add("Salary", e => e.Salary, "N0", HelixTotal.Sum));
+        }
+
+        await JS.HelixDownloadAsync("team-report.docx", word.ToBytes());
+    }
+
+    private Task Csv() => JS.HelixDownloadAsync("employees.csv", HelixExport.ToCsv(People));
+
+    private const string OneLine = """
+        byte[] xlsx = HelixExport.ToExcel(employees);                    // every property
+        byte[] docx = HelixExport.ToWord(employees, title: "Employees");
+        string csv  = HelixExport.ToCsv(employees, c => c
+            .Add("Name", e => e.Name)
+            .Add("Salary", e => e.Salary, "N0", HelixTotal.Sum));
+        """;
+
+    private const string ExcelCode = """
+        new HelixExcel()
+            .Sheet("Employees", employees, c => c
+                .Add("Name", e => e.Name)
+                .Add("Salary", e => e.Salary, "N0", HelixTotal.Sum)
+                .Add("Start", e => e.StartDate, "dd/MM/yyyy")
+                .Add("Load", e => e.Load, "P0", HelixTotal.Average), title: "Employees")
+            .Sheet("Summary", summary)                        // every property
+            .Save("employees.xlsx");                          // or ToBytes(), WriteTo(stream)
+        """;
+
+    private const string WordCode = """
+        new HelixWord { PageNumbers = true, Landscape = false, HeaderText = "Monthly report" }
+            .Title("Team report")
+            .Paragraph("Figures for November.")
+            .Details(("Site", "North"), ("Period", "November 2026"))
+            .Heading("Highlights")
+            .Bullets(["Largest team: Engineering", "3 on leave"])
+            .Heading("Employees", 2)
+            .Table(employees, c => c.Add("Name", e => e.Name).Add("Salary", e => e.Salary, "N0", HelixTotal.Sum))
+            .PageBreak()
+            .Save("report.docx");
+        """;
+
+    private const string GridCode = """
+        <HelixDataGrid @ref="grid" Items="orders" Exportable ExportFormats="HelixExportFormat.All"
+                       ExportFileName="orders" ExportTitle="Orders">
+            <HelixColumn Field="o => o.Volume" Format="N0" Unit="MWh" Aggregate="HelixAggregate.Sum" />
+        </HelixDataGrid>
+
+        @code {
+            // your own report with the grid's rows:
+            var word = new HelixWord().Title("Weekly").Table(grid.ToExportTable());
+        }
+        """;
+
+    private const string GridWpf = """
+        <helix:HelixDataGrid Source="{Binding Orders}" IsExportable="True" ExportFormats="All"
+                             ExportFileName="orders" ExportTitle="Orders" />
+
+        // in code: grid.ToExportTable(), grid.ExportFile(HelixExportFormat.Excel)
+        """;
+}

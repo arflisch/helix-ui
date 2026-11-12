@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
+using Helix.Export;
 
 namespace Helix.Wpf;
 
@@ -17,6 +18,8 @@ public partial class HelixDataGrid
     public static readonly DependencyProperty GroupByProperty = HelixProperty.Register<HelixDataGrid, string?>(nameof(GroupBy), null, (d, _) => ((HelixDataGrid)d).Reload());
     public static readonly DependencyProperty IsExportableProperty = HelixProperty.Register<HelixDataGrid, bool>(nameof(IsExportable), false);
     public static readonly DependencyProperty ExportFileNameProperty = HelixProperty.Register<HelixDataGrid, string>(nameof(ExportFileName), "export");
+    public static readonly DependencyProperty ExportFormatsProperty = HelixProperty.Register<HelixDataGrid, HelixExportFormat>(nameof(ExportFormats), HelixExportFormat.Csv);
+    public static readonly DependencyProperty ExportTitleProperty = HelixProperty.Register<HelixDataGrid, string?>(nameof(ExportTitle), null);
 
     private static readonly DependencyPropertyKey HasTotalsKey = DependencyProperty.RegisterReadOnly(nameof(HasTotals), typeof(bool), typeof(HelixDataGrid), new PropertyMetadata(false));
     public static readonly DependencyProperty HasTotalsProperty = HasTotalsKey.DependencyProperty;
@@ -54,11 +57,17 @@ public partial class HelixDataGrid
     /// <summary>Property path that groups the rows (e.g. "Region"): collapsible headers with their count and subtotals.</summary>
     public string? GroupBy { get => (string?)GetValue(GroupByProperty); set => SetValue(GroupByProperty, value); }
 
-    /// <summary>An "Export" button in the toolbar: saves the filtered rows as CSV.</summary>
+    /// <summary>An "Export" button in the toolbar: saves the filtered rows, in <see cref="ExportFormats"/>.</summary>
     public bool IsExportable { get => (bool)GetValue(IsExportableProperty); set => SetValue(IsExportableProperty, value); }
 
     /// <summary>File name suggested by the export, without extension.</summary>
     public string ExportFileName { get => (string)GetValue(ExportFileNameProperty); set => SetValue(ExportFileNameProperty, value); }
+
+    /// <summary>Formats offered by the Export button: Csv (default), Excel, Word, or several (a menu), e.g. "Excel, Csv" or "All".</summary>
+    public HelixExportFormat ExportFormats { get => (HelixExportFormat)GetValue(ExportFormatsProperty); set => SetValue(ExportFormatsProperty, value); }
+
+    /// <summary>Title written above the table in Word exports (and the Excel sheet name).</summary>
+    public string? ExportTitle { get => (string?)GetValue(ExportTitleProperty); set => SetValue(ExportTitleProperty, value); }
 
     /// <summary>True when a column has an Aggregate: the total row is shown.</summary>
     public bool HasTotals => (bool)GetValue(HasTotalsProperty);
@@ -266,24 +275,91 @@ public partial class HelixDataGrid
     /// <summary>Writes <see cref="ToCsv"/> to a file (UTF-8 with BOM, so that Excel reads accents).</summary>
     public void ExportCsv(string path) => File.WriteAllText(path, ToCsv(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
 
-    private void OnExportClick(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// The visible columns and the filtered rows, ready for Helix.Export: typed values (numbers and dates stay numbers and dates
+    /// in Excel), binding formats and units, totals from Aggregate.
+    /// </summary>
+    public HelixExportTable ToExportTable()
     {
+        var columns = VisibleInOrder.Where(c => c is not HelixDetailsColumn && PathOf(c) is not null).Select(c =>
+        {
+            var path = PathOf(c)!;
+            var format = FormatOf(c);
+            if (format is not null && format.StartsWith("{0:", StringComparison.Ordinal) && format.EndsWith('}') && format.IndexOf('}') == format.Length - 1)
+            {
+                format = format[3..^1];
+            }
+            else if (format is not null && format.Contains("{0"))
+            {
+                format = null; // "{0:N0} MW": keep the value, Excel shows it unformatted
+            }
+
+            return new HelixExportColumn
+            {
+                Header = GetUnit(c) is { Length: > 0 } unit ? $"{Header(c)} ({unit})" : Header(c),
+                Value = row => Value(row, path),
+                Format = format,
+                Total = GetAggregate(c) switch
+                {
+                    HelixAggregate.Sum => HelixTotal.Sum,
+                    HelixAggregate.Average => HelixTotal.Average,
+                    HelixAggregate.Min => HelixTotal.Min,
+                    HelixAggregate.Max => HelixTotal.Max,
+                    HelixAggregate.Count => HelixTotal.Count,
+                    _ => HelixTotal.None,
+                },
+            };
+        }).ToList();
+        return new HelixExportTable(columns, _allRows.Cast<object>().ToList()) { Title = ExportTitle, TotalLabel = HelixTexts.Current.Total };
+    }
+
+    /// <summary>The rows as an Excel, Word or CSV file (bytes), in one format.</summary>
+    public byte[] ToFile(HelixExportFormat format) =>
+        format == HelixExportFormat.Csv ? [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(ToCsv())] : HelixExport.Write(ToExportTable(), format);
+
+    /// <summary>Asks where to save, then writes the rows; without a format, the first of <see cref="ExportFormats"/>.</summary>
+    public void ExportFile(HelixExportFormat format = HelixExportFormat.None)
+    {
+        if (format == HelixExportFormat.None) format = HelixExport.Split(ExportFormats).FirstOrDefault(HelixExportFormat.Csv);
+        var extension = HelixExport.Extension(format);
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
-            FileName = (string.IsNullOrWhiteSpace(ExportFileName) ? "export" : ExportFileName) + ".csv",
-            DefaultExt = ".csv",
-            Filter = "CSV (*.csv)|*.csv",
+            FileName = (string.IsNullOrWhiteSpace(ExportFileName) ? "export" : ExportFileName) + extension,
+            DefaultExt = extension,
+            Filter = $"{HelixExport.Label(format)}|*{extension}",
         };
-        if (dialog.ShowDialog(Window.GetWindow(this)) == true)
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+        try
         {
-            try
-            {
-                ExportCsv(dialog.FileName);
-            }
-            catch (IOException ex)
-            {
-                HelixToasts.Error(ex.Message, HelixTexts.Current.Export);
-            }
+            File.WriteAllBytes(dialog.FileName, ToFile(format));
         }
+        catch (IOException ex)
+        {
+            HelixToasts.Error(ex.Message, HelixTexts.Current.Export);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            HelixToasts.Error(ex.Message, HelixTexts.Current.Export);
+        }
+    }
+
+    private void OnExportClick(object sender, RoutedEventArgs e)
+    {
+        var formats = HelixExport.Split(ExportFormats);
+        if (formats.Count <= 1 || sender is not FrameworkElement button)
+        {
+            ExportFile();
+            return;
+        }
+
+        var menu = new ContextMenu { PlacementTarget = button, Placement = PlacementMode.Bottom };
+        foreach (var format in formats)
+        {
+            var item = new MenuItem { Header = HelixExport.Label(format) };
+            item.Click += (_, _) => ExportFile(format);
+            menu.Items.Add(item);
+        }
+
+        menu.IsOpen = true;
     }
 }

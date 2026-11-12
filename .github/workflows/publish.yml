@@ -34,6 +34,7 @@ jobs:
       - name: Pack
         run: |
           VERSION="${PACKAGE_VERSION:-0.0.0-ci.${GITHUB_RUN_NUMBER}}"
+          dotnet pack src/Helix.Export -c Release -o artifacts -p:Version="$VERSION"
           dotnet pack src/Helix.Blazor -c Release -o artifacts -p:Version="$VERSION"
           dotnet pack src/Helix.Wpf -c Release -o artifacts -p:Version="$VERSION"
           dotnet pack templates/Helix.Templates.csproj -c Release -o artifacts -p:Version="$VERSION"

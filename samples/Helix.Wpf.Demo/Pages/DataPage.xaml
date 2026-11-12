@@ -41,7 +41,7 @@
         <TextBlock Style="{StaticResource SectionTitle}" Text="Groupes, totaux, détail et export" />
         <TextBlock Style="{StaticResource SectionText}"
                    Text="GroupBy regroupe les lignes (en-têtes repliables avec nombre et sous-totaux), helix:HelixDataGrid.Aggregate ajoute une ligne de total, HelixDetailsColumn ouvre le détail d'une ligne, HelixBadgeColumn et HelixSignedColumn affichent un statut et une variation. IsExportable ajoute l'export CSV." />
-        <helix:HelixDataGrid x:Name="GroupedGrid" GroupBy="Site" PageSize="0" IsExportable="True" ExportFileName="unites" AutoGenerateColumns="False"
+        <helix:HelixDataGrid x:Name="GroupedGrid" GroupBy="Site" PageSize="0" IsExportable="True" ExportFormats="All" ExportFileName="unites" AutoGenerateColumns="False"
                            Height="480" Margin="0,0,0,32" IsReadOnly="True">
             <helix:HelixDataGrid.Columns>
                 <helix:HelixDetailsColumn />

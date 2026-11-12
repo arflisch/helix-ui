@@ -19,4 +19,8 @@
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Helix.Export\Helix.Export.csproj" />
+  </ItemGroup>
+
 </Project>

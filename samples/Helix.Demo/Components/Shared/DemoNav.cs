@@ -16,6 +16,7 @@ public static class DemoNav
             new("Light and dark themes", "themes"),
             new("Remembering user settings", "user-settings"),
             new("Developer helpers", "helpers"),
+            new("Export: Excel, Word, CSV", "export"),
         ]),
         new("Actions",
         [

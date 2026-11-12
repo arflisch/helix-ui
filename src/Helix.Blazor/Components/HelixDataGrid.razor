@@ -28,9 +28,21 @@
             }
             <div class="helix-grid__toolbar-end">
                 @Toolbar
-                @if (Exportable)
+                @if (Exportable && Helix.Export.HelixExport.Split(ExportFormats) is { Count: > 1 } formats)
                 {
-                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="download" OnClick="ExportAsync">@Texts.Export</HelixButton>
+                    <HelixMenu Align="HelixAlign.End">
+                        <Trigger><HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="download" IconEnd="chevron-down">@Texts.Export</HelixButton></Trigger>
+                        <ChildContent>
+                            @foreach (var format in formats)
+                            {
+                                <HelixMenuItem Icon="download" OnClick="() => ExportAsync(format)">@Helix.Export.HelixExport.Label(format)</HelixMenuItem>
+                            }
+                        </ChildContent>
+                    </HelixMenu>
+                }
+                else if (Exportable)
+                {
+                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="download" OnClick="() => ExportAsync()">@Texts.Export</HelixButton>
                 }
                 @if (ColumnChooser)
                 {
@@ -307,11 +319,17 @@
     /// <summary>Starts with every group collapsed.</summary>
     [Parameter] public bool GroupsCollapsed { get; set; }
 
-    /// <summary>Shows an "Export" button that downloads the rows as CSV (every filtered row; the current page in server mode).</summary>
+    /// <summary>Shows an "Export" button that downloads the rows (every filtered row; the current page in server mode), in <see cref="ExportFormats"/>.</summary>
     [Parameter] public bool Exportable { get; set; }
 
     /// <summary>File name of the export, without extension.</summary>
     [Parameter] public string? ExportFileName { get; set; }
+
+    /// <summary>Formats offered by the Export button: Csv (default), Excel, Word, or several (a menu), e.g. HelixExportFormat.Excel | HelixExportFormat.Csv.</summary>
+    [Parameter] public Helix.Export.HelixExportFormat ExportFormats { get; set; } = Helix.Export.HelixExportFormat.Csv;
+
+    /// <summary>Title written above the table in Word exports (and the Excel sheet name).</summary>
+    [Parameter] public string? ExportTitle { get; set; }
 
     /// <summary>Extra CSS class per row, e.g. item => item.IsLate ? "late" : null.</summary>
     [Parameter] public Func<TItem, string?>? RowClass { get; set; }
@@ -484,14 +502,50 @@
         return sb.ToString();
     }
 
-    /// <summary>Downloads <see cref="ToCsv"/> as a file (UTF-8 with BOM so that Excel reads accents).</summary>
-    public async Task ExportAsync()
+    /// <summary>
+    /// The visible columns and the filtered rows, ready for Helix.Export: typed values (numbers and dates stay numbers and dates
+    /// in Excel), column formats and units, totals from Aggregate.
+    /// </summary>
+    public Helix.Export.HelixExportTable ToExportTable()
     {
-        var name = (ExportFileName ?? "export") + ".csv";
+        var culture = EffectiveCulture;
+        var columns = VisibleColumns.Where(c => c.HasValue).Select(c => new Helix.Export.HelixExportColumn
+        {
+            Header = c.ExportHeader,
+            Value = row => c.ExportValue((TItem)row, culture),
+            Format = c.Format,
+            Total = c.Aggregate switch
+            {
+                HelixAggregate.Sum => Helix.Export.HelixTotal.Sum,
+                HelixAggregate.Average => Helix.Export.HelixTotal.Average,
+                HelixAggregate.Min => Helix.Export.HelixTotal.Min,
+                HelixAggregate.Max => Helix.Export.HelixTotal.Max,
+                HelixAggregate.Count => Helix.Export.HelixTotal.Count,
+                _ => Helix.Export.HelixTotal.None,
+            },
+        });
+        return new Helix.Export.HelixExportTable(columns, Filtered().Cast<object>()) { Title = ExportTitle };
+    }
+
+    /// <summary>The rows as an Excel, Word or CSV file (bytes), in one format.</summary>
+    public byte[] ToFile(Helix.Export.HelixExportFormat format) =>
+        format == Helix.Export.HelixExportFormat.Csv
+            ? [.. System.Text.Encoding.UTF8.GetPreamble(), .. System.Text.Encoding.UTF8.GetBytes(ToCsv())]
+            : Helix.Export.HelixExport.Write(ToExportTable(), format);
+
+    /// <summary>Downloads the rows as a file; without a format, the first of <see cref="ExportFormats"/> (Excel, then Word, then CSV).</summary>
+    public async Task ExportAsync(Helix.Export.HelixExportFormat format = Helix.Export.HelixExportFormat.None)
+    {
+        if (format == Helix.Export.HelixExportFormat.None)
+        {
+            format = Helix.Export.HelixExport.Split(ExportFormats).FirstOrDefault(Helix.Export.HelixExportFormat.Csv);
+        }
+
+        var name = (ExportFileName ?? "export") + Helix.Export.HelixExport.Extension(format);
         try
         {
             _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
-            await _module.InvokeVoidAsync("downloadText", name, "\uFEFF" + ToCsv(), "text/csv;charset=utf-8");
+            await _module.InvokeVoidAsync("downloadBytes", name, ToFile(format), Helix.Export.HelixExport.ContentType(format));
         }
         catch (JSDisconnectedException)
         {

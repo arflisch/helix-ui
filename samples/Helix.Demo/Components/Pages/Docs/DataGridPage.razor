@@ -148,9 +148,9 @@
     </Example>
 
     <Example WpfCode="@Wpf3" Title="Groups, totals and export"
-             Description="GroupBy gathers the rows under collapsible headers with their count and subtotals. Aggregate adds a total row at the bottom. BadgeColor shows a status as a badge, Signed colors a change with an arrow, Unit appends the unit. Exportable adds a CSV export of the filtered rows."
+             Description="GroupBy gathers the rows under collapsible headers with their count and subtotals. Aggregate adds a total row at the bottom. BadgeColor shows a status as a badge, Signed colors a change with an arrow, Unit appends the unit. Exportable adds an export of the filtered rows: Excel, Word and/or CSV with ExportFormats (typed values, formats, totals)."
              Code="@GroupsCode">
-        <HelixDataGrid Items="Orders" GroupBy="o => o.Region" PageSize="0" Exportable="true" ExportFileName="orders" Searchable="true" Culture="English">
+        <HelixDataGrid Items="Orders" GroupBy="o => o.Region" PageSize="0" Exportable="true" ExportFormats="HelixExportFormat.All" ExportFileName="orders" ExportTitle="Orders" Searchable="true" Culture="English">
             <HelixColumn Field="o => o.Product" Title="Product" Aggregate="HelixAggregate.Count" />
             <HelixColumn Field="o => o.Status" BadgeColor="@(o => StatusColor(o.Status))" />
             <HelixColumn Field="o => o.Volume" Format="N0" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
@@ -233,7 +233,8 @@
     };
 
     private const string GroupsCode = """
-        <HelixDataGrid Items="orders" GroupBy="o => o.Region" Exportable ExportFileName="orders" Searchable>
+        <HelixDataGrid Items="orders" GroupBy="o => o.Region" Searchable
+                       Exportable ExportFormats="HelixExportFormat.All" ExportFileName="orders" ExportTitle="Orders">
             <HelixColumn Field="o => o.Product" Aggregate="HelixAggregate.Count" />
             <HelixColumn Field="o => o.Status" BadgeColor="@(o => o.Status == "Delivered" ? "success" : "warning")" />
             <HelixColumn Field="o => o.Volume" Format="N0" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
@@ -505,7 +506,8 @@
         new("ColumnLayout", "IReadOnlyList<HelixColumnState>", null, "Chosen order and visibility (Key, Visible), to save and restore (@bind-ColumnLayout)."),
         new("RowDetails / HasDetails", "RenderFragment<T> / Func<T, bool>", null, "Content under an expanded row (chevron column); which rows can expand."),
         new("GroupBy / GroupText / GroupsCollapsed", "Func<T, object?> / Func<object?, string> / bool", null, "Collapsible groups with count and subtotals; header text; start collapsed."),
-        new("Exportable / ExportFileName", "bool / string", null, "“Export” button: CSV of the filtered rows (Excel-friendly). Also ExportAsync() and ToCsv()."),
+        new("Exportable / ExportFileName", "bool / string", null, "“Export” button for the filtered rows. Also ExportAsync(format), ToFile(format), ToCsv()."),
+        new("ExportFormats / ExportTitle", "HelixExportFormat / string", null, "Csv (default), Excel, Word or several (a menu); title of the Word document and Excel sheet. ToExportTable() gives the rows to Helix.Export for your own reports."),
         new("Color", "string", "--helix-grid-color", "Sort, selection and active page."),
         new("HeaderBackground", "string", "--helix-grid-header-bg", "Header background."),
         new("HoverColor", "string", "--helix-grid-hover", "Background of a hovered row."),

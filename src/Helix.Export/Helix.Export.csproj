@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <PackageId>Helix.Export</PackageId>
+    <Title>Helix Export</Title>
+    <Description>Excel (.xlsx), Word (.docx) and CSV files from your lists in a few lines: typed cells, number and date formats, totals, frozen header, filters, headings, tables, page numbers. No dependency, no Office needed. Works anywhere .NET runs (Blazor, WPF, APIs, jobs).</Description>
+    <PackageTags>excel;xlsx;word;docx;csv;export;report;openxml</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -204,6 +204,12 @@
 
     internal object? SortValue(TItem item) => SortBy is not null ? SortBy(item) : _getter?.Invoke(item);
 
+    /// <summary>The value written by Excel and Word exports: the typed value, or the text for badge and template-only columns.</summary>
+    internal object? ExportValue(TItem item, CultureInfo culture) =>
+        _getter is null ? null : BadgeColor is not null ? Text(item, culture) : _getter(item);
+
+    internal bool HasValue => _getter is not null;
+
     internal string Text(TItem item, CultureInfo culture)
     {
         var value = _getter?.Invoke(item);
