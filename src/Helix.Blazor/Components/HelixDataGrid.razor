@@ -11,8 +11,9 @@
 @{
     var view = BuildView();
     var columns = VisibleColumns;
-    var colCount = columns.Count + (Selectable ? 1 : 0);
+    var colCount = columns.Count + (Selectable ? 1 : 0) + (RowDetails is not null ? 1 : 0);
     var showSkeleton = Loading || (IsServerMode && !_hasLoaded && _error is null);
+    var hasFooterRow = !showSkeleton && _error is null && view.Page.Count > 0 && columns.Any(c => c.HasFooter);
     var showFooter = _pageSize > 0 && !showSkeleton && _error is null && view.Total > 0;
 }
 
@@ -27,11 +28,15 @@
             }
             <div class="helix-grid__toolbar-end">
                 @Toolbar
+                @if (Exportable)
+                {
+                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="download" OnClick="ExportAsync">@Texts.Export</HelixButton>
+                }
                 @if (ColumnChooser)
                 {
                     <div class="helix-grid__chooser">
                         <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="columns"
-                                    aria-expanded="@(_chooserOpen ? "true" : "false")" OnClick="() => _chooserOpen = !_chooserOpen">Colonnes</HelixButton>
+                                    aria-expanded="@(_chooserOpen ? "true" : "false")" OnClick="() => _chooserOpen = !_chooserOpen">@Texts.Columns</HelixButton>
                         @if (_chooserOpen)
                         {
                             <div class="helix-select__backdrop" @onclick="() => _chooserOpen = false"></div>
@@ -62,6 +67,10 @@
             <table class="helix-grid__table">
                 <thead>
                     <tr>
+                        @if (RowDetails is not null)
+                        {
+                            <th class="helix-grid__expand" scope="col"><span class="helix-sr-only">@Texts.ShowDetails</span></th>
+                        }
                         @if (Selectable)
                         {
                             <th class="helix-grid__check" scope="col">
@@ -140,36 +149,57 @@
                     }
                     else
                     {
+                        object? group = null;
+                        var first = true;
                         @foreach (var item in view.Page)
                         {
-                            var selected = Selectable && _selected.Contains(item);
-                            <tr @key="KeyOf(item)"
-                                class="@(new CssBuilder().Add("is-selected", selected).Add("is-clickable", OnRowClick.HasDelegate || Selectable).Add(RowClass?.Invoke(item)).Build())"
-                                aria-selected="@(Selectable ? (selected ? "true" : "false") : null)"
-                                @onclick="() => RowClicked(item)">
-                                @if (Selectable)
+                            if (GroupBy is not null)
+                            {
+                                var key = GroupKey(item);
+                                if (first || !Equals(key, group))
                                 {
-                                    <td class="helix-grid__check" @onclick:stopPropagation="true">
-                                        <HelixCheckbox Checked="selected" Color="@Color" CheckedChanged="v => ToggleItem(item, v)" aria-label="@Texts.SelectRow" />
-                                    </td>
+                                    group = key;
+                                    @GroupRow(key, columns, colCount)
                                 }
-                                @foreach (var column in columns)
+
+                                first = false;
+                                if (_collapsedGroups.Contains(key))
                                 {
-                                    <td class="@(new CssBuilder($"is-{column.Align.Css()}").Add(column.CellClass).Build())">
-                                        @if (column.Template is not null)
-                                        {
-                                            @column.Template(item)
-                                        }
-                                        else
-                                        {
-                                            @column.Text(item, EffectiveCulture)
-                                        }
-                                    </td>
+                                    continue;
                                 }
-                            </tr>
+                            }
+
+                            @Row(item, columns, colCount)
                         }
                     }
                 </tbody>
+                @if (hasFooterRow)
+                {
+                    <tfoot>
+                        <tr>
+                            @if (RowDetails is not null) { <td></td> }
+                            @if (Selectable) { <td></td> }
+                            @for (var i = 0; i < columns.Count; i++)
+                            {
+                                var column = columns[i];
+                                <td class="@($"is-{column.Align.Css()}")">
+                                    @if (i == 0)
+                                    {
+                                        <span class="helix-grid__total-label">@Texts.Total</span>
+                                    }
+                                    @if (column.FooterTemplate is not null)
+                                    {
+                                        @column.FooterTemplate(view.All)
+                                    }
+                                    else if (column.Aggregate != HelixAggregate.None)
+                                    {
+                                        @column.AggregateText(view.All, EffectiveCulture)
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    </tfoot>
+                }
             </table>
         </div>
     </div>
@@ -187,7 +217,7 @@
             <div class="helix-grid__pager">
                 @if (PageSizes.Length > 1)
                 {
-                    <span class="helix-grid__rows-label">Lignes</span>
+                    <span class="helix-grid__rows-label">@Texts.Rows</span>
                     <HelixSelect TValue="int" Class="helix-grid__size" Items="PageSizes" Value="_pageSize" ValueChanged="SetPageSize" aria-label="@Texts.RowsPerPageLabel" />
                 }
                 <button type="button" class="helix-grid__page" disabled="@(_page == 0)" aria-label="@Texts.PreviousPage" @onclick="() => GoTo(_page - 1)">
@@ -259,6 +289,27 @@
 
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
 
+    /// <summary>Content shown under a row when it is expanded (a chevron column appears). Without OnRowClick or Selectable, a click on the row expands it too.</summary>
+    [Parameter] public RenderFragment<TItem>? RowDetails { get; set; }
+
+    /// <summary>Rows that can expand (all by default when RowDetails is set).</summary>
+    [Parameter] public Func<TItem, bool>? HasDetails { get; set; }
+
+    /// <summary>Groups the rows by this key, e.g. e => e.Department. Each group gets a collapsible header with its count and subtotals.</summary>
+    [Parameter] public Func<TItem, object?>? GroupBy { get; set; }
+
+    /// <summary>Text of a group header (the key's ToString by default).</summary>
+    [Parameter] public Func<object?, string>? GroupText { get; set; }
+
+    /// <summary>Starts with every group collapsed.</summary>
+    [Parameter] public bool GroupsCollapsed { get; set; }
+
+    /// <summary>Shows an "Export" button that downloads the rows as CSV (every filtered row; the current page in server mode).</summary>
+    [Parameter] public bool Exportable { get; set; }
+
+    /// <summary>File name of the export, without extension.</summary>
+    [Parameter] public string? ExportFileName { get; set; }
+
     /// <summary>Extra CSS class per row, e.g. item => item.IsLate ? "late" : null.</summary>
     [Parameter] public Func<TItem, string?>? RowClass { get; set; }
 
@@ -305,7 +356,135 @@
     private bool _chooserOpen;
     private IJSObjectReference? _module;
 
-    private bool HasToolbar => Searchable || Toolbar is not null || ColumnChooser;
+    private bool HasToolbar => Searchable || Toolbar is not null || ColumnChooser || Exportable;
+
+    private static readonly object NullGroup = new();
+    private readonly HashSet<object> _expanded = [];
+    private readonly HashSet<object> _collapsedGroups = [];
+    private bool _groupsInitialized;
+    private Dictionary<object, List<TItem>> _groups = [];
+
+    private object GroupKey(TItem item) => GroupBy?.Invoke(item) ?? NullGroup;
+
+    private string GroupTitle(object key)
+    {
+        var value = ReferenceEquals(key, NullGroup) ? null : key;
+        return GroupText?.Invoke(value) ?? (value is null ? "—" : Convert.ToString(value, EffectiveCulture) ?? "");
+    }
+
+    private bool CanExpand(TItem item) => RowDetails is not null && (HasDetails?.Invoke(item) ?? true);
+
+    private void ToggleDetails(TItem item)
+    {
+        var key = KeyOf(item);
+        if (!_expanded.Remove(key)) _expanded.Add(key);
+    }
+
+    private void ToggleGroup(object key)
+    {
+        if (!_collapsedGroups.Remove(key)) _collapsedGroups.Add(key);
+    }
+
+    private RenderFragment GroupRow(object key, List<HelixColumn<TItem>> columns, int colCount) => __builder =>
+    {
+        var rows = _groups.TryGetValue(key, out var list) ? list : [];
+        var collapsed = _collapsedGroups.Contains(key);
+        var lead = (RowDetails is not null ? 1 : 0) + (Selectable ? 1 : 0);
+        <tr class="helix-grid__group" @key="@("g:" + GroupTitle(key))">
+            <td colspan="@(lead + 1)">
+                <button type="button" class="helix-grid__group-toggle" aria-expanded="@(collapsed ? "false" : "true")" @onclick="() => ToggleGroup(key)">
+                    <HelixIcon Name="@(collapsed ? "chevron-right" : "chevron-down")" Size="14" />
+                    <span class="helix-grid__group-title">@GroupTitle(key)</span>
+                    <span class="helix-grid__group-count">@rows.Count</span>
+                </button>
+            </td>
+            @for (var i = 1; i < columns.Count; i++)
+            {
+                var column = columns[i];
+                <td class="@($"is-{column.Align.Css()}")">
+                    @if (column.Aggregate != HelixAggregate.None)
+                    {
+                        @column.AggregateText(rows, EffectiveCulture)
+                    }
+                </td>
+            }
+        </tr>
+    };
+
+    private RenderFragment Row(TItem item, List<HelixColumn<TItem>> columns, int colCount) => __builder =>
+    {
+        var selected = Selectable && _selected.Contains(item);
+        var canExpand = CanExpand(item);
+        var expanded = canExpand && _expanded.Contains(KeyOf(item));
+        <tr @key="KeyOf(item)"
+            class="@(new CssBuilder().Add("is-selected", selected).Add("is-expanded", expanded).Add("is-clickable", OnRowClick.HasDelegate || Selectable || canExpand).Add(RowClass?.Invoke(item)).Build())"
+            aria-selected="@(Selectable ? (selected ? "true" : "false") : null)"
+            @onclick="() => RowClicked(item)">
+            @if (RowDetails is not null)
+            {
+                <td class="helix-grid__expand" @onclick:stopPropagation="true">
+                    @if (canExpand)
+                    {
+                        <button type="button" class="helix-grid__expand-btn" aria-expanded="@(expanded ? "true" : "false")"
+                                aria-label="@(expanded ? Texts.HideDetails : Texts.ShowDetails)" @onclick="() => ToggleDetails(item)">
+                            <HelixIcon Name="chevron-right" Size="15" />
+                        </button>
+                    }
+                </td>
+            }
+            @if (Selectable)
+            {
+                <td class="helix-grid__check" @onclick:stopPropagation="true">
+                    <HelixCheckbox Checked="selected" Color="@Color" CheckedChanged="v => ToggleItem(item, v)" aria-label="@Texts.SelectRow" />
+                </td>
+            }
+            @foreach (var column in columns)
+            {
+                <td class="@(new CssBuilder($"is-{column.Align.Css()}").Add(column.CellClass).Build())">
+                    @column.Cell(item, EffectiveCulture)
+                </td>
+            }
+        </tr>
+        @if (expanded)
+        {
+            <tr class="helix-grid__details" @key="@("d:" + KeyOf(item))">
+                <td colspan="@colCount"><div class="helix-grid__details-body">@RowDetails!(item)</div></td>
+            </tr>
+        }
+    };
+
+    /// <summary>The rows as CSV, with the visible columns as displayed (every filtered row; the loaded page in server mode).</summary>
+    public string ToCsv()
+    {
+        var culture = EffectiveCulture;
+        var separator = culture.TextInfo.ListSeparator is { Length: > 0 } ls ? ls : ",";
+        var columns = VisibleColumns;
+        var sb = new System.Text.StringBuilder();
+        string Escape(string value) =>
+            value.Contains(separator) || value.Contains('"') || value.Contains('\n') || value.Contains('\r')
+                ? "\"" + value.Replace("\"", "\"\"") + "\"" : value;
+        sb.AppendLine(string.Join(separator, columns.Select(c => Escape(c.ExportHeader))));
+        foreach (var item in Filtered())
+        {
+            sb.AppendLine(string.Join(separator, columns.Select(c => Escape(c.Text(item, culture)))));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>Downloads <see cref="ToCsv"/> as a file (UTF-8 with BOM so that Excel reads accents).</summary>
+    public async Task ExportAsync()
+    {
+        var name = (ExportFileName ?? "export") + ".csv";
+        try
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+            await _module.InvokeVoidAsync("downloadText", name, "\uFEFF" + ToCsv(), "text/csv;charset=utf-8");
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
 
     /// <summary>Every column in display order, with its visibility (columns the saved layout doesn't know come last, visible).</summary>
     private List<(HelixColumn<TItem> Column, bool Visible)> OrderedColumns
@@ -391,7 +570,7 @@
 
     private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
 
-    private sealed record View(IReadOnlyList<TItem> Page, int Total, int PageCount, int From, int To, bool AllSelected, bool SomeSelected);
+    private sealed record View(IReadOnlyList<TItem> Page, IReadOnlyList<TItem> All, int Total, int PageCount, int From, int To, bool AllSelected, bool SomeSelected);
 
     /// <summary>Reloads the current page from the ItemsProvider (call it after you add, edit or delete rows).</summary>
     public Task RefreshAsync() => IsServerMode ? LoadAsync(TimeSpan.Zero) : InvokeAsync(StateHasChanged);
@@ -564,6 +743,21 @@
             rows = rows.Where(item => searchable.Any(c => c.Text(item, culture).Contains(term, StringComparison.CurrentCultureIgnoreCase)));
         }
 
+        if (GroupBy is not null)
+        {
+            // Groups stay together; the sort applies inside each group.
+            var grouped = rows.OrderBy(r => GroupBy(r), Comparer<object?>.Default);
+            if (_sortColumn is not null)
+            {
+                var column = _sortColumn;
+                grouped = _sortDescending
+                    ? grouped.ThenByDescending(column.SortValue, Comparer<object?>.Default)
+                    : grouped.ThenBy(column.SortValue, Comparer<object?>.Default);
+            }
+
+            return grouped.ToList();
+        }
+
         if (_sortColumn is not null)
         {
             var column = _sortColumn;
@@ -579,6 +773,15 @@
     {
         var rows = Filtered();
         var total = IsServerMode ? _serverTotal : rows.Count;
+        if (GroupBy is not null)
+        {
+            _groups = rows.GroupBy(GroupKey).ToDictionary(g => g.Key, g => g.ToList());
+            if (GroupsCollapsed && !_groupsInitialized && _groups.Count > 0)
+            {
+                _groupsInitialized = true;
+                _collapsedGroups.UnionWith(_groups.Keys);
+            }
+        }
         var pageCount = _pageSize > 0 ? Math.Max(1, (int)Math.Ceiling(total / (double)_pageSize)) : 1;
 
         IReadOnlyList<TItem> page;
@@ -597,7 +800,7 @@
 
         // Server mode only knows the loaded page, so "select all" applies to the page.
         var selectedInView = Selectable ? rows.Count(_selected.Contains) : 0;
-        return new View(page, total, pageCount, from, to,
+        return new View(page, rows, total, pageCount, from, to,
             AllSelected: rows.Count > 0 && selectedInView == rows.Count,
             SomeSelected: selectedInView > 0 && selectedInView < rows.Count);
     }
@@ -689,6 +892,10 @@
         else if (Selectable)
         {
             await ToggleItem(item, !_selected.Contains(item));
+        }
+        else if (CanExpand(item))
+        {
+            ToggleDetails(item);
         }
     }
 

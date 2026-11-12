@@ -45,6 +45,27 @@
     /// <summary>Extra CSS class on every cell of the column.</summary>
     [Parameter] public string? CellClass { get; set; }
 
+    /// <summary>Unit shown after the value, e.g. "MW" (also added to the CSV header).</summary>
+    [Parameter] public string? Unit { get; set; }
+
+    /// <summary>Shows the value as a badge; returns its color (semantic name or CSS color), e.g. e => e.Status == "Done" ? "success" : "warning".</summary>
+    [Parameter] public Func<TItem, string?>? BadgeColor { get; set; }
+
+    /// <summary>Numbers get a sign, an arrow and a color: up / green when positive, down / red when negative.</summary>
+    [Parameter] public bool Signed { get; set; }
+
+    /// <summary>With Signed: false when a negative value is the good news (costs, delays…).</summary>
+    [Parameter] public bool HigherIsBetter { get; set; } = true;
+
+    /// <summary>Total shown in the footer row and in each group header: Sum, Average, Min, Max or Count.</summary>
+    [Parameter] public HelixAggregate Aggregate { get; set; }
+
+    /// <summary>Format of the aggregate (the column Format by default).</summary>
+    [Parameter] public string? AggregateFormat { get; set; }
+
+    /// <summary>Custom footer cell; receives every filtered row.</summary>
+    [Parameter] public RenderFragment<IReadOnlyList<TItem>>? FooterTemplate { get; set; }
+
     private Expression<Func<TItem, object?>>? _compiledFrom;
     private Func<TItem, object?>? _getter;
     private string? _memberName;
@@ -88,6 +109,98 @@
     internal string? ServerSortName => SortName ?? _memberPath;
 
     internal bool CanSearch => Searchable && _getter is not null;
+
+    internal bool HasFooter => Aggregate != HelixAggregate.None || FooterTemplate is not null;
+
+    internal string ExportHeader => string.IsNullOrEmpty(Unit) ? HeaderText : $"{HeaderText} ({Unit})";
+
+    private static double? Number(object? value) => value switch
+    {
+        null or bool or string or char or DateTime or DateTimeOffset or DateOnly or TimeOnly or Enum => null,
+        IConvertible convertible => convertible.ToDouble(CultureInfo.InvariantCulture),
+        TimeSpan span => span.TotalMilliseconds,
+        _ => null,
+    };
+
+    /// <summary>The cell as displayed: template, badge, signed number or text with its unit.</summary>
+    internal RenderFragment Cell(TItem item, CultureInfo culture) => __builder =>
+    {
+        if (Template is not null)
+        {
+            @Template(item)
+        }
+        else if (BadgeColor is not null)
+        {
+            var text = Text(item, culture);
+            if (text.Length > 0)
+            {
+                <HelixBadge Color="@BadgeColor(item)" Dot="true">@text</HelixBadge>
+            }
+        }
+        else if (Signed && Number(_getter?.Invoke(item)) is { } number)
+        {
+            var good = number == 0 ? (bool?)null : number > 0 == HigherIsBetter;
+            var text = Text(item, culture);
+            <span class="@(new CssBuilder("helix-grid__signed").Add(good == true ? "is-good" : good == false ? "is-bad" : "is-flat").Build())">
+                @if (number != 0)
+                {
+                    <HelixIcon Name="@(number > 0 ? "arrow-up" : "arrow-down")" Size="12" />
+                }
+                @(number > 0 && !text.StartsWith('+') ? "+" + text : text)@Suffix
+            </span>
+        }
+        else
+        {
+            var text = Text(item, culture);
+            @(text.Length > 0 ? text + Suffix : text)
+        }
+    };
+
+    private string Suffix => string.IsNullOrEmpty(Unit) ? "" : "\u202F" + Unit;
+
+    internal double? AggregateValue(IReadOnlyList<TItem> rows)
+    {
+        if (Aggregate == HelixAggregate.Count)
+        {
+            return rows.Count(r => _getter?.Invoke(r) is not null);
+        }
+
+        var values = rows.Select(r => Number(_getter?.Invoke(r))).OfType<double>().ToList();
+        if (values.Count == 0)
+        {
+            return null;
+        }
+
+        return Aggregate switch
+        {
+            HelixAggregate.Sum => values.Sum(),
+            HelixAggregate.Average => values.Average(),
+            HelixAggregate.Min => values.Min(),
+            HelixAggregate.Max => values.Max(),
+            _ => null,
+        };
+    }
+
+    internal string AggregateText(IReadOnlyList<TItem> rows, CultureInfo culture)
+    {
+        if (AggregateValue(rows) is not { } value)
+        {
+            return "";
+        }
+
+        var format = Aggregate == HelixAggregate.Count ? "N0" : AggregateFormat ?? Format ?? "#,0.##";
+        string text;
+        try
+        {
+            text = value.ToString(format, culture);
+        }
+        catch (FormatException)
+        {
+            text = value.ToString("#,0.##", culture); // e.g. a date format on a number
+        }
+
+        return Aggregate == HelixAggregate.Count ? text : text + Suffix;
+    }
 
     internal object? SortValue(TItem item) => SortBy is not null ? SortBy(item) : _getter?.Invoke(item);
 

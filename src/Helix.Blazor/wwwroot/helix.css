@@ -994,6 +994,51 @@
 :where(.helix-grid__page:focus-visible) { outline: 2px solid color-mix(in oklab, var(--_c) 50%, transparent); }
 :where(.helix-grid__page.is-active) { background: color-mix(in oklab, var(--_c) 12%, transparent); color: color-mix(in oklab, var(--_c) 88%, var(--helix-text)); font-weight: 600; }
 :where(.helix-grid__ellipsis) { min-width: 20px; text-align: center; color: var(--helix-text-subtle); }
+:where(.helix-grid__expand) { width: 36px; padding-right: 0; }
+:where(.helix-grid__expand-btn) {
+    display: inline-grid; place-items: center; width: 26px; height: 26px; padding: 0;
+    border: 0; border-radius: calc(var(--helix-radius) * .6); background: transparent; color: var(--helix-text-subtle); cursor: pointer;
+    transition: background var(--helix-duration) var(--helix-ease), color var(--helix-duration) var(--helix-ease);
+}
+:where(.helix-grid__expand-btn:hover) { background: var(--helix-surface-2); color: var(--helix-text); }
+:where(.helix-grid__expand-btn:focus-visible) { outline: 2px solid color-mix(in oklab, var(--_c) 50%, transparent); }
+:where(.helix-grid__expand-btn .helix-icon) { transition: transform var(--helix-duration) var(--helix-ease); }
+:where(.helix-grid__expand-btn[aria-expanded="true"]) { color: var(--_c); }
+:where(.helix-grid__expand-btn[aria-expanded="true"] .helix-icon) { transform: rotate(90deg); }
+:where(.helix-grid__table tbody tr.is-expanded td) { border-bottom-color: transparent; }
+:where(.helix-grid__table tbody tr.helix-grid__details td) { padding: 0 var(--_px) 14px; background: transparent; }
+:where(.helix-grid__table tbody tr.helix-grid__details:hover td) { background: transparent; }
+:where(.helix-grid__details-body) {
+    padding: 14px 16px; border-radius: calc(var(--helix-radius) * .9);
+    background: color-mix(in oklab, var(--helix-surface-2) 70%, transparent); color: var(--helix-text);
+}
+:where(.helix-grid__table tbody tr.helix-grid__group td) {
+    padding-top: 9px; padding-bottom: 9px;
+    background: color-mix(in oklab, var(--helix-surface-2) 55%, var(--helix-surface));
+    font-weight: 600; color: var(--helix-text);
+}
+:where(.helix-grid__table tbody tr.helix-grid__group:hover td) { background: color-mix(in oklab, var(--helix-surface-2) 80%, var(--helix-surface)); }
+:where(.helix-grid__group-toggle) {
+    display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none;
+    font: inherit; color: inherit; cursor: pointer;
+}
+:where(.helix-grid__group-toggle:focus-visible) { outline: 2px solid color-mix(in oklab, var(--_c) 50%, transparent); outline-offset: 2px; border-radius: 4px; }
+:where(.helix-grid__group-toggle .helix-icon) { color: var(--helix-text-subtle); }
+:where(.helix-grid__group-count) {
+    min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--helix-surface-3, var(--helix-surface-2));
+    font-size: 11.5px; font-weight: 600; text-align: center; color: var(--helix-text-muted); font-variant-numeric: tabular-nums;
+}
+:where(.helix-grid__table tfoot td) {
+    padding: calc(var(--_py) + 1px) var(--_px);
+    border-top: 1px solid var(--helix-grid-border, var(--helix-border));
+    background: var(--helix-grid-header-bg, color-mix(in oklab, var(--helix-surface-2) 60%, var(--helix-surface)));
+    font-weight: 650; color: var(--helix-text); font-variant-numeric: tabular-nums;
+}
+:where(.helix-grid__total-label) { margin-right: 10px; font-size: 12px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--helix-text-muted); }
+:where(.helix-grid__signed) { display: inline-flex; align-items: center; gap: 3px; font-weight: 550; font-variant-numeric: tabular-nums; }
+:where(.helix-grid__signed.is-good) { color: color-mix(in oklab, var(--helix-success) 85%, var(--helix-text)); }
+:where(.helix-grid__signed.is-bad) { color: color-mix(in oklab, var(--helix-danger) 85%, var(--helix-text)); }
+:where(.helix-grid__signed.is-flat) { color: var(--helix-text-muted); }
 
 /* ---------- Chart -------------------------------------------------------- */
 

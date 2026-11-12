@@ -147,6 +147,40 @@
         </HelixDataGrid>
     </Example>
 
+    <Example WpfCode="@Wpf3" Title="Groups, totals and export"
+             Description="GroupBy gathers the rows under collapsible headers with their count and subtotals. Aggregate adds a total row at the bottom. BadgeColor shows a status as a badge, Signed colors a change with an arrow, Unit appends the unit. Exportable adds a CSV export of the filtered rows."
+             Code="@GroupsCode">
+        <HelixDataGrid Items="Orders" GroupBy="o => o.Region" PageSize="0" Exportable="true" ExportFileName="orders" Searchable="true" Culture="English">
+            <HelixColumn Field="o => o.Product" Title="Product" Aggregate="HelixAggregate.Count" />
+            <HelixColumn Field="o => o.Status" BadgeColor="@(o => StatusColor(o.Status))" />
+            <HelixColumn Field="o => o.Volume" Format="N0" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
+            <HelixColumn Field="o => o.Price" Format="N1" Unit="€" Align="HelixAlign.End" Aggregate="HelixAggregate.Average" />
+            <HelixColumn Field="o => o.Change" Title="vs last week" Format="0.0'%'" Signed="true" Align="HelixAlign.End" />
+        </HelixDataGrid>
+    </Example>
+
+    <Example WpfCode="@Wpf4" Title="Expandable rows"
+             Description="RowDetails is shown under a row when it is expanded: with the chevron, or by clicking the row when it has no other action. HasDetails limits it to some rows."
+             Code="@DetailsCode">
+        <HelixDataGrid Items="_employees.Take(5)" PageSize="0" Culture="English" ItemKey="e => e.Id">
+            <ChildContent>
+                <HelixColumn Field="e => e.Name" Title="Employee" />
+                <HelixColumn Field="e => e.Department" Title="Department" />
+                <HelixColumn Field="e => e.Status" Title="Status">
+                    <Template><StatusBadge Status="context.Status" /></Template>
+                </HelixColumn>
+            </ChildContent>
+            <RowDetails>
+                <div class="row" style="gap:28px;flex-wrap:wrap">
+                    <div><div class="muted" style="font-size:12px">Email</div>@context.Email</div>
+                    <div><div class="muted" style="font-size:12px">Role</div>@context.Role</div>
+                    <div><div class="muted" style="font-size:12px">Start date</div>@context.StartDate.ToString("MMMM d, yyyy", English)</div>
+                    <div><div class="muted" style="font-size:12px">Salary</div>@context.Salary.ToString("C0", English)</div>
+                </div>
+            </RowDetails>
+        </HelixDataGrid>
+    </Example>
+
     <ApiTable Rows="Api" />
     <ApiTable Title="HelixColumn" Rows="ColumnApi" ShowIntro="false" />
 </DemoPage>
@@ -179,6 +213,78 @@
             var page = await api.SearchAsync(request.Search, request.SortBy, request.Descending, request.Page, request.PageSize, ct);
             return new HelixGridPage(page.Items, page.Total);
         };
+        """;
+
+    public sealed record Order(string Region, string Product, string Status, double Volume, double Price, double Change);
+
+    private static readonly Order[] Orders =
+    [
+        new("North", "Baseload", "Delivered", 1240, 82.4, 3.1), new("North", "Peak", "Delivered", 610, 97.9, -1.4),
+        new("North", "Off-peak", "Pending", 380, 64.2, 0), new("South", "Baseload", "Delivered", 980, 80.1, 5.6),
+        new("South", "Peak", "Cancelled", 220, 101.5, -8.2), new("East", "Baseload", "Pending", 1430, 79.3, 1.9),
+        new("East", "Peak", "Delivered", 540, 95.0, 2.4), new("East", "Off-peak", "Delivered", 410, 61.8, -0.7),
+    ];
+
+    private static string StatusColor(string status) => status switch
+    {
+        "Delivered" => "success",
+        "Pending" => "warning",
+        _ => "danger",
+    };
+
+    private const string GroupsCode = """
+        <HelixDataGrid Items="orders" GroupBy="o => o.Region" Exportable ExportFileName="orders" Searchable>
+            <HelixColumn Field="o => o.Product" Aggregate="HelixAggregate.Count" />
+            <HelixColumn Field="o => o.Status" BadgeColor="@(o => o.Status == "Delivered" ? "success" : "warning")" />
+            <HelixColumn Field="o => o.Volume" Format="N0" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
+            <HelixColumn Field="o => o.Price" Format="N1" Unit="€" Align="HelixAlign.End" Aggregate="HelixAggregate.Average" />
+            <HelixColumn Field="o => o.Change" Format="0.0'%'" Signed Align="HelixAlign.End" />
+        </HelixDataGrid>
+
+        @* Or export from your own button: await grid.ExportAsync();  string csv = grid.ToCsv(); *@
+        """;
+
+    private const string DetailsCode = """
+        <HelixDataGrid Items="employees" ItemKey="e => e.Id">
+            <ChildContent>
+                <HelixColumn Field="e => e.Name" />
+                <HelixColumn Field="e => e.Department" />
+            </ChildContent>
+            <RowDetails>
+                <p>@context.Email · @context.Role</p>
+            </RowDetails>
+        </HelixDataGrid>
+        """;
+
+    private const string Wpf3 = """
+        <helix:HelixDataGrid Source="{Binding Orders}" GroupBy="Region" PageSize="0" IsExportable="True" ExportFileName="orders"
+                             AutoGenerateColumns="False" IsReadOnly="True">
+            <helix:HelixDataGrid.Columns>
+                <DataGridTextColumn Header="Product" Binding="{Binding Product}" Width="*"
+                                    helix:HelixDataGrid.Aggregate="Count" />
+                <helix:HelixBadgeColumn Header="Status" Binding="{Binding Status}" ToneBinding="{Binding StatusTone}" />
+                <DataGridTextColumn Header="Volume" Binding="{Binding Volume, StringFormat=N0}"
+                                    helix:HelixDataGrid.Aggregate="Sum" helix:HelixDataGrid.Unit="MWh" />
+                <helix:HelixSignedColumn Header="vs last week" Binding="{Binding Change}" Format="0.0'%'" />
+            </helix:HelixDataGrid.Columns>
+        </helix:HelixDataGrid>
+
+        // Or from your own button: Grid.ExportCsv(path);  string csv = Grid.ToCsv();
+        """;
+
+    private const string Wpf4 = """
+        <helix:HelixDataGrid Source="{Binding Employees}" AutoGenerateColumns="False" IsReadOnly="True">
+            <helix:HelixDataGrid.Columns>
+                <helix:HelixDetailsColumn />   <!-- the chevron that opens the row details -->
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Department" Binding="{Binding Department}" />
+            </helix:HelixDataGrid.Columns>
+            <helix:HelixDataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Email}" Margin="12" />
+                </DataTemplate>
+            </helix:HelixDataGrid.RowDetailsTemplate>
+        </helix:HelixDataGrid>
         """;
 
     private const string Wpf2 = """
@@ -397,6 +503,9 @@
         new("ReorderableColumns", "bool", null, "Drag the headers to reorder the columns."),
         new("ColumnChooser", "bool", null, "“Columns” button: show / hide columns."),
         new("ColumnLayout", "IReadOnlyList<HelixColumnState>", null, "Chosen order and visibility (Key, Visible), to save and restore (@bind-ColumnLayout)."),
+        new("RowDetails / HasDetails", "RenderFragment<T> / Func<T, bool>", null, "Content under an expanded row (chevron column); which rows can expand."),
+        new("GroupBy / GroupText / GroupsCollapsed", "Func<T, object?> / Func<object?, string> / bool", null, "Collapsible groups with count and subtotals; header text; start collapsed."),
+        new("Exportable / ExportFileName", "bool / string", null, "“Export” button: CSV of the filtered rows (Excel-friendly). Also ExportAsync() and ToCsv()."),
         new("Color", "string", "--helix-grid-color", "Sort, selection and active page."),
         new("HeaderBackground", "string", "--helix-grid-header-bg", "Header background."),
         new("HoverColor", "string", "--helix-grid-hover", "Background of a hovered row."),
@@ -416,5 +525,9 @@
         new("SortBy", "Func<T, object?>", null, "Custom sort key."),
         new("Sortable / Searchable", "bool", null, "Turn off sorting / search on the column."),
         new("Align / Width / CellClass", "HelixAlign / string / string", null, "Alignment, width, cell class."),
+        new("Unit", "string", null, "Unit after the value (and in the CSV header)."),
+        new("BadgeColor", "Func<T, string?>", null, "Shows the value as a badge of that color (status columns)."),
+        new("Signed / HigherIsBetter", "bool / bool", null, "Sign, arrow and color for a change; false when a decrease is good news."),
+        new("Aggregate / AggregateFormat / FooterTemplate", "HelixAggregate / string / RenderFragment<IReadOnlyList<T>>", null, "Sum, Average, Min, Max or Count in the total row and group headers; its format; a custom footer cell."),
     ];
 }

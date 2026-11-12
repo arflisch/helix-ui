@@ -371,3 +371,13 @@ export async function eyeDropper() {
 }
 
 export function hasEyeDropper() { return "EyeDropper" in window; }
+
+/** Saves text as a file (CSV export of the data grid). */
+export function downloadText(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const link = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

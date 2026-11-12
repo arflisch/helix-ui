@@ -12,6 +12,9 @@ public enum HelixTabsVariant { Underline, Pills, Segmented }
 
 public enum HelixAlign { Start, Center, End }
 
+/// <summary>Total of a grid column: in the footer row and in each group header.</summary>
+public enum HelixAggregate { None, Sum, Average, Min, Max, Count }
+
 public enum HelixPlacement { Top, Bottom, Left, Right }
 
 public enum HelixAvatarStatus { None, Online, Away, Busy, Offline }

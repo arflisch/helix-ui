@@ -78,6 +78,10 @@ public sealed record HelixTexts
     /// <summary>{0} = rows per page.</summary>
     public string RowsPerPage { get; init; } = "{0} / page";
     public string RowsPerPageLabel { get; init; } = "Rows per page";
+    public string Rows { get; init; } = "Rows";
+    public string Export { get; init; } = "Export";
+    public string ShowDetails { get; init; } = "Show details";
+    public string HideDetails { get; init; } = "Hide details";
 
     // ----- Charts ------------------------------------------------------------------------------
     public string Series { get; init; } = "Series";
@@ -176,6 +180,7 @@ public sealed record HelixTexts
         Columns = "Colonnes", VisibleColumns = "Colonnes affichées", SelectAll = "Tout sélectionner", SelectPage = "Sélectionner la page",
         SelectRow = "Sélectionner la ligne", SelectedCount = "{0} sélectionné(s)", PreviousPage = "Page précédente", NextPage = "Page suivante",
         PageNumber = "Page {0}", RangeOf = "{0}–{1} sur {2}", RowsPerPage = "{0} / page", RowsPerPageLabel = "Lignes par page",
+        Rows = "Lignes", Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",
 
         Series = "Séries", ShowSeries = "Afficher {0}", HideSeries = "Masquer {0}",
         WindowStart = "Début de la période affichée", WindowEnd = "Fin de la période affichée",
