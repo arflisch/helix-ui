@@ -127,6 +127,19 @@ La galerie WPF ne s'exécute que sous Windows ; la librairie se compile aussi su
 Chaque partie visuelle est une propriété (`Accent`, `TrackBrush`, `ThumbBrush`, `CornerRadius`…). Pour changer une valeur par défaut
 dans toute l'application, un style implicite `BasedOn="{StaticResource {x:Type velo:VeloSwitch}}"` suffit : le template reste celui de Velo.
 
+## Mettre la documentation en ligne
+
+Le site de documentation est une application Blazor WebAssembly : une fois publié, ce sont de simples fichiers,
+hébergeables gratuitement (Cloudflare Pages, Netlify…).
+
+```bash
+dotnet publish samples/Velo.Demo -c Release -o publish-docs
+```
+
+Le dossier à mettre en ligne est `publish-docs/wwwroot`. Sur Cloudflare Pages : Workers & Pages › Create ›
+Pages › « Upload assets », glisser ce dossier, puis « Deploy ». Pour une mise à jour, refaire la publication et
+« Create new deployment » dans le même projet.
+
 ## Packages NuGet
 
 | Package | Installation |

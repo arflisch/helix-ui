@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # macOS
 .DS_Store
+
+# Published documentation site
+publish-docs/
