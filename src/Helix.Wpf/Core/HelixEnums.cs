@@ -16,3 +16,6 @@ public enum HelixLabelPosition { End, Start }
 
 /// <summary>Light, dark, or following Windows (System).</summary>
 public enum HelixThemeMode { Light, Dark, System }
+
+/// <summary>Total of a grid column: in the total row and in each group header.</summary>
+public enum HelixAggregate { None, Sum, Average, Min, Max, Count }

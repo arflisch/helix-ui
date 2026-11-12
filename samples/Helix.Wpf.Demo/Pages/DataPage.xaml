@@ -32,6 +32,31 @@
             </helix:HelixDataGrid.Columns>
         </helix:HelixDataGrid>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Groupes, totaux, détail et export" />
+        <TextBlock Style="{StaticResource SectionText}"
+                   Text="GroupBy regroupe les lignes (en-têtes repliables avec nombre et sous-totaux), helix:HelixDataGrid.Aggregate ajoute une ligne de total, HelixDetailsColumn ouvre le détail d'une ligne, HelixBadgeColumn et HelixSignedColumn affichent un statut et une variation. IsExportable ajoute l'export CSV." />
+        <helix:HelixDataGrid x:Name="GroupedGrid" GroupBy="Site" PageSize="0" IsExportable="True" ExportFileName="unites" AutoGenerateColumns="False"
+                           Height="480" Margin="0,0,0,32" IsReadOnly="True">
+            <helix:HelixDataGrid.Columns>
+                <helix:HelixDetailsColumn />
+                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*" helix:HelixDataGrid.Aggregate="Count" />
+                <helix:HelixBadgeColumn Header="Statut" Binding="{Binding Status}" ToneBinding="{Binding Tone}" Width="130" SortMemberPath="Status" />
+                <DataGridTextColumn Header="Puissance" Binding="{Binding Power, StringFormat=N0}" Width="140"
+                                    helix:HelixDataGrid.Aggregate="Sum" helix:HelixDataGrid.Unit="MW" />
+                <helix:HelixSignedColumn Header="Variation" Binding="{Binding Change}" Format="0.0'%'" Width="120" />
+            </helix:HelixDataGrid.Columns>
+            <helix:HelixDataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <Border Margin="52,0,16,12" Padding="14,12" CornerRadius="10" Background="{DynamicResource Helix.Surface2}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Id, StringFormat=Unité n° {0}}" Margin="0,0,28,0" />
+                            <TextBlock Text="{Binding Updated, StringFormat=Mise à jour le {0:dd/MM à HH:mm}}" Foreground="{DynamicResource Helix.TextMuted}" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </helix:HelixDataGrid.RowDetailsTemplate>
+        </helix:HelixDataGrid>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Côté serveur" />
         <TextBlock Style="{StaticResource SectionText}" Text="ItemsProvider reçoit (recherche, tri, page) et un CancellationToken : la requête précédente est annulée quand on tape vite. Ici, un faux serveur avec 600 ms de latence et 10 000 lignes." />
         <helix:HelixDataGrid x:Name="ServerGrid" IsSearchable="True" PageSize="10" AutoGenerateColumns="False" Height="500" IsReadOnly="True">

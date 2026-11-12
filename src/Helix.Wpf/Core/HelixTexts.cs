@@ -38,6 +38,9 @@ public sealed record HelixTexts
     public string StepError { get; init; } = "Needs fixing";
     public string Others { get; init; } = "Others";
     public string Total { get; init; } = "Total";
+    public string Export { get; init; } = "Export";
+    public string ShowDetails { get; init; } = "Show details";
+    public string HideDetails { get; init; } = "Hide details";
     public string EditLayout { get; init; } = "Edit layout";
     public string Done { get; init; } = "Done";
     public string HiddenTiles { get; init; } = "Hidden tiles";
@@ -67,6 +70,7 @@ public sealed record HelixTexts
 
     public static HelixTexts French { get; } = new()
     {
+        Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",
         Close = "Fermer", Clear = "Effacer", Confirm = "Confirmer", Cancel = "Annuler", Loading = "Chargement",
         NoData = "Aucune donnée", SelectPlaceholder = "Sélectionner…", ChooseDate = "Choisir une date",
         Increase = "Augmenter", Decrease = "Diminuer", Required = "obligatoire",

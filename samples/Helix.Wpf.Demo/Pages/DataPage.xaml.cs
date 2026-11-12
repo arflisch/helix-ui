@@ -9,7 +9,7 @@ namespace Helix.Wpf.Demo.Pages;
 
 public partial class DataPage : UserControl
 {
-    public sealed record Plant(int Id, string Name, string Site, double Power, string Status, HelixTone Tone, DateTime Updated);
+    public sealed record Plant(int Id, string Name, string Site, double Power, string Status, HelixTone Tone, DateTime Updated, double Change = 0);
 
     private static readonly string[] Sites = ["Lyon", "Grenoble", "Marseille", "Bordeaux", "Lille", "Nantes", "Toulouse"];
     private static readonly (string Status, HelixTone Tone)[] Statuses = [("En service", HelixTone.Success), ("Maintenance", HelixTone.Warning), ("Arrêt", HelixTone.Danger), ("Planifié", HelixTone.Info)];
@@ -21,13 +21,14 @@ public partial class DataPage : UserControl
     {
         InitializeComponent();
         Grid.Source = Enumerable.Range(1, 46).Select(Make).ToList();
+        GroupedGrid.Source = Enumerable.Range(1, 18).Select(Make).ToList();
         ServerGrid.ItemsProvider = QueryAsync;
     }
 
     private static Plant Make(int i)
     {
         var (status, tone) = Statuses[i * 7 % Statuses.Length];
-        return new Plant(i, $"Unité {i:000}", Sites[i * 3 % Sites.Length], 20 + i * 37 % 480, status, tone, DateTime.Today.AddHours(-i * 5 % 96));
+        return new Plant(i, $"Unité {i:000}", Sites[i * 3 % Sites.Length], 20 + i * 37 % 480, status, tone, DateTime.Today.AddHours(-i * 5 % 96), Math.Round((i * 13 % 21 - 10) * 0.7, 1));
     }
 
     private static async Task<HelixGridPage> QueryAsync(HelixGridRequest request, CancellationToken cancellationToken)

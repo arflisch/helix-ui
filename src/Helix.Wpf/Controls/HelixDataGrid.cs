@@ -27,7 +27,9 @@ public sealed record HelixGridPage(IReadOnlyList<object> Items, int TotalCount);
 [TemplatePart(Name = "PART_ColumnPopup", Type = typeof(Popup))]
 [TemplatePart(Name = "PART_ColumnList", Type = typeof(Panel))]
 [TemplatePart(Name = "PART_Retry", Type = typeof(ButtonBase))]
-public class HelixDataGrid : DataGrid
+[TemplatePart(Name = "PART_Export", Type = typeof(ButtonBase))]
+[TemplatePart(Name = "PART_Totals", Type = typeof(Panel))]
+public partial class HelixDataGrid : DataGrid
 {
     static HelixDataGrid() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixDataGrid), new FrameworkPropertyMetadata(typeof(HelixDataGrid)));
 
@@ -43,6 +45,7 @@ public class HelixDataGrid : DataGrid
             Reload();
         };
         Unloaded += (_, _) => _cts?.Cancel();
+        InitExtras();
     }
 
     public static readonly DependencyProperty SourceProperty = HelixProperty.Register<HelixDataGrid, IEnumerable?>(nameof(Source), null, (d, e) => ((HelixDataGrid)d).OnSourceChanged(e));
@@ -147,6 +150,7 @@ public class HelixDataGrid : DataGrid
         _retry = GetTemplateChild("PART_Retry") as ButtonBase;
         if (_columnsButton is not null) _columnsButton.Click += OnColumnsClick;
         if (_retry is not null) _retry.Click += OnRetry;
+        ApplyExtrasTemplate();
     }
 
     private void OnRetry(object sender, RoutedEventArgs e) => Reload();
@@ -251,12 +255,24 @@ public class HelixDataGrid : DataGrid
             rows = rows.Where(row => paths.Any(path => Value(row, path)?.ToString()?.Contains(search, StringComparison.CurrentCultureIgnoreCase) == true));
         }
 
-        if (_sortBy is { } sortBy)
+        if (GroupBy is { Length: > 0 } groupBy)
+        {
+            // Groups stay together; the sort applies inside each group.
+            var grouped = rows.OrderBy(r => Value(r, groupBy), Comparer.Default);
+            if (_sortBy is { } by)
+            {
+                grouped = _descending ? grouped.ThenByDescending(r => Value(r, by), Comparer.Default) : grouped.ThenBy(r => Value(r, by), Comparer.Default);
+            }
+
+            rows = grouped;
+        }
+        else if (_sortBy is { } sortBy)
         {
             rows = _descending ? rows.OrderByDescending(r => Value(r, sortBy), Comparer.Default) : rows.OrderBy(r => Value(r, sortBy), Comparer.Default);
         }
 
         var all = rows.ToList();
+        _allRows = all;
         Show(all.Count, PageSize > 0 ? all.Skip((ClampPage(all.Count) - 1) * PageSize).Take(PageSize).ToList() : all, search);
     }
 
@@ -294,6 +310,7 @@ public class HelixDataGrid : DataGrid
             var request = new HelixGridRequest(string.IsNullOrWhiteSpace(SearchText) ? null : SearchText.Trim(), _sortBy, _descending, Math.Max(1, Page), PageSize);
             var page = await ItemsProvider!(request, cts.Token);
             if (cts.IsCancellationRequested) return;
+            _allRows = page.Items;
             Show(page.TotalCount, page.Items, request.Search);
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
@@ -317,7 +334,7 @@ public class HelixDataGrid : DataGrid
 
     private void Show(int total, IReadOnlyList<object> page, string? search)
     {
-        ItemsSource = page;
+        ItemsSource = Grouped(page);
         SetValue(TotalCountKey, total);
         SetValue(IsEmptyKey, page.Count == 0);
         SetValue(EmptyMessageKey, string.IsNullOrEmpty(search) ? EmptyText : HelixTexts.Format(HelixTexts.Current.NoResultsFor, search));
@@ -325,6 +342,7 @@ public class HelixDataGrid : DataGrid
         var first = total == 0 ? 0 : (Math.Max(1, Page) - 1) * Math.Max(PageSize, 0) + 1;
         var last = PageSize > 0 ? Math.Min(total, first + PageSize - 1) : total;
         SetValue(InfoTextKey, HelixTexts.Format(HelixTexts.Current.RangeOf, first, last, total));
+        UpdateTotals();
     }
 
     /// <summary>Binding paths of the visible bound columns (what the search looks into).</summary>

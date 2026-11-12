@@ -2535,7 +2535,130 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Chevron of HelixDetailsColumn: opens the row details. -->
+    <Style TargetType="{x:Type local:HelixDetailsToggle}">
+        <Setter Property="Width" Value="26" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{DynamicResource Helix.TextSubtle}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:HelixDetailsToggle}">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="7">
+                        <local:HelixIcon x:Name="Chevron" Icon="chevron-right" Size="15" Foreground="{TemplateBinding Foreground}"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chevron" Property="Icon" Value="chevron-down" />
+                            <Setter Property="Foreground" Value="{DynamicResource Helix.Primary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Signed change: arrow + sign, green / red / gray. -->
+    <Style TargetType="{x:Type local:HelixSignedValue}">
+        <Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:HelixSignedValue}">
+                    <StackPanel Orientation="Horizontal">
+                        <local:HelixIcon x:Name="Arrow" Icon="arrow-up" Size="12" Margin="0,0,3,0" Foreground="{TemplateBinding Foreground}"
+                                        VerticalAlignment="Center" Visibility="Collapsed" />
+                        <TextBlock Text="{TemplateBinding Text}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Direction" Value="1">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="Direction" Value="-1">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Arrow" Property="Icon" Value="arrow-down" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="State" Value="good">
+                <Setter Property="Foreground" Value="{DynamicResource Helix.Success}" />
+            </Trigger>
+            <Trigger Property="State" Value="bad">
+                <Setter Property="Foreground" Value="{DynamicResource Helix.Danger}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <Style TargetType="{x:Type local:HelixDataGrid}">
+        <Style.Resources>
+            <!-- Group header (GroupBy): chevron, name, row count, subtotals; the rows fold under it. -->
+            <Style x:Key="Helix.GridGroupItem" TargetType="{x:Type GroupItem}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                            <StackPanel>
+                                <Border Background="{DynamicResource Helix.Surface2}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1" Padding="12,0">
+                                    <ToggleButton x:Name="Toggle" IsChecked="True" Cursor="Hand" FocusVisualStyle="{x:Null}" HorizontalAlignment="Left">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                <Border Background="Transparent" Padding="0,9">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <local:HelixIcon x:Name="Chevron" Icon="chevron-down" Size="14" VerticalAlignment="Center"
+                                                                        Foreground="{DynamicResource Helix.TextSubtle}" />
+                                                        <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsChecked" Value="False">
+                                                        <Setter TargetName="Chevron" Property="Icon" Value="chevron-right" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" VerticalAlignment="Center" />
+                                            <Border Margin="8,0,0,0" Padding="7,1" CornerRadius="999" Background="{DynamicResource Helix.Surface3}" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ItemCount}" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource Helix.TextMuted}" />
+                                            </Border>
+                                            <TextBlock Margin="16,0,0,0" FontWeight="SemiBold" Foreground="{DynamicResource Helix.TextMuted}" VerticalAlignment="Center">
+                                                <TextBlock.Text>
+                                                    <MultiBinding Converter="{x:Static local:HelixDataGrid.GroupSummaryConverter}">
+                                                        <Binding Path="Items" />
+                                                        <Binding RelativeSource="{RelativeSource AncestorType={x:Type local:HelixDataGrid}}" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </ToggleButton>
+                                </Border>
+                                <ItemsPresenter x:Name="Rows" />
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger SourceName="Toggle" Property="IsChecked" Value="False">
+                                    <Setter TargetName="Rows" Property="Visibility" Value="Collapsed" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Style.Resources>
         <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
         <Setter Property="FontSize" Value="13.5" />
         <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
@@ -2555,6 +2678,7 @@
         <Setter Property="CellStyle" Value="{StaticResource Helix.GridCell}" />
         <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+        <Setter Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="True" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -2563,6 +2687,8 @@
                             CornerRadius="{TemplateBinding CornerRadius}" SnapsToDevicePixels="True">
                         <DockPanel>
                             <DockPanel x:Name="Toolbar" DockPanel.Dock="Top" Margin="12,12,12,12">
+                                <local:HelixButton x:Name="PART_Export" DockPanel.Dock="Right" Icon="download" Content="{x:Static local:HelixDataGrid.ExportText}"
+                                                  Variant="Outline" Tone="Neutral" Size="Sm" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" />
                                 <local:HelixButton x:Name="PART_Columns" DockPanel.Dock="Right" Icon="columns" Content="{x:Static local:HelixDataGrid.ColumnsText}"
                                                   Variant="Outline" Tone="Neutral" Size="Sm" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" />
                                 <local:HelixTextField x:Name="Search" DockPanel.Dock="Right" Width="240" Icon="search" IsClearable="True" Visibility="Collapsed"
@@ -2581,6 +2707,11 @@
                                     </StackPanel>
                                     <TextBlock Text="{TemplateBinding InfoText}" FontSize="12.5" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextMuted}" />
                                 </DockPanel>
+                            </Border>
+                            <!-- Total row: one cell per visible column, as wide as the column, scrolled with the rows. -->
+                            <Border x:Name="TotalsHost" DockPanel.Dock="Bottom" MinHeight="40" ClipToBounds="True" Visibility="Collapsed"
+                                    Background="{DynamicResource Helix.Surface2}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,1,0,0">
+                                <StackPanel x:Name="PART_Totals" Orientation="Horizontal" />
                             </Border>
                             <Grid>
                                 <ScrollViewer x:Name="DG_ScrollViewer" Focusable="False">
@@ -2649,10 +2780,17 @@
                         <Trigger Property="ShowColumnChooser" Value="True">
                             <Setter TargetName="PART_Columns" Property="Visibility" Value="Visible" />
                         </Trigger>
+                        <Trigger Property="IsExportable" Value="True">
+                            <Setter TargetName="PART_Export" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="HasTotals" Value="True">
+                            <Setter TargetName="TotalsHost" Property="Visibility" Value="Visible" />
+                        </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsSearchable" Value="False" />
                                 <Condition Property="ShowColumnChooser" Value="False" />
+                                <Condition Property="IsExportable" Value="False" />
                                 <Condition Property="Toolbar" Value="{x:Null}" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="Toolbar" Property="Visibility" Value="Collapsed" />
