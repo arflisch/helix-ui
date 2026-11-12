@@ -11,10 +11,21 @@
         <p class="muted" style="margin:14px 0 0;font-size:13px">Values: @_power MW · @_price €/MWh · @(_qty?.ToString() ?? "—")</p>
     </Example>
 
+    <Example WpfCode="@Wpf2" Title="Signed values and calculations" Description="Signed shows the sign, an arrow and a color (HigherIsBetter=false for costs). AllowExpressions accepts a calculation such as 120*0.8 or =1000/4+20 and keeps the result: try it." Code="@SignedCode">
+        <div class="grid-3">
+            <HelixNumberField Label="Correction" @bind-Value="_correction" Signed="true" Unit="MW" Step="5" Culture="English" />
+            <HelixNumberField Label="Cost change" @bind-Value="_cost" Signed="true" HigherIsBetter="false" Unit="€" Decimals="2" Culture="English" />
+            <HelixNumberField Label="Volume (type 120*0.8)" @bind-Value="_calc" AllowExpressions="true" Unit="MWh" Decimals="1" Culture="English"
+                              Hint="@($"Value: {_calc?.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) ?? "—"}")" />
+        </div>
+    </Example>
+
     <ApiTable Title="HelixNumberField" Rows="Api" />
 </DemoPage>
 
 @code {
+    private static readonly System.Globalization.CultureInfo English = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
+
     private const string Wpf1 = """
         <helix:HelixNumberField Label="Requested power" Value="{Binding Power}" Unit="MW"
                               Minimum="0" Maximum="250" Step="5" Hint="Between 0 and 250 MW, in steps of 5" />
@@ -23,6 +34,19 @@
         """;
 
     private double? _power = 120, _price = 92.5, _qty = 3;
+
+    private double? _correction = -15, _cost = 2.5, _calc = 96;
+
+    private const string SignedCode = """
+        <HelixNumberField Label="Correction" @bind-Value="correction" Signed Unit="MW" Step="5" />
+        <HelixNumberField Label="Cost change" @bind-Value="cost" Signed HigherIsBetter="false" Unit="€" />
+        <HelixNumberField Label="Volume" @bind-Value="volume" AllowExpressions Unit="MWh" />
+        """;
+
+    private const string Wpf2 = """
+        <helix:HelixNumberField Label="Correction" Value="{Binding Correction}" IsSigned="True" Unit="MW" Step="5" />
+        <helix:HelixNumberField Label="Volume" Value="{Binding Volume}" AllowExpressions="True" Unit="MWh" />
+        """;
 
     private const string Code = """
         <HelixNumberField Label="Requested power" @bind-Value="power" Min="0" Max="250" Step="5" Unit="MW" />
@@ -36,6 +60,9 @@
         new("Decimals", "int?", null, "Rounding, e.g. 0 for integers."),
         new("Unit / Label / Hint / Error", "string", null, "Displayed unit, label, hint, error."),
         new("ShowSteppers", "bool", null, "− / + buttons (true)."),
+        new("Signed / HigherIsBetter", "bool / bool", null, "Sign, arrow and color; false when a decrease is good news."),
+        new("AllowExpressions", "bool", null, "Accepts a calculation (+ - * / %, parentheses); the result is kept."),
+        new("Culture", "CultureInfo", null, "Display and decimal separator in signed / calculation mode."),
         new("Prefix / Suffix", "RenderFragment", null, "Content at the start / end of the field (icon, sign, unit…). Same slots on every field."),
         new("Hint / Error", "string", null, "Hint under the field, or an error that replaces it; linked to the field for screen readers (aria-describedby)."),
         new("Required", "bool", null, "Asterisk after the label and required attribute."),

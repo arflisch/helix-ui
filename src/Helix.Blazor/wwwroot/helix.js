@@ -387,3 +387,8 @@ export function scrollToKey(root, key) {
     const el = root?.querySelector(`[data-helix-key="${CSS.escape(key)}"]`);
     el?.scrollIntoView({ block: "center", inline: "nearest" });
 }
+
+/** Scrolls a container to its end (log viewer in follow mode). */
+export function scrollToEnd(el) {
+    if (el) el.scrollTop = el.scrollHeight;
+}

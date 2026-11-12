@@ -1,0 +1,63 @@
+@page "/components/descriptionlist"
+
+<DemoPage Title="DescriptionList" Description="Label / value pairs, aligned: the body of a detail screen or of a dialog. One or several columns, label above or on the left, any content as value.">
+    <Example WpfCode="@Wpf1" Title="Details in columns" Code="@Code">
+        <HelixDescriptionList Columns="3">
+            <HelixDescription Label="Request" Value="DR-2026-11-0042" Icon="copy" />
+            <HelixDescription Label="Status"><HelixBadge Color="success" Dot="true">Confirmed</HelixBadge></HelixDescription>
+            <HelixDescription Label="Direction"><span style="color:var(--helix-success);font-weight:600">↑ Upward</span></HelixDescription>
+            <HelixDescription Label="Start" Value="12 Nov 2026, 14:00" />
+            <HelixDescription Label="End" Value="12 Nov 2026, 15:00" />
+            <HelixDescription Label="Volume" Value="120 MW" />
+            <HelixDescription Label="Reason" Value="Imbalance forecast above 300 MW over the evening peak." Span="2" />
+            <HelixDescription Label="Comment" />
+        </HelixDescriptionList>
+    </Example>
+
+    <Example Title="Label on the left, with lines" Code="@InlineCode">
+        <HelixCard Style="max-width:460px">
+            <HelixDescriptionList Inline="true" Bordered="true">
+                <HelixDescription Label="Operator" Value="Grace Hopper" />
+                <HelixDescription Label="Team" Value="Dispatching" />
+                <HelixDescription Label="On call" Value="Until 20:00" />
+            </HelixDescriptionList>
+        </HelixCard>
+    </Example>
+
+    <ApiTable Title="HelixDescriptionList and HelixDescription" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Code = """
+        <HelixDescriptionList Columns="3">
+            <HelixDescription Label="Request" Value="@request.Id" />
+            <HelixDescription Label="Status"><HelixBadge Color="success">Confirmed</HelixBadge></HelixDescription>
+            <HelixDescription Label="Reason" Value="@request.Reason" Span="2" />
+        </HelixDescriptionList>
+        """;
+
+    private const string InlineCode = """
+        <HelixDescriptionList Inline Bordered>
+            <HelixDescription Label="Operator" Value="Grace Hopper" />
+        </HelixDescriptionList>
+        """;
+
+    private const string Wpf1 = """
+        <helix:HelixDescriptionList Columns="3">
+            <helix:HelixDescription Label="Request" Content="{Binding Id}" />
+            <helix:HelixDescription Label="Status">
+                <helix:HelixBadge Content="Confirmed" Tone="Success" ShowDot="True" />
+            </helix:HelixDescription>
+            <helix:HelixDescription Label="Reason" Content="{Binding Reason}" Span="2" />
+        </helix:HelixDescriptionList>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Columns", "int", "--helix-dl-cols", "Number of columns (1); one on small screens."),
+        new("Inline / LabelWidth", "bool / string", "--helix-dl-label-w", "Label on the left of the value; its width (140px)."),
+        new("Bordered", "bool", null, "A line between the items."),
+        new("HelixDescription Label / Value / ChildContent / Icon", "string / string / RenderFragment / string", null, "The pair; any content as value."),
+        new("HelixDescription Span / Empty", "int / string", "--helix-dl-span", "Columns taken; text when empty (“—”)."),
+    ];
+}

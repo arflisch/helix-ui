@@ -1,0 +1,50 @@
+@page "/components/busy"
+
+<DemoPage Title="Busy" Description="A “loading” veil over a zone while work is running: the content stays visible but cannot be used. It only appears after a short delay, so quick work doesn't flicker.">
+    <Example WpfCode="@Wpf1" Title="Example" Code="@Code">
+        <div class="stack" style="gap:14px">
+            <HelixButton Icon="download" Loading="_busy" OnClick="Load" Style="align-self:flex-start">Reload the figures</HelixButton>
+            <HelixBusy Busy="_busy" Text="Loading…" Style="border-radius:14px">
+                <div class="grid-3">
+                    <HelixStat Label="Production" Value="1284" Unit="MWh" Delta="4.1" DeltaLabel="vs last week" Trend="DemoData.Trend(6)" />
+                    <HelixStat Label="Availability" Value="99.2" Format="0.0" Unit="%" Delta="0.3" DeltaLabel="vs last week" Trend="DemoData.Trend(7)" />
+                    <HelixStat Label="Incidents" Value="3" Delta="-2" HigherIsBetter="false" DeltaLabel="vs last week" Trend="DemoData.Trend(8, 14, 6, -0.2)" />
+                </div>
+            </HelixBusy>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixBusy" Rows="Api" />
+</DemoPage>
+
+@code {
+    private bool _busy;
+
+    private async Task Load()
+    {
+        _busy = true;
+        await Task.Delay(1800);
+        _busy = false;
+    }
+
+    private const string Code = """
+        <HelixBusy Busy="loading" Text="Loading…">
+            … your content …
+        </HelixBusy>
+        """;
+
+    private const string Wpf1 = """
+        <helix:HelixBusy IsBusy="{Binding IsLoading}" Text="Loading…">
+            <Grid> … your content … </Grid>
+        </helix:HelixBusy>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Busy", "bool", null, "Shows the veil and blocks the content (inert)."),
+        new("Text", "string", null, "Text under the spinner."),
+        new("Delay", "TimeSpan", null, "Wait before showing the veil (150 ms): no flicker for quick work."),
+        new("Color / SpinnerSize", "string", null, "Spinner color and size."),
+        new("Background", "string", "--helix-busy-bg", "Veil color."),
+    ];
+}

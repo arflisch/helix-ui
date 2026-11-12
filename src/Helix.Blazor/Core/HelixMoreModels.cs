@@ -141,3 +141,11 @@ public sealed record HelixDateRangePreset(string Label, Func<DateOnly, HelixDate
 
 /// <summary>A named set of filter values (key → encoded value), saved by the user in a <see cref="HelixFilterBar{TItem}"/>.</summary>
 public sealed record HelixFilterPreset(string Name, IReadOnlyDictionary<string, string> State);
+
+/// <summary>A zone behind a <see cref="HelixTargetBar"/>, e.g. the tolerance around the target.</summary>
+public sealed record HelixTargetBand(double From, double To, string Color, string? Label = null);
+
+public enum HelixLogLevel { Debug, Info, Warning, Error }
+
+/// <summary>A line of a <see cref="HelixLogViewer"/>.</summary>
+public sealed record HelixLogEntry(DateTime Time, HelixLogLevel Level, string Message, string? Source = null);

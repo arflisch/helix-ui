@@ -1,0 +1,62 @@
+@page "/components/targetbar"
+@using System.Globalization
+
+<DemoPage Title="TargetBar" Description="A value against its target, in a thin bar: a mark shows the target, bands behind the bar show zones (tolerance, limits). With Tolerance, the bar turns green within it, orange beyond, red beyond twice.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:440px">
+                <HelixTargetBar Label="Activated power" Value="_value" Target="_target" Min="0" Max="200" Unit="MW"
+                                Tolerance="@(_tolerance ? 10 : null)" Bands="@(_bands ? Bands : [])" Culture="English" />
+            </div>
+        </Preview>
+        <Controls>
+            <HelixSlider Label="Value" @bind-Value="_value" Max="200" />
+            <HelixSlider Label="Target" @bind-Value="_target" Max="200" />
+            <HelixSwitch Label="Tolerance ±10" @bind-Checked="_tolerance" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Bands" @bind-Checked="_bands" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="Several units" Description="Bars share the same scale when they share Min and Max: easy to compare.">
+        <div class="stack" style="gap:18px;max-width:520px">
+            <HelixTargetBar Label="Unit A" Value="118" Target="120" Max="200" Unit="MW" Tolerance="10" Culture="English" />
+            <HelixTargetBar Label="Unit B" Value="64" Target="80" Max="200" Unit="MW" Tolerance="10" Culture="English" />
+            <HelixTargetBar Label="Unit C" Value="152" Target="110" Max="200" Unit="MW" Tolerance="10" Culture="English" />
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixTargetBar" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly System.Globalization.CultureInfo English = System.Globalization.CultureInfo.GetCultureInfo("en-GB");
+
+    private static readonly HelixTargetBand[] Bands =
+    [
+        new(0, 40, "danger", "Under minimum"),
+        new(40, 160, "success", "Normal"),
+        new(160, 200, "warning", "Near the limit"),
+    ];
+
+    private double _value = 96, _target = 110;
+    private bool _tolerance = true, _bands;
+
+    private string Code => $"""
+        <HelixTargetBar Label="Activated power" Value="{_value}" Target="{_target}" Max="200" Unit="MW"{(_tolerance ? " Tolerance=\"10\"" : "")}{(_bands ? " Bands=\"bands\"" : "")} />
+        """ + (_bands ? "\n\n// new HelixTargetBand(From, To, Color, Label)\nbands = [new(0, 40, \"danger\", \"Under minimum\"), new(40, 160, \"success\", \"Normal\")];" : "");
+
+    private const string Wpf1 = """
+        <helix:HelixTargetBar Label="Activated power" Value="{Binding Power}" Target="{Binding Setpoint}"
+                              Maximum="200" Unit="MW" Tolerance="10" />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Value / Target", "double?", null, "The value (bar) and the target (mark)."),
+        new("Min / Max", "double", null, "Scale (0–100)."),
+        new("Tolerance", "double?", null, "Allowed gap: green within, orange beyond, red beyond twice."),
+        new("Bands", "IReadOnlyList<HelixTargetBand>", null, "Zones behind the bar (From, To, Color, Label), with a legend."),
+        new("Label / Unit / NumberFormat / ShowValues", "string / string / string / bool", null, "Texts; format of the numbers (N0); value, target and gap above the bar."),
+        new("Color / Height", "string", "--helix-target-color, --helix-target-height", "Bar color without Tolerance; track height (14px)."),
+    ];
+}

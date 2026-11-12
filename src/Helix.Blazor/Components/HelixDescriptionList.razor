@@ -1,0 +1,30 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+@* Label / value pairs, aligned in one or more columns (detail screens, summaries). *@
+<dl @attributes="Attributes" class="@(new CssBuilder("helix-dl").Add("helix-dl--inline", Inline).Add("helix-dl--bordered", Bordered).Add(Class).Build())" style="@StyleValue">
+    @ChildContent
+</dl>
+
+@code {
+    /// <summary>HelixDescription items.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Number of columns (1). Drops to 1 on small screens.</summary>
+    [Parameter] public int Columns { get; set; } = 1;
+
+    /// <summary>Label on the left of the value instead of above it.</summary>
+    [Parameter] public bool Inline { get; set; }
+
+    /// <summary>A line between the items.</summary>
+    [Parameter] public bool Bordered { get; set; }
+
+    /// <summary>Width of the labels in Inline mode (140px).</summary>
+    [Parameter] public string? LabelWidth { get; set; }
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--helix-dl-cols", Columns.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        .Var("--helix-dl-label-w", LabelWidth)
+        .Raw(Style)
+        .Build();
+}

@@ -1,0 +1,155 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+@* A live log: level filters with counts, search, follow mode (stays at the newest line), virtualized for long logs. *@
+<div @attributes="Attributes" class="@(new CssBuilder("helix-log").Add(Class).Build())" style="@StyleValue">
+    <div class="helix-log__bar">
+        <div class="helix-log__levels" role="group" aria-label="@Texts.LogLevels">
+            @foreach (var level in Enum.GetValues<HelixLogLevel>())
+            {
+                var count = _counts[(int)level];
+                var on = !_hidden.Contains(level);
+                <button type="button" class="@(new CssBuilder("helix-log__level").Add($"is-{level.ToString().ToLowerInvariant()}").Add("is-on", on).Build())"
+                        aria-pressed="@(on ? "true" : "false")" @onclick="() => ToggleLevel(level)">
+                    @LevelText(level) <span class="helix-log__count">@count</span>
+                </button>
+            }
+        </div>
+        <HelixTextField Class="helix-log__search" Icon="search" Clearable="true" Placeholder="@Texts.Search" aria-label="@Texts.Search"
+                        Value="@_search" ValueChanged="v => { _search = v; Refilter(); }" />
+        <HelixSwitch Size="HelixSize.Sm" Label="@Texts.FollowLog" Checked="_follow" CheckedChanged="SetFollow" />
+    </div>
+    <div class="helix-log__lines" @ref="_scroller" role="log" aria-live="off" tabindex="0">
+        @if (_visible.Count == 0)
+        {
+            <p class="helix-log__empty">@(EmptyText ?? Texts.NoData)</p>
+        }
+        else
+        {
+            <Virtualize Items="_visible" ItemSize="LineHeight" OverscanCount="20" Context="entry">
+                <div class="@(new CssBuilder("helix-log__line").Add($"is-{entry.Level.ToString().ToLowerInvariant()}").Build())" style="height:@(LineHeight)px">
+                    <time class="helix-log__time">@entry.Time.ToString(TimeFormat, EffectiveCulture)</time>
+                    <span class="helix-log__badge">@LevelText(entry.Level)</span>
+                    @if (!string.IsNullOrEmpty(entry.Source))
+                    {
+                        <span class="helix-log__source">@entry.Source</span>
+                    }
+                    <span class="helix-log__message" title="@entry.Message">@entry.Message</span>
+                </div>
+            </Virtualize>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The entries, oldest first. Pass a new list (or call Refresh) when lines are added.</summary>
+    [Parameter] public IReadOnlyList<HelixLogEntry> Entries { get; set; } = [];
+
+    /// <summary>Height of the list (360px).</summary>
+    [Parameter] public string Height { get; set; } = "360px";
+
+    /// <summary>Format of the time column (HH:mm:ss).</summary>
+    [Parameter] public string TimeFormat { get; set; } = "HH:mm:ss";
+
+    /// <summary>Starts in follow mode: the list stays at the newest line (true).</summary>
+    [Parameter] public bool Follow { get; set; } = true;
+
+    /// <summary>Levels hidden at first, e.g. [HelixLogLevel.Debug].</summary>
+    [Parameter] public IReadOnlyCollection<HelixLogLevel>? HiddenLevels { get; set; }
+
+    [Parameter] public string? EmptyText { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private const float LineHeight = 30;
+    private readonly HashSet<HelixLogLevel> _hidden = [];
+    private readonly int[] _counts = new int[Enum.GetValues<HelixLogLevel>().Length];
+    private List<HelixLogEntry> _visible = [];
+    private string? _search;
+    private bool _follow;
+    private bool _initialized;
+    private bool _scroll;
+    private int _lastCount = -1;
+    private IReadOnlyList<HelixLogEntry>? _lastEntries;
+    private ElementReference _scroller;
+    private IJSObjectReference? _module;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private string? StyleValue => new StyleBuilder().Var("--helix-log-height", Height).Raw(Style).Build();
+
+    private string LevelText(HelixLogLevel level) => level switch
+    {
+        HelixLogLevel.Debug => Texts.LogDebug,
+        HelixLogLevel.Info => Texts.LogInfo,
+        HelixLogLevel.Warning => Texts.LogWarning,
+        _ => Texts.LogError,
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (!_initialized)
+        {
+            _initialized = true;
+            _follow = Follow;
+            if (HiddenLevels is not null) _hidden.UnionWith(HiddenLevels);
+        }
+
+        if (!ReferenceEquals(Entries, _lastEntries) || Entries.Count != _lastCount)
+        {
+            _lastEntries = Entries;
+            _lastCount = Entries.Count;
+            Refilter();
+        }
+    }
+
+    /// <summary>Recounts and refilters after lines were added to the same list.</summary>
+    public void Refresh()
+    {
+        _lastCount = -1;
+        Refilter();
+        StateHasChanged();
+    }
+
+    private void Refilter()
+    {
+        Array.Clear(_counts);
+        foreach (var entry in Entries) _counts[(int)entry.Level]++;
+        var term = _search?.Trim();
+        _visible = Entries.Where(e => !_hidden.Contains(e.Level)
+            && (string.IsNullOrEmpty(term) || e.Message.Contains(term, StringComparison.CurrentCultureIgnoreCase) || e.Source?.Contains(term, StringComparison.CurrentCultureIgnoreCase) == true)).ToList();
+        _scroll = _follow;
+    }
+
+    private void ToggleLevel(HelixLogLevel level)
+    {
+        if (!_hidden.Remove(level)) _hidden.Add(level);
+        Refilter();
+    }
+
+    private void SetFollow(bool on)
+    {
+        _follow = on;
+        _scroll = on;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_scroll || _visible.Count == 0) return;
+        _scroll = false;
+        try
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+            await _module.InvokeVoidAsync("scrollToEnd", _scroller);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit closed.
+        }
+    }
+
+    public ValueTask DisposeAsync() => HelixJs.DisposeQuietlyAsync(_module);
+}

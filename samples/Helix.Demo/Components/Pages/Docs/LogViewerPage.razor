@@ -1,0 +1,69 @@
+@page "/components/logviewer"
+@implements IDisposable
+
+<DemoPage Title="LogViewer" Description="A log that keeps up: filter by level (with counts), search, and follow mode that stays on the newest line. Virtualized: thousands of lines scroll smoothly. Here, a line arrives every 800 ms.">
+    <Example WpfCode="@Wpf1" Title="Live log" Code="@Code">
+        <HelixLogViewer Entries="_entries" HiddenLevels="@([HelixLogLevel.Debug])" Height="320px" />
+    </Example>
+
+    <ApiTable Title="HelixLogViewer" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly (HelixLogLevel Level, string Source, string Message)[] Samples =
+    [
+        (HelixLogLevel.Info, "dispatch", "Request DR-0042 sent to the grid operator"),
+        (HelixLogLevel.Debug, "forecast", "Forecast refreshed in 412 ms"),
+        (HelixLogLevel.Info, "dispatch", "Request DR-0042 confirmed (120 MW)"),
+        (HelixLogLevel.Warning, "telemetry", "Unit B: no measurement for 45 s"),
+        (HelixLogLevel.Info, "scheduler", "Schedule for 18:00–19:00 published"),
+        (HelixLogLevel.Error, "telemetry", "Unit C: connection lost, retrying in 5 s"),
+        (HelixLogLevel.Debug, "cache", "Prices cache hit (96 %)"),
+        (HelixLogLevel.Info, "telemetry", "Unit C: connection restored"),
+    ];
+
+    private List<HelixLogEntry> _entries = [];
+    private Timer? _timer;
+    private int _next;
+
+    protected override void OnInitialized()
+    {
+        var start = DateTime.Now.AddMinutes(-40);
+        _entries = Enumerable.Range(0, 400).Select(i =>
+        {
+            var s = Samples[i % Samples.Length];
+            return new HelixLogEntry(start.AddSeconds(i * 6), s.Level, s.Message, s.Source);
+        }).ToList();
+        _timer = new Timer(_ => InvokeAsync(() =>
+        {
+            var s = Samples[_next++ % Samples.Length];
+            _entries = [.. _entries, new HelixLogEntry(DateTime.Now, s.Level, s.Message, s.Source)];
+            StateHasChanged();
+        }), null, 800, 800);
+    }
+
+    public void Dispose() => _timer?.Dispose();
+
+    private const string Code = """
+        <HelixLogViewer Entries="entries" HiddenLevels="@([HelixLogLevel.Debug])" Height="320px" />
+
+        // new HelixLogEntry(DateTime.Now, HelixLogLevel.Warning, "Unit B: no measurement", Source: "telemetry")
+        // Add a line: entries = [.. entries, entry];  (or add to the same list and call viewer.Refresh())
+        """;
+
+    private const string Wpf1 = """
+        <helix:HelixLogViewer ItemsSource="{Binding Log}" Height="320" IsFollowing="True" />
+
+        // ViewModel: an ObservableCollection<HelixLogEntry>; the viewer follows new lines by itself.
+        Log.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Error, "Unit C: connection lost", "telemetry"));
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Entries", "IReadOnlyList<HelixLogEntry>", null, "The lines, oldest first: (Time, Level, Message, Source)."),
+        new("HiddenLevels", "IReadOnlyCollection<HelixLogLevel>", null, "Levels hidden at first (the buttons toggle them)."),
+        new("Follow", "bool", null, "Starts in follow mode: stays on the newest line (true)."),
+        new("Height / TimeFormat", "string", "--helix-log-height", "List height (360px); time format (HH:mm:ss)."),
+        new("Refresh()", "method", null, "After adding lines to the same list."),
+    ];
+}

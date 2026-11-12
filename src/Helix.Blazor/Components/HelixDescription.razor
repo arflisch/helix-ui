@@ -1,0 +1,42 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-dl__item").Add(Class).Build())" style="@StyleValue">
+    <dt class="helix-dl__label">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <HelixIcon Name="@Icon" Size="14" />
+        }
+        @Label
+    </dt>
+    <dd class="@(new CssBuilder("helix-dl__value").Add("is-empty", ChildContent is null && string.IsNullOrEmpty(Value)).Build())">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            @(string.IsNullOrEmpty(Value) ? Empty : Value)
+        }
+    </dd>
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>The value as text (or use ChildContent for anything else).</summary>
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Columns taken by this item (e.g. 2 for a long text).</summary>
+    [Parameter] public int Span { get; set; } = 1;
+
+    /// <summary>Shown when there is no value ("—").</summary>
+    [Parameter] public string Empty { get; set; } = "—";
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--helix-dl-span", Span == 1 ? null : Span.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        .Raw(Style)
+        .Build();
+}

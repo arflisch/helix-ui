@@ -1,22 +1,31 @@
 @namespace Helix.Blazor
 @inherits HelixComponentBase
 @using System.Globalization
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 
 <HelixFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
-    <div class="helix-input helix-number">
+    <div class="@(new CssBuilder("helix-input helix-number").Add("is-signed", Signed).Add(SignClass).Build())">
         @if (Steppers)
         {
             <button type="button" class="helix-number__step" tabindex="-1" aria-label="@Texts.Decrease" disabled="@(Disabled || AtMin)" @onclick="() => StepBy(-1)">
                 <HelixIcon Name="minus" Size="14" />
             </button>
         }
+        @if (Signed && Value is { } signed && signed != 0)
+        {
+            <HelixIcon Name="@(signed > 0 ? "arrow-up" : "arrow-down")" Size="14" Class="helix-number__sign" />
+        }
         @Prefix
         <input @attributes="Attributes"
+               @key="_version"
+               @ref="_input"
                id="@_id"
-               type="number"
+               type="@(TextMode ? "text" : "number")"
                inputmode="decimal"
                class="helix-input__control helix-number__control"
                value="@Raw"
+               title="@(AllowExpressions ? Texts.ExpressionHint : null)"
                min="@Inv(Min)"
                max="@Inv(Max)"
                step="@Inv(Step)"
@@ -25,7 +34,8 @@
                required="@Required"
                aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")"
                aria-describedby="@HelixFieldFrame.DescribedBy(_id, Hint, Error)"
-               @onchange="OnChange" />
+               @onchange="OnChange"
+               @onkeydown="OnKey" />
         @if (!string.IsNullOrEmpty(Unit))
         {
             <span class="helix-input__affix helix-number__unit">@Unit</span>
@@ -87,6 +97,18 @@
     [Parameter] public bool? ShowSteppers { get; set; }
 
     private bool Steppers => ShowSteppers ?? Defaults.Field.ShowSteppers ?? true;
+
+    /// <summary>Shows the sign, an up / down arrow and a color: green when positive, red when negative (HigherIsBetter=false swaps them).</summary>
+    [Parameter] public bool Signed { get; set; }
+
+    /// <summary>With Signed: false when a decrease is the good news (costs, delays…).</summary>
+    [Parameter] public bool HigherIsBetter { get; set; } = true;
+
+    /// <summary>Accepts a calculation, e.g. "120*0.8" or "=1000/4+20" (+ - * / %, parentheses); the result is kept.</summary>
+    [Parameter] public bool AllowExpressions { get; set; }
+
+    /// <summary>Culture of the displayed number and of the decimal separator typed (text mode).</summary>
+    [Parameter] public CultureInfo? Culture { get; set; }
     [Parameter] public bool Disabled { get; set; }
 
     private readonly string _id = HelixId.Next("number");
@@ -94,7 +116,21 @@
     private bool AtMin => Min is { } min && Value is { } v && v <= min;
     private bool AtMax => Max is { } max && Value is { } v && v >= max;
 
-    private string? Raw => Value?.ToString(CultureInfo.InvariantCulture);
+    private ElementReference _input;
+    private IJSObjectReference? _module;
+    private bool _keysReady;
+    private int _version;
+
+    /// <summary>A text input is needed to show "+12.5" or to type "120*0.8"; otherwise a native number input.</summary>
+    private bool TextMode => Signed || AllowExpressions;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private string? Raw => Value is not { } v ? null
+        : !TextMode ? v.ToString(CultureInfo.InvariantCulture)
+        : (Signed && v > 0 ? "+" : "") + v.ToString(Decimals is { } d ? $"0.{new string('#', Math.Max(d, 0))}" : "0.##########", EffectiveCulture);
+
+    private string? SignClass => !Signed || Value is not { } v || v == 0 ? null : v > 0 == HigherIsBetter ? "is-good" : "is-bad";
 
 
     private static string? Inv(double? value) => value?.ToString(CultureInfo.InvariantCulture);
@@ -122,9 +158,50 @@
             return Set(null);
         }
 
+        if (TextMode)
+        {
+            if (AllowExpressions ? HelixExpression.TryEvaluate(text, EffectiveCulture, out var result)
+                : double.TryParse(text.Trim(), NumberStyles.Float, EffectiveCulture, out result) || double.TryParse(text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out result))
+            {
+                return Set(result);
+            }
+
+            // Not a number: a new input element shows the previous value again.
+            _version++;
+            _keysReady = false;
+            return Task.CompletedTask;
+        }
+
         // type=number always reports an invariant number ("12.5"), whatever the culture.
         return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
             ? Set(value)
             : Task.CompletedTask;
     }
+
+    /// <summary>Text mode: ↑ / ↓ step like a native number input.</summary>
+    private Task OnKey(KeyboardEventArgs e) => !TextMode ? Task.CompletedTask : e.Key switch
+    {
+        "ArrowUp" => StepBy(1),
+        "ArrowDown" => StepBy(-1),
+        _ => Task.CompletedTask,
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (TextMode && !_keysReady)
+        {
+            _keysReady = true;
+            try
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+                await _module.InvokeVoidAsync("preventKeys", _input, new[] { "ArrowUp", "ArrowDown" });
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit closed.
+            }
+        }
+    }
+
+    public ValueTask DisposeAsync() => HelixJs.DisposeQuietlyAsync(_module);
 }

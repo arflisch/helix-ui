@@ -1,0 +1,73 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+
+@* A zone that shows a "loading" veil over its content while Busy, after a short delay (no flicker for fast work). *@
+<div @attributes="Attributes" class="@(new CssBuilder("helix-busy").Add("is-busy", _shown).Add(Class).Build())" style="@StyleValue" aria-busy="@(Busy ? "true" : "false")">
+    <div class="helix-busy__content" inert="@_shown">@ChildContent</div>
+    @if (_shown)
+    {
+        <div class="helix-busy__veil" role="status" aria-live="polite">
+            <HelixSpinner Size="@SpinnerSize" Color="@Color" />
+            @if (!string.IsNullOrEmpty(Text))
+            {
+                <span class="helix-busy__text">@Text</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Shows the veil (after Delay) and blocks the content.</summary>
+    [Parameter] public bool Busy { get; set; }
+
+    /// <summary>Text under the spinner, e.g. "Saving…".</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Wait before showing the veil, so that quick work doesn't flicker (150 ms).</summary>
+    [Parameter] public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(150);
+
+    [Parameter] public string SpinnerSize { get; set; } = "26px";
+
+    /// <summary>Spinner color. Null: primary.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Veil color, e.g. "rgb(255 255 255 / .8)".</summary>
+    [Parameter] public string? Background { get; set; }
+
+    private bool _shown;
+    private CancellationTokenSource? _cts;
+
+    private string? StyleValue => new StyleBuilder().Var("--helix-busy-bg", Background).Raw(Style).Build();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Busy)
+        {
+            _cts?.Cancel();
+            _shown = false;
+            return;
+        }
+
+        if (_shown || _cts is { IsCancellationRequested: false })
+        {
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _cts = cts;
+        try
+        {
+            await Task.Delay(Delay, cts.Token);
+            _shown = Busy;
+        }
+        catch (TaskCanceledException)
+        {
+            // Done before the delay: nothing to show.
+        }
+    }
+
+    public void Dispose() => _cts?.Cancel();
+}

@@ -1,0 +1,99 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+@* A value against a target ("bullet" bar): the bar, a mark at the target, and optional bands (tolerance, zones). *@
+<div @attributes="Attributes" class="@(new CssBuilder("helix-target").Add(Class).Add(StateClass).Build())" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Label) || ShowValues)
+    {
+        <div class="helix-target__head">
+            <span class="helix-target__label">@Label</span>
+            @if (ShowValues)
+            {
+                <span class="helix-target__values">
+                    <strong>@Format(Value)</strong>
+                    @if (Target is { } target)
+                    {
+                        <span class="helix-target__of">/ @Format(target)</span>
+                        @if (Value is { } value)
+                        {
+                            <span class="helix-target__delta">@((value - target >= 0 ? "+" : "") + Format(value - target))</span>
+                        }
+                    }
+                </span>
+            }
+        </div>
+    }
+    <div class="helix-target__track" role="meter" aria-valuemin="@Inv(Min)" aria-valuemax="@Inv(Max)" aria-valuenow="@Inv(Value)"
+         aria-valuetext="@ValueText" aria-label="@Label">
+        @foreach (var band in Bands)
+        {
+            <span class="helix-target__band" style="left:@Pct(band.From);width:@Pct(band.To - band.From + Min);background:@HelixColor.Resolve(band.Color).Value"
+                  title="@band.Label"></span>
+        }
+        @if (Value is { } v)
+        {
+            <span class="helix-target__bar" style="width:@Pct(Math.Clamp(v, Min, Max))"></span>
+        }
+        @if (Target is { } t)
+        {
+            <span class="helix-target__mark" style="left:@Pct(Math.Clamp(t, Min, Max))"></span>
+        }
+    </div>
+    @if (Bands.Any(b => !string.IsNullOrEmpty(b.Label)))
+    {
+        <div class="helix-target__legend">
+            @foreach (var band in Bands.Where(b => !string.IsNullOrEmpty(b.Label)))
+            {
+                <span><i style="background:@HelixColor.Resolve(band.Color).Value"></i>@band.Label</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public double? Value { get; set; }
+
+    /// <summary>The target, shown as a mark across the bar.</summary>
+    [Parameter] public double? Target { get; set; }
+
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; } = 100;
+
+    /// <summary>Zones behind the bar, e.g. the tolerance around the target.</summary>
+    [Parameter] public IReadOnlyList<HelixTargetBand> Bands { get; set; } = [];
+
+    /// <summary>Allowed gap to the target: within it the bar is green, beyond it orange (red beyond twice).</summary>
+    [Parameter] public double? Tolerance { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Unit { get; set; }
+
+    /// <summary>.NET format of the numbers (N0).</summary>
+    [Parameter] public string NumberFormat { get; set; } = "N0";
+
+    /// <summary>Value, target and gap above the bar (true).</summary>
+    [Parameter] public bool ShowValues { get; set; } = true;
+
+    /// <summary>Bar color without Tolerance (primary).</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private string? StateClass => Tolerance is not { } tol || Value is not { } v || Target is not { } t ? null
+        : Math.Abs(v - t) <= tol ? "is-ok" : Math.Abs(v - t) <= tol * 2 ? "is-warn" : "is-off";
+
+    private string? StyleValue => new StyleBuilder().Color("target", Color).Var("--helix-target-height", Height).Raw(Style).Build();
+
+    private string Pct(double value) =>
+        (Max <= Min ? 0 : Math.Clamp((value - Min) / (Max - Min) * 100, 0, 100)).ToString("0.###", CultureInfo.InvariantCulture) + "%";
+
+    private static string? Inv(double? value) => value?.ToString(CultureInfo.InvariantCulture);
+
+    private string Format(double? value) =>
+        value is not { } v ? "—" : v.ToString(NumberFormat, EffectiveCulture) + (string.IsNullOrEmpty(Unit) ? "" : " " + Unit);
+
+    private string ValueText => Target is { } t ? $"{Format(Value)} / {Format(t)}" : Format(Value);
+}
