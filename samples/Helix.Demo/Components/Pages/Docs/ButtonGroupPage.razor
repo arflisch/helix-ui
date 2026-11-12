@@ -1,0 +1,81 @@
+@page "/components/buttongroup"
+@inject HelixToastService Toasts
+
+<DemoPage Title="ButtonGroup" Description="Boutons accolés pour des actions liées : barre d'outils, bouton principal + menu (split button), choix d'affichage.">
+    <Example WpfCode="@Wpf1" Title="Barre d'outils et split button" Code="@Code">
+        <div class="row" style="gap:20px">
+            <HelixButtonGroup Label="Alignement">
+                <HelixButton Variant="HelixVariant.Outline" Color="neutral" Icon="chevron-left" aria-label="Précédent" />
+                <HelixButton Variant="HelixVariant.Outline" Color="neutral">Aujourd'hui</HelixButton>
+                <HelixButton Variant="HelixVariant.Outline" Color="neutral" Icon="chevron-right" aria-label="Suivant" />
+            </HelixButtonGroup>
+
+            <HelixButtonGroup Label="Enregistrer">
+                <HelixButton Icon="check" OnClick="@(() => Toasts.Success("Enregistré"))">Enregistrer</HelixButton>
+                <HelixMenu Align="HelixAlign.End">
+                    <Trigger><HelixButton Icon="chevron-down" aria-label="Autres options d'enregistrement" /></Trigger>
+                    <ChildContent>
+                        <HelixMenuItem Icon="copy">Enregistrer une copie</HelixMenuItem>
+                        <HelixMenuItem Icon="download">Enregistrer et exporter</HelixMenuItem>
+                    </ChildContent>
+                </HelixMenu>
+            </HelixButtonGroup>
+
+            <HelixButtonGroup Label="Période">
+                @foreach (var p in Periods)
+                {
+                    <HelixButton Variant="@(p == _period ? HelixVariant.Soft : HelixVariant.Outline)" Color="@(p == _period ? "primary" : "neutral")"
+                                aria-pressed="@(p == _period ? "true" : "false")" OnClick="() => _period = p">@p</HelixButton>
+                }
+            </HelixButtonGroup>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixButtonGroup" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <!-- Choix segmenté (SelectedIndex / SelectedItem comme une ListBox) -->
+        <helix:HelixButtonGroup SelectedIndex="1">
+            <ListBoxItem Content="Jour" />
+            <ListBoxItem Content="Semaine" />
+            <ListBoxItem Content="Mois" />
+        </helix:HelixButtonGroup>
+
+        <!-- Split button : un bouton + un bouton à menu -->
+        <StackPanel Orientation="Horizontal">
+            <helix:HelixButton Content="Enregistrer" CornerRadius="10,0,0,10" />
+            <helix:HelixMenuButton Icon="chevron-down" Padding="0" Width="34" CornerRadius="0,10,10,0" Margin="1,0,0,0" MenuAlignment="Right">
+                <helix:HelixMenuButton.Menu>
+                    <helix:HelixContextMenu>
+                        <helix:HelixMenuItem Header="Enregistrer sous…" />
+                        <helix:HelixMenuItem Header="Enregistrer comme modèle" />
+                    </helix:HelixContextMenu>
+                </helix:HelixMenuButton.Menu>
+            </helix:HelixMenuButton>
+        </StackPanel>
+        """;
+
+    private static readonly string[] Periods = ["Jour", "Semaine", "Mois"];
+    private string _period = "Semaine";
+
+    private const string Code = """
+        <HelixButtonGroup Label="Enregistrer">
+            <HelixButton Icon="check" OnClick="Save">Enregistrer</HelixButton>
+            <HelixMenu Align="HelixAlign.End">
+                <Trigger><HelixButton Icon="chevron-down" aria-label="Autres options" /></Trigger>
+                <ChildContent>
+                    <HelixMenuItem Icon="copy">Enregistrer une copie</HelixMenuItem>
+                </ChildContent>
+            </HelixMenu>
+        </HelixButtonGroup>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("ChildContent", "RenderFragment", null, "Des HelixButton (ou un HelixMenu) : les bords se rejoignent."),
+        new("Label", "string", null, "Nom accessible du groupe (role=group)."),
+        new("Vertical", "bool", null, "Boutons empilés."),
+    ];
+}

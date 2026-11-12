@@ -1,6 +1,6 @@
 <Project>
 
-  <!-- Shared package metadata for Velo.Blazor and Velo.Wpf. -->
+  <!-- Shared package metadata for Helix.Blazor and Helix.Wpf. -->
   <PropertyGroup>
     <Version>0.1.0</Version>
     <Authors>arflisch</Authors>

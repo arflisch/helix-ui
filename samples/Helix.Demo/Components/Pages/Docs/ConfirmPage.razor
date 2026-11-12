@@ -1,0 +1,77 @@
+@page "/components/confirm"
+@inject HelixConfirmService Confirm
+@inject HelixToastService Toasts
+
+<DemoPage Title="Confirm" Description="Demander une confirmation depuis n'importe quel code, en une ligne qui attend la réponse : if (await Confirm.AskAsync(…)). Pas de dialogue à déclarer dans la page : HelixProvider l'affiche.">
+    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
+        <div class="row">
+            <HelixButton Color="danger" Variant="HelixVariant.Soft" Icon="trash" OnClick="Delete">Supprimer le planning</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="Publish">Publier</HelixButton>
+            <span class="muted" style="font-size:13px">Dernière réponse : @_last</span>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixConfirmService" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <!-- MainWindow.xaml : une fois, autour du contenu -->
+        <helix:HelixHost> … </helix:HelixHost>
+
+        // Code-behind ou ViewModel
+        if (await HelixConfirm.AskAsync("Supprimer le rapport ?", "Cette action est définitive.",
+                                       danger: true, confirmText: "Supprimer"))
+        {
+            await reports.DeleteAsync(id);
+            HelixToasts.Success("Rapport supprimé.");
+        }
+        """;
+
+    private string _last = "—";
+
+    private async Task Delete()
+    {
+        var ok = await Confirm.AskAsync(new HelixConfirmOptions("Supprimer le planning ?")
+        {
+            Message = "Les 12 demandes planifiées seront annulées. Cette action est définitive.",
+            ConfirmText = "Supprimer",
+            Danger = true,
+        });
+        _last = ok ? "confirmé" : "annulé";
+        if (ok)
+        {
+            Toasts.Error("Planning supprimé");
+        }
+    }
+
+    private async Task Publish()
+    {
+        _last = await Confirm.AskAsync("Publier le planning ?", "Il sera visible par toute l'équipe.") ? "confirmé" : "annulé";
+    }
+
+    private const string Code = """
+        @inject HelixConfirmService Confirm
+
+        if (await Confirm.AskAsync(new HelixConfirmOptions("Supprimer le planning ?")
+            {
+                Message = "Cette action est définitive.",
+                ConfirmText = "Supprimer",
+                Danger = true,
+            }))
+        {
+            await planning.DeleteAsync();
+        }
+
+        // Version courte
+        if (await Confirm.AskAsync("Publier le planning ?")) { … }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("AskAsync(title, message, danger, confirmText)", "Task<bool>", null, "Version courte."),
+        new("AskAsync(HelixConfirmOptions, CancellationToken)", "Task<bool>", null, "true = confirmé ; false = annulé, fermé ou jeton annulé."),
+        new("HelixConfirmOptions", "record", null, "Title, Message, ConfirmText, CancelText, Danger."),
+        new("Inscription", "AddVelo()", null, "Service enregistré par AddVelo ; affiché par HelixProvider."),
+    ];
+}

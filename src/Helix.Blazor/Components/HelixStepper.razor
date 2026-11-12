@@ -1,0 +1,79 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<ol @attributes="Attributes" class="@(new CssBuilder("helix-stepper").Add(Vertical ? "helix-stepper--vertical" : "helix-stepper--horizontal").Add(Class).Build())"
+    style="@(new StyleBuilder().Color("stepper", Color).Raw(Style).Build())" aria-label="@(AriaLabel ?? Texts.Steps)">
+    @for (var i = 0; i < Steps.Count; i++)
+    {
+        var index = i;
+        var step = Steps[i];
+        var state = ErrorSteps?.Contains(index) == true ? "error" : index < ActiveIndex ? "done" : index == ActiveIndex ? "current" : "upcoming";
+        var clickable = Clickable && index != ActiveIndex && (index < ActiveIndex || AllowSkip);
+        <li class="@(new CssBuilder("helix-stepper__step").Add($"is-{state}").Build())" aria-current="@(state == "current" ? "step" : null)">
+            @if (clickable)
+            {
+                <button type="button" class="helix-stepper__button" @onclick="() => Go(index)">@Body(index, step, state)</button>
+            }
+            else
+            {
+                <div class="helix-stepper__button">@Body(index, step, state)</div>
+            }
+        </li>
+    }
+</ol>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<HelixStep> Steps { get; set; } = [];
+
+    /// <summary>Current step (0-based). Steps before it are done.</summary>
+    [Parameter] public int ActiveIndex { get; set; }
+    [Parameter] public EventCallback<int> ActiveIndexChanged { get; set; }
+
+    /// <summary>Steps flagged in error (icon + "Erreur", not only red).</summary>
+    [Parameter] public IReadOnlyCollection<int>? ErrorSteps { get; set; }
+
+    /// <summary>Done steps can be clicked to go back.</summary>
+    [Parameter] public bool Clickable { get; set; } = true;
+
+    /// <summary>Also allow jumping to future steps.</summary>
+    [Parameter] public bool AllowSkip { get; set; }
+    [Parameter] public bool Vertical { get; set; }
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+
+    private async Task Go(int index)
+    {
+        ActiveIndex = index;
+        await ActiveIndexChanged.InvokeAsync(index);
+    }
+
+    private RenderFragment Body(int index, HelixStep step, string state) => __builder =>
+    {
+        <span class="helix-stepper__marker" aria-hidden="true">
+            @if (state == "done")
+            {
+                <HelixIcon Name="check" Size="14" StrokeWidth="3" />
+            }
+            else if (state == "error")
+            {
+                <HelixIcon Name="x" Size="14" StrokeWidth="3" />
+            }
+            else
+            {
+                @(index + 1)
+            }
+        </span>
+        <span class="helix-stepper__text">
+            <span class="helix-stepper__title">@step.Title</span>
+            @if (state == "error")
+            {
+                <span class="helix-stepper__description helix-stepper__error">@Texts.StepErrorHint</span>
+            }
+            else if (!string.IsNullOrEmpty(step.Description))
+            {
+                <span class="helix-stepper__description">@step.Description</span>
+            }
+            <span class="helix-sr-only">@(state switch { "done" => Texts.StepDone, "current" => Texts.StepCurrent, "error" => Texts.StepError, _ => "" })</span>
+        </span>
+    };
+}

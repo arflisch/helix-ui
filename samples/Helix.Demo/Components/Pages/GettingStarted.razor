@@ -1,0 +1,95 @@
+@page "/getting-started"
+
+<DemoPage Title="Installation" Eyebrow="Guide" Description="Quelques étapes, et tous les composants sont disponibles dans votre application Blazor ou WPF. Le sélecteur Blazor / WPF des blocs de code change d'exemple partout sur le site.">
+    <div class="steps">
+        <div class="step">
+            <p class="step__title">Référencer la librairie</p>
+            <p class="step__text">Ajoutez le projet (ou, plus tard, le package NuGet) à votre application.</p>
+            <CodeBlock Language="bash" Code="dotnet add reference ../Helix.Blazor/Helix.Blazor.csproj" WpfCode="dotnet add reference ../Helix.Wpf/Helix.Wpf.csproj" />
+        </div>
+        <div class="step">
+            <p class="step__title">Enregistrer les services</p>
+            <p class="step__text">Une ligne dans <code>Program.cs</code> (nécessaire pour les toasts).</p>
+            <CodeBlock Language="c#" Code="@ProgramCode" WpfCode="@WpfAppCode" />
+        </div>
+        <div class="step">
+            <p class="step__title">Ajouter la feuille de style et le using</p>
+            <p class="step__text">Dans <code>App.razor</code> et <code>_Imports.razor</code>.</p>
+            <CodeBlock Language="razor" Code="@ImportsCode" WpfCode="@WpfNamespaceCode" />
+        </div>
+        <div class="step">
+            <p class="step__title">Envelopper la mise en page</p>
+            <p class="step__text"><code>HelixProvider</code> applique le thème, le mode sombre et affiche les toasts.</p>
+            <CodeBlock Language="razor" Code="@LayoutCode" WpfCode="@WpfHostCode" />
+        </div>
+        <div class="step">
+            <p class="step__title">Utiliser les composants</p>
+            <p class="step__text">C'est prêt.</p>
+            <CodeBlock Language="razor" Code="@UsageCode" WpfCode="@WpfUsageCode" />
+        </div>
+    </div>
+</DemoPage>
+
+@code {
+    private const string WpfAppCode = """
+        <!-- WPF · App.xaml : le thème (clair, sombre ou comme Windows) -->
+        <Application.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <helix:HelixResources Mode="System" />
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </Application.Resources>
+        """;
+
+    private const string WpfNamespaceCode = """
+        <!-- WPF · un seul espace de noms XAML pour tous les contrôles -->
+        <Window xmlns:helix="https://helix-ui.dev/wpf" … >
+
+        // En C# : using Helix.Wpf;
+        """;
+
+    private const string WpfHostCode = """
+        <!-- WPF · MainWindow.xaml : HelixHost affiche notifications, dialogues et confirmations -->
+        <Window … Background="{DynamicResource Helix.Background}">
+            <helix:HelixHost>
+                <!-- votre mise en page -->
+            </helix:HelixHost>
+        </Window>
+        """;
+
+    private const string WpfUsageCode = """
+        <helix:HelixButton Content="Enregistrer" Icon="check" Click="OnSave" />
+        <helix:HelixSwitch Content="Pilote auto" ThumbBrush="#F59E0B" IsChecked="{Binding Auto}" />
+        """;
+
+    private const string ProgramCode = """
+        builder.Services.AddVelo();
+        """;
+
+    private const string ImportsCode = """
+        <!-- App.razor, dans <head> -->
+        <link rel="stylesheet" href="_content/Helix.Blazor/helix.css" />
+
+        @* _Imports.razor *@
+        @using Helix.Blazor
+        """;
+
+    private const string LayoutCode = """
+        @inherits LayoutComponentBase
+
+        <HelixProvider Theme="_theme">
+            @Body
+        </HelixProvider>
+
+        @code {
+            private readonly HelixTheme _theme = new() { Primary = "#4f46e5" };
+        }
+        """;
+
+    private const string UsageCode = """
+        <HelixTextField Label="Email" @bind-Value="email" Icon="mail" Clearable />
+        <HelixSwitch Label="Notifications" @bind-Checked="enabled" />
+        <HelixButton OnClick="Save">Enregistrer</HelixButton>
+        """;
+}

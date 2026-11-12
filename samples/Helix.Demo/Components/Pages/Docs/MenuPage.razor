@@ -1,0 +1,77 @@
+@page "/components/menu"
+@inject HelixToastService Toasts
+
+<DemoPage Title="Menu" Description="Menu déroulant d'actions : icônes, raccourcis, éléments cochables, séparateurs, actions dangereuses. Au clavier : flèches pour naviguer, Entrée pour choisir, Échap pour fermer (le focus revient sur le bouton).">
+    <Example WpfCode="@Wpf1" Title="Menu d'actions" Code="@ActionsCode">
+        <div class="row" style="gap:16px">
+            <HelixMenu>
+                <Trigger><HelixButton Variant="HelixVariant.Outline" Color="neutral" IconEnd="chevron-down">Actions</HelixButton></Trigger>
+                <ChildContent>
+                    <HelixMenuItem Icon="copy" Shortcut="⌘D" OnClick="@(() => Say("Dupliqué"))">Dupliquer</HelixMenuItem>
+                    <HelixMenuItem Icon="download" Shortcut="⌘E" OnClick="@(() => Say("Exporté"))">Exporter en CSV</HelixMenuItem>
+                    <HelixMenuItem Icon="external" Description="Visible par toute l'équipe" OnClick="@(() => Say("Lien copié"))">Partager</HelixMenuItem>
+                    <HelixMenuSeparator />
+                    <HelixMenuItem Icon="lock" Disabled="true">Verrouiller (admin)</HelixMenuItem>
+                    <HelixMenuItem Icon="trash" Danger="true" OnClick="@(() => Say("Supprimé"))">Supprimer</HelixMenuItem>
+                </ChildContent>
+            </HelixMenu>
+
+            <HelixMenu Align="HelixAlign.End" MinWidth="200px">
+                <Trigger><HelixButton Variant="HelixVariant.Ghost" Color="neutral" Icon="settings" aria-label="Affichage" /></Trigger>
+                <ChildContent>
+                    <HelixMenuLabel>Affichage</HelixMenuLabel>
+                    <HelixMenuItem Checked="_compact" OnClick="() => _compact = !_compact">Mode compact</HelixMenuItem>
+                    <HelixMenuItem Checked="_grid" OnClick="() => _grid = !_grid">Afficher la grille</HelixMenuItem>
+                </ChildContent>
+            </HelixMenu>
+            <span class="muted" style="font-size:13px">Compact : @(_compact ? "oui" : "non") · Grille : @(_grid ? "oui" : "non")</span>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixMenu et HelixMenuItem" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixMenuButton Content="Actions" IconEnd="chevron-down" Variant="Outline" Tone="Neutral">
+            <helix:HelixMenuButton.Menu>
+                <helix:HelixContextMenu>
+                    <helix:HelixMenuLabel Text="DOCUMENT" />
+                    <helix:HelixMenuItem Header="Modifier" IconName="edit" Shortcut="Ctrl+E" Command="{Binding EditCommand}" />
+                    <helix:HelixMenuItem Header="Exporter" IconName="download" Description="PDF ou Excel" />
+                    <helix:HelixMenuSeparator />
+                    <helix:HelixMenuItem Header="Supprimer" IconName="trash" IsDanger="True" />
+                </helix:HelixContextMenu>
+            </helix:HelixMenuButton.Menu>
+        </helix:HelixMenuButton>
+
+        <!-- Clic droit : le même menu en ContextMenu de n'importe quel élément -->
+        <Border.ContextMenu><helix:HelixContextMenu> … </helix:HelixContextMenu></Border.ContextMenu>
+        """;
+
+    private bool _compact, _grid = true;
+
+    private void Say(string text) => Toasts.Show(text, HelixSeverity.Success, duration: TimeSpan.FromSeconds(2));
+
+    private const string ActionsCode = """
+        <HelixMenu>
+            <Trigger><HelixButton Variant="HelixVariant.Outline" IconEnd="chevron-down">Actions</HelixButton></Trigger>
+            <ChildContent>
+                <HelixMenuItem Icon="copy" Shortcut="⌘D" OnClick="Duplicate">Dupliquer</HelixMenuItem>
+                <HelixMenuItem Icon="external" Description="Visible par toute l'équipe">Partager</HelixMenuItem>
+                <HelixMenuSeparator />
+                <HelixMenuItem Icon="trash" Danger OnClick="Delete">Supprimer</HelixMenuItem>
+            </ChildContent>
+        </HelixMenu>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Trigger", "RenderFragment", null, "Ce qui ouvre le menu (souvent un HelixButton)."),
+        new("Align / MinWidth", "HelixAlign / string", null, "Aligné sur le bord gauche (Start) ou droit (End) du bouton ; largeur minimale."),
+        new("HelixMenuItem Icon / Shortcut / Description", "string", null, "Icône, raccourci affiché, seconde ligne."),
+        new("HelixMenuItem Danger / Disabled / Checked", "bool", null, "Action dangereuse (rouge), désactivée, cochée."),
+        new("HelixMenuItem OnClick / Href", "EventCallback / string", null, "Action ou lien ; le menu se ferme ensuite."),
+        new("HelixMenuSeparator / HelixMenuLabel", "", null, "Séparateur ; titre de groupe."),
+    ];
+}

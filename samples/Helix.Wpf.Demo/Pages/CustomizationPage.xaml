@@ -1,0 +1,119 @@
+<UserControl x:Class="Helix.Wpf.Demo.Pages.CustomizationPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Personnalisation" />
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Changer la couleur de la pastille d'un switch ne devrait jamais demander de copier un template. Trois niveaux, du plus local au plus global." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="1. Une propriété sur le contrôle" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Chaque partie visuelle a sa propriété : Accent, TrackBrush, ThumbBrush, ThumbOnBrush, CornerRadius…" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <WrapPanel>
+                    <helix:HelixSwitch Content="Par défaut" IsChecked="True" Margin="0,0,28,0" />
+                    <helix:HelixSwitch Content="Pastille ambre" IsChecked="True" ThumbBrush="#F59E0B" Margin="0,0,28,0" />
+                    <helix:HelixSwitch Content="Vert + pastille" IsChecked="True" Tone="Success" ThumbOnBrush="#DCFCE7" Margin="0,0,28,0" />
+                    <helix:HelixSwitch Content="Carré" IsChecked="True" CornerRadius="5" Accent="#18181B" />
+                </WrapPanel>
+                <TextBox Style="{StaticResource Code}" Text="&lt;helix:HelixSwitch ThumbBrush=&quot;#F59E0B&quot; /&gt;" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="2. Une valeur par défaut pour toute l'application" />
+        <TextBlock Style="{StaticResource SectionText}"
+                   Text="Un style implicite BasedOn dans App.xaml : seulement les propriétés qui changent, le template reste celui de Helix. Ici, tous les switches de l'encadré deviennent orange avec le libellé à gauche." />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <Border Padding="16" CornerRadius="10" Background="{DynamicResource Helix.Surface2}" HorizontalAlignment="Left" MinWidth="380">
+                    <Border.Resources>
+                        <Style TargetType="helix:HelixSwitch" BasedOn="{StaticResource {x:Type helix:HelixSwitch}}">
+                            <Setter Property="Accent" Value="#FF8A00" />
+                            <Setter Property="LabelPosition" Value="Start" />
+                            <Setter Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter Property="Margin" Value="0,0,0,12" />
+                        </Style>
+                        <Style TargetType="helix:HelixButton" BasedOn="{StaticResource {x:Type helix:HelixButton}}">
+                            <Setter Property="CornerRadius" Value="999" />
+                            <Setter Property="Variant" Value="Soft" />
+                        </Style>
+                    </Border.Resources>
+                    <StackPanel>
+                        <helix:HelixSwitch Content="Pilote automatique" Description="Contrôle les volumes." IsChecked="True" />
+                        <helix:HelixSwitch Content="Alertes" />
+                        <helix:HelixButton Content="Enregistrer" HorizontalAlignment="Left" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+                <TextBox Style="{StaticResource Code}">
+                    <TextBox.Text>&lt;!-- App.xaml --&gt;
+&lt;Style TargetType="helix:HelixSwitch" BasedOn="{StaticResource {x:Type helix:HelixSwitch}}"&gt;
+    &lt;Setter Property="Accent" Value="#FF8A00" /&gt;
+    &lt;Setter Property="LabelPosition" Value="Start" /&gt;
+&lt;/Style&gt;</TextBox.Text>
+                </TextBox>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="3. Le thème : toute l'application d'un coup" />
+        <TextBlock Style="{StaticResource SectionText}"
+                   Text="HelixResources règle les couleurs (une palette claire et une sombre), l'arrondi, la hauteur des contrôles et la police. Les changements s'appliquent en direct à tout ce site." />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+                    <helix:HelixCard Title="Aperçu" Subtitle="Tous les contrôles suivent." Margin="0,0,24,0" VerticalAlignment="Top">
+                        <StackPanel>
+                            <helix:HelixTextField Label="Projet" Text="Helix UI" Margin="0,0,0,14" />
+                            <helix:HelixSwitch Content="Publier" IsChecked="True" Margin="0,0,0,14" />
+                            <WrapPanel>
+                                <helix:HelixBadge Content="Nouveau" Margin="0,0,8,0" />
+                                <helix:HelixBadge Content="En ligne" Tone="Success" ShowDot="True" />
+                            </WrapPanel>
+                        </StackPanel>
+                        <helix:HelixCard.Footer>
+                            <StackPanel Orientation="Horizontal">
+                                <helix:HelixButton Content="Annuler" Variant="Outline" Tone="Neutral" />
+                                <helix:HelixButton Content="Enregistrer" Margin="8,0,0,0" />
+                            </StackPanel>
+                        </helix:HelixCard.Footer>
+                    </helix:HelixCard>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Couleur principale" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource Helix.Text}" />
+                        <WrapPanel x:Name="Swatches" Margin="0,0,0,18" />
+                        <DockPanel Margin="0,0,0,6">
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Value, ElementName=RadiusSlider, StringFormat={}{0:0} px}" Foreground="{DynamicResource Helix.TextMuted}" />
+                            <TextBlock Text="Arrondi" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                        </DockPanel>
+                        <helix:HelixSlider x:Name="RadiusSlider" Minimum="0" Maximum="20" Value="10" IsSnapToTickEnabled="True" TickFrequency="1"
+                                         ValueChanged="OnRadiusChanged" Margin="0,0,0,18" />
+                        <DockPanel Margin="0,0,0,6">
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Value, ElementName=HeightSlider, StringFormat={}{0:0} px}" Foreground="{DynamicResource Helix.TextMuted}" />
+                            <TextBlock Text="Hauteur des contrôles" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                        </DockPanel>
+                        <helix:HelixSlider x:Name="HeightSlider" Minimum="30" Maximum="46" Value="38" IsSnapToTickEnabled="True" TickFrequency="1"
+                                         ValueChanged="OnHeightChanged" Margin="0,0,0,18" />
+                        <helix:HelixButton Content="Réinitialiser" Variant="Soft" Tone="Neutral" Size="Sm" HorizontalAlignment="Left" Click="OnReset" />
+                    </StackPanel>
+                </Grid>
+                <TextBox Style="{StaticResource Code}">
+                    <TextBox.Text>&lt;!-- App.xaml --&gt;
+&lt;helix:HelixResources Mode="System" Radius="12" ControlHeight="34"&gt;
+    &lt;helix:HelixResources.Light&gt;&lt;helix:HelixPalette Primary="#C2410C" /&gt;&lt;/helix:HelixResources.Light&gt;
+    &lt;helix:HelixResources.Dark&gt;&lt;helix:HelixPalette Primary="#F97316" /&gt;&lt;/helix:HelixResources.Dark&gt;
+&lt;/helix:HelixResources&gt;
+
+// En code, à tout moment :
+HelixResources.Current!.Mode = HelixThemeMode.Dark;</TextBox.Text>
+                </TextBox>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Textes intégrés" />
+        <TextBlock Style="{StaticResource SectionText}"
+                   Text="Les quelques textes écrits par les contrôles (Annuler, Confirmer, Effacer, Sélectionner…) suivent la langue de l'interface, en français ou en anglais. Pour les changer : HelixTexts.Current = HelixTexts.English with { Cancel = &quot;Back&quot; };" />
+    </StackPanel>
+</UserControl>

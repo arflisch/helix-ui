@@ -1,0 +1,252 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@using System.Globalization
+@inject IJSRuntime JS
+
+<HelixFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
+    <div class="@(new CssBuilder("helix-select helix-date").Add("is-open", _open).Build())" @ref="_root">
+        <button @attributes="Attributes" id="@_id" type="button" class="helix-input helix-select__trigger" disabled="@Disabled"
+                aria-haspopup="dialog" aria-expanded="@(_open ? "true" : "false")" @onclick="Toggle"
+                aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")" aria-describedby="@HelixFieldFrame.DescribedBy(_id, Hint, Error)">
+            @if (Prefix is null)
+            {
+                <HelixIcon Name="calendar" Class="helix-date__icon" />
+            }
+            else
+            {
+                @Prefix
+            }
+            <span class="@(new CssBuilder("helix-select__value").Add("is-placeholder", Value is null).Build())">
+                @(Value?.ToString(Format, EffectiveCulture) ?? Placeholder ?? Texts.ChooseDate)
+            </span>
+            @if ((Clearable ?? Defaults.Field.Clearable ?? true) && Value is not null && !Disabled)
+            {
+                <span class="helix-close helix-input__clear" role="button" aria-label="@Texts.ClearDate" @onclick="Clear" @onclick:stopPropagation="true">
+                    <HelixIcon Name="x" Size="14" />
+                </span>
+            }
+            @Suffix
+        </button>
+
+        @if (_open)
+        {
+            <div class="helix-select__backdrop" @onclick="() => Close(false)"></div>
+            <div class="helix-date__panel" role="dialog" aria-label="@Texts.ChooseDate">
+                <div class="helix-date__head">
+                    <button type="button" class="helix-close" aria-label="@Texts.PreviousMonth" @onclick="() => ShiftMonth(-1)"><HelixIcon Name="chevron-left" /></button>
+                    <span class="helix-date__month" aria-live="polite">@Capitalize(_view.ToString("MMMM yyyy", EffectiveCulture))</span>
+                    <button type="button" class="helix-close" aria-label="@Texts.NextMonth" @onclick="() => ShiftMonth(1)"><HelixIcon Name="chevron-right" /></button>
+                </div>
+                <div class="helix-date__grid" role="grid" tabindex="0" @ref="_grid"
+                     aria-activedescendant="@CellId(_active)"
+                     aria-label="@_view.ToString("MMMM yyyy", EffectiveCulture)"
+                     @onkeydown="OnKey" @onkeydown:preventDefault="true">
+                    @foreach (var day in WeekDays)
+                    {
+                        <span class="helix-date__weekday" role="columnheader" title="@EffectiveCulture.DateTimeFormat.GetDayName(day)">@EffectiveCulture.DateTimeFormat.GetShortestDayName(day)</span>
+                    }
+                    @foreach (var date in Days)
+                    {
+                        var disabled = IsDisabled(date);
+                        <span id="@CellId(date)"
+                              role="gridcell"
+                              aria-selected="@(date == Value ? "true" : "false")"
+                              aria-disabled="@(disabled ? "true" : null)"
+                              class="@(new CssBuilder("helix-date__day").Add("is-outside", date.Month != _view.Month).Add("is-today", date == Today).Add("is-selected", date == Value).Add("is-active", date == _active).Add("is-disabled", disabled).Build())"
+                              @onclick="() => Pick(date)">@date.Day</span>
+                    }
+                </div>
+                <div class="helix-date__foot">
+                    <button type="button" class="helix-date__today" disabled="@IsDisabled(Today)" @onclick="() => Pick(Today)">@Texts.Today</button>
+                    <span class="helix-date__help">@Texts.DateKeyboardHelp</span>
+                </div>
+            </div>
+        }
+    </div>
+</HelixFieldFrame>
+
+@code {
+    /// <summary>Content at the start (replaces the calendar icon).</summary>
+    [Parameter] public RenderFragment? Prefix { get; set; }
+
+    /// <summary>Content at the end of the input (unit, button…).</summary>
+    [Parameter] public RenderFragment? Suffix { get; set; }
+
+    /// <summary>Help text under the field, announced with it.</summary>
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Shows the field in error state with this message (replaces the hint).</summary>
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Required { get; set; }
+
+    /// <summary>Focus color. Null: HelixOptions.Defaults.Field.Color, else primary.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private string? FieldStyle => new StyleBuilder()
+        .Color("input", Color)
+        .Var("--helix-input-radius", Radius)
+        .Var("--helix-input-bg", Background)
+        .Var("--helix-input-border", BorderColor)
+        .Raw(Style)
+        .Build();
+
+    [Parameter] public DateOnly? Value { get; set; }
+    [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
+    [Parameter] public DateOnly? Min { get; set; }
+    [Parameter] public DateOnly? Max { get; set; }
+
+    /// <summary>Extra rule, e.g. d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday.</summary>
+    [Parameter] public Func<DateOnly, bool>? IsDateDisabled { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>Display format, e.g. "D" (long) or "dd/MM/yyyy".</summary>
+    [Parameter] public string Format { get; set; } = "d MMMM yyyy";
+    /// <summary>The × button. Null: HelixOptions.Defaults.Field.Clearable, else true.</summary>
+    [Parameter] public bool? Clearable { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Month and day names, first day of the week.</summary>
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    private readonly string _id = HelixId.Next("date");
+    private bool _open;
+    private bool _focusGrid;
+    private bool _focusTrigger;
+    private DateOnly _view;
+    private DateOnly _active;
+    private ElementReference _grid;
+    private ElementReference _root;
+    private IJSObjectReference? _module;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private DateOnly Today => DateOnly.FromDateTime((TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime);
+
+    private IEnumerable<DayOfWeek> WeekDays =>
+        Enumerable.Range(0, 7).Select(i => (DayOfWeek)(((int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek + i) % 7));
+
+    /// <summary>Six full weeks starting on the culture's first day of the week.</summary>
+    private IEnumerable<DateOnly> Days
+    {
+        get
+        {
+            var first = new DateOnly(_view.Year, _view.Month, 1);
+            var offset = ((int)first.DayOfWeek - (int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek + 7) % 7;
+            var start = first.AddDays(-offset);
+            return Enumerable.Range(0, 42).Select(start.AddDays);
+        }
+    }
+
+    private string CellId(DateOnly date) => $"{_id}-{date:yyyyMMdd}";
+
+    private static string Capitalize(string text) => text.Length == 0 ? text : char.ToUpper(text[0]) + text[1..];
+
+    private bool IsDisabled(DateOnly date) =>
+        (Min is { } min && date < min) || (Max is { } max && date > max) || (IsDateDisabled?.Invoke(date) ?? false);
+
+    private void Toggle()
+    {
+        if (_open)
+        {
+            Close(false);
+            return;
+        }
+
+        _active = Value ?? Today;
+        _view = new DateOnly(_active.Year, _active.Month, 1);
+        _open = true;
+        _focusGrid = true;
+    }
+
+    private void Close(bool returnFocus)
+    {
+        _open = false;
+        _focusTrigger = returnFocus;
+    }
+
+    private void ShiftMonth(int months)
+    {
+        _view = _view.AddMonths(months);
+        var day = Math.Min(_active.Day, DateTime.DaysInMonth(_view.Year, _view.Month));
+        _active = new DateOnly(_view.Year, _view.Month, day);
+        _focusGrid = true;
+    }
+
+    private void MoveActive(DateOnly date)
+    {
+        _active = date;
+        if (date.Month != _view.Month || date.Year != _view.Year)
+        {
+            _view = new DateOnly(date.Year, date.Month, 1);
+        }
+    }
+
+    private async Task Pick(DateOnly date)
+    {
+        if (IsDisabled(date))
+        {
+            return;
+        }
+
+        Value = date;
+        Close(true);
+        await ValueChanged.InvokeAsync(date);
+    }
+
+    private async Task Clear()
+    {
+        Value = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+
+    private async Task OnKey(KeyboardEventArgs e)
+    {
+        var firstDay = (int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek;
+        var dayIndex = ((int)_active.DayOfWeek - firstDay + 7) % 7;
+        switch (e.Key)
+        {
+            case "ArrowLeft": MoveActive(_active.AddDays(-1)); break;
+            case "ArrowRight": MoveActive(_active.AddDays(1)); break;
+            case "ArrowUp": MoveActive(_active.AddDays(-7)); break;
+            case "ArrowDown": MoveActive(_active.AddDays(7)); break;
+            case "Home": MoveActive(_active.AddDays(-dayIndex)); break;
+            case "End": MoveActive(_active.AddDays(6 - dayIndex)); break;
+            case "PageUp": MoveActive(_active.AddMonths(e.ShiftKey ? -12 : -1)); break;
+            case "PageDown": MoveActive(_active.AddMonths(e.ShiftKey ? 12 : 1)); break;
+            case "Enter" or " ": await Pick(_active); break;
+            case "Escape": Close(true); break;
+            case "Tab": Close(true); break;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusGrid && _open)
+        {
+            _focusGrid = false;
+            await _grid.FocusAsync();
+        }
+
+        if (_focusTrigger)
+        {
+            _focusTrigger = false;
+            try
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+                await _module.InvokeVoidAsync("focusFirst", _root);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit closed.
+            }
+        }
+    }
+
+    public ValueTask DisposeAsync() => HelixJs.DisposeQuietlyAsync(_module);
+}

@@ -1,0 +1,85 @@
+<UserControl x:Class="Helix.Wpf.Demo.Pages.FeedbackPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Retours" />
+        <TextBlock Style="{StaticResource PageLead}"
+                   Text="Alertes, badges, progression, notifications, boîtes de dialogue et confirmations. Les notifications et dialogues s'affichent dans le HelixHost de la fenêtre." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Alert" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <helix:HelixAlert Severity="Info" Title="Nouvelle version" Content="Helix 1.2 apporte les champs unifiés." Margin="0,0,0,10" />
+                <helix:HelixAlert Severity="Success" Title="Enregistré" Content="Vos réglages ont été appliqués." Margin="0,0,0,10" />
+                <helix:HelixAlert Severity="Warning" Title="Quota presque atteint" Content="Il reste 8 % de l'espace disponible." IsClosable="True" Margin="0,0,0,10" />
+                <helix:HelixAlert Severity="Danger" Content="La connexion au serveur a été perdue." />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Badge" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <WrapPanel Margin="0,0,0,10">
+                    <helix:HelixBadge Content="Primary" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Neutral" Tone="Neutral" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="En ligne" Tone="Success" ShowDot="True" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Attention" Tone="Warning" Icon="warning" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Erreur" Tone="Danger" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="#FF8A00" Accent="#FF8A00" Margin="0,0,8,0" />
+                </WrapPanel>
+                <WrapPanel>
+                    <helix:HelixBadge Content="Solid" Variant="Solid" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Solid danger" Variant="Solid" Tone="Danger" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Outline" Variant="Outline" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Carré" CornerRadius="4" Tone="Info" Margin="0,0,8,0" />
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Progress et Spinner" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel MaxWidth="520" HorizontalAlignment="Left">
+                <helix:HelixProgress Label="Import des données" ShowValue="True" Value="{Binding Value, ElementName=ProgressValue}" Margin="0,0,0,12" />
+                <helix:HelixSlider x:Name="ProgressValue" Minimum="0" Maximum="100" Value="64" Margin="0,0,0,20" />
+                <helix:HelixProgress Label="Synchronisation" IsIndeterminate="True" Tone="Success" BarHeight="6" Margin="0,0,0,20" />
+                <StackPanel Orientation="Horizontal">
+                    <helix:HelixSpinner Margin="0,0,16,0" />
+                    <helix:HelixSpinner Size="28" Tone="Success" Margin="0,0,16,0" />
+                    <helix:HelixSpinner Size="36" Thickness="3" Accent="#FF8A00" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Notifications, dialogue et confirmation" />
+        <Border Style="{StaticResource Stage}">
+            <StackPanel>
+                <WrapPanel>
+                    <helix:HelixButton Content="Succès" Tone="Success" Variant="Soft" Click="OnToastSuccess" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Avertissement" Tone="Warning" Variant="Soft" Click="OnToastWarning" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Erreur" Tone="Danger" Variant="Soft" Click="OnToastError" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Ouvrir un dialogue" Variant="Outline" Tone="Neutral" Click="OnOpenDialog" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Supprimer…" Tone="Danger" Icon="trash" Click="OnDelete" Margin="0,0,10,10" />
+                </WrapPanel>
+                <TextBox Style="{StaticResource Code}" Text="HelixToasts.Success(&quot;Enregistré&quot;);&#10;if (await HelixConfirm.AskAsync(&quot;Supprimer ?&quot;, &quot;Action définitive.&quot;, danger: true)) { … }" />
+            </StackPanel>
+        </Border>
+
+        <helix:HelixDialog x:Name="Dialog" Title="Inviter un membre" Description="Il recevra un e-mail pour rejoindre l'équipe.">
+            <StackPanel>
+                <helix:HelixTextField Label="E-mail" Icon="mail" Placeholder="prenom@exemple.fr" Margin="0,0,0,16" />
+                <helix:HelixSelect Label="Rôle" SelectedIndex="0">
+                    <ComboBoxItem Content="Lecteur" />
+                    <ComboBoxItem Content="Éditeur" />
+                    <ComboBoxItem Content="Administrateur" />
+                </helix:HelixSelect>
+            </StackPanel>
+            <helix:HelixDialog.Footer>
+                <StackPanel Orientation="Horizontal">
+                    <helix:HelixButton Content="Annuler" Variant="Ghost" Tone="Neutral" Click="OnCloseDialog" />
+                    <helix:HelixButton Content="Inviter" Icon="mail" Margin="8,0,0,0" Click="OnInvite" />
+                </StackPanel>
+            </helix:HelixDialog.Footer>
+        </helix:HelixDialog>
+    </StackPanel>
+</UserControl>

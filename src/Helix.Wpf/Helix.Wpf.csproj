@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Lets the library build on macOS and Linux too (it only runs on Windows). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>Helix.Wpf</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>Helix.Wpf</PackageId>
+    <Title>Helix UI for WPF</Title>
+    <Description>Clean, modern WPF controls where every visual part is a property: buttons, fields, data grid, charts, timeline, kanban, dashboard and more. Light, dark or Windows theme, no template to copy.</Description>
+    <PackageTags>wpf;controls;ui;xaml;datagrid;charts;timeline;theme;dark-mode</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

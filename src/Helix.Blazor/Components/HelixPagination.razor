@@ -1,0 +1,80 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+@{
+    var count = PageCount;
+}
+
+<nav @attributes="Attributes" class="@(new CssBuilder("helix-pagination").Add("helix-pagination--compact", Compact).Add(Class).Build())"
+     style="@(new StyleBuilder().Color("pagination", Color).Raw(Style).Build())" aria-label="@AriaLabel">
+    @if (ShowInfo && TotalItems is { } total)
+    {
+        <span class="helix-pagination__info">@(HelixTexts.Format(Texts.RangeOf, (Page - 1) * PageSize + (total == 0 ? 0 : 1), Math.Min(total, Page * PageSize), total))</span>
+    }
+    <div class="helix-pagination__pages">
+        <button type="button" class="helix-pagination__nav" disabled="@(Page <= 1)" aria-label="@Texts.PreviousPage" @onclick="() => Go(Page - 1)">
+            <HelixIcon Name="chevron-left" Size="15" />
+            @if (ShowLabels) { <span>@Texts.Previous</span> }
+        </button>
+        @if (Compact)
+        {
+            <span class="helix-pagination__current">@Page / @count</span>
+        }
+        else
+        {
+            @foreach (var p in HelixPaging.Window(count, Page - 1))
+            {
+                if (p < 0)
+                {
+                    <span class="helix-pagination__ellipsis" aria-hidden="true">…</span>
+                }
+                else
+                {
+                    var number = p + 1;
+                    <button type="button" class="@(new CssBuilder("helix-pagination__page").Add("is-active", number == Page).Build())"
+                            aria-current="@(number == Page ? "page" : null)" aria-label="@HelixTexts.Format(Texts.PageNumber, number)" @onclick="() => Go(number)">@number</button>
+                }
+            }
+        }
+        <button type="button" class="helix-pagination__nav" disabled="@(Page >= count)" aria-label="@Texts.NextPage" @onclick="() => Go(Page + 1)">
+            @if (ShowLabels) { <span>@Texts.Next</span> }
+            <HelixIcon Name="chevron-right" Size="15" />
+        </button>
+    </div>
+</nav>
+
+@code {
+    /// <summary>Current page, 1-based. @bind-Page.</summary>
+    [Parameter] public int Page { get; set; } = 1;
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+
+    /// <summary>Either PageCount, or TotalItems + PageSize.</summary>
+    [Parameter] public int? Count { get; set; }
+    [Parameter] public int? TotalItems { get; set; }
+    [Parameter] public int PageSize { get; set; } = 10;
+
+    /// <summary>"11–20 of 87" on the left (needs TotalItems).</summary>
+    [Parameter] public bool ShowInfo { get; set; }
+
+    /// <summary>"Précédent" / "Suivant" next to the arrows.</summary>
+    [Parameter] public bool ShowLabels { get; set; }
+
+    /// <summary>Only arrows and "3 / 12" (small spaces, mobile).</summary>
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string AriaLabel { get; set; } = "Pagination";
+
+    private int PageCount => Math.Max(1, Count ?? (TotalItems is { } t ? (int)Math.Ceiling(t / (double)Math.Max(PageSize, 1)) : 1));
+
+    private async Task Go(int page)
+    {
+        page = Math.Clamp(page, 1, PageCount);
+        if (page == Page)
+        {
+            return;
+        }
+
+        Page = page;
+        await PageChanged.InvokeAsync(page);
+    }
+}

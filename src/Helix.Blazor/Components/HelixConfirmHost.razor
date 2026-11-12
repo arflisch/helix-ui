@@ -1,0 +1,37 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+@inject HelixConfirmService Confirm
+
+@{
+    var current = Confirm.Current;
+}
+
+<HelixDialog Open="current is not null" OpenChanged="OnOpenChanged" Title="@current?.Title" Width="420px" Class="helix-confirm">
+    <ChildContent>
+        @if (!string.IsNullOrEmpty(current?.Message))
+        {
+            @current.Message
+        }
+    </ChildContent>
+    <Footer>
+        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => Confirm.Resolve(false)">@(current?.CancelText ?? Texts.Cancel)</HelixButton>
+        <HelixButton Color="@(current?.Danger == true ? "danger" : null)" OnClick="() => Confirm.Resolve(true)">@(current?.ConfirmText ?? Texts.Confirm)</HelixButton>
+    </Footer>
+</HelixDialog>
+
+@code {
+    protected override void OnInitialized() => Confirm.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void OnOpenChanged(bool open)
+    {
+        if (!open)
+        {
+            Confirm.Resolve(false);
+        }
+    }
+
+    public void Dispose() => Confirm.Changed -= OnChanged;
+}

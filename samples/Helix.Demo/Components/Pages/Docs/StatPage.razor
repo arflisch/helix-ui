@@ -1,0 +1,74 @@
+@page "/components/stat"
+@using System.Globalization
+@using static Helix.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Stat" Description="Carte d'indicateur : une valeur clé, sa variation (bonne ou mauvaise selon le sens) et une mini-courbe de tendance.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:320px">
+                <HelixStat Label="@_label" Value="_value" Unit="@_unit" Delta="@(_showDelta ? _delta : null)" DeltaLabel="vs hier"
+                          HigherIsBetter="_higherIsBetter" Trend="@(_trend ? DemoData.Trend(5, 14, _value - 20, 1.6) : null)"
+                          TrendColor="@_color" Icon="@(_icon ? "zap" : null)" Loading="_loading" Culture="French" />
+            </div>
+        </Preview>
+        <Controls>
+            <HelixTextField Label="Label" @bind-Value="_label" />
+            <HelixTextField Label="Unit" @bind-Value="_unit" />
+            <HelixSlider Label="Value" @bind-Value="_value" Min="0" Max="500" />
+            <HelixSlider Label="Delta" @bind-Value="_delta" Min="-50" Max="50" />
+            <ColorPicker Label="TrendColor" @bind-Value="_color" Colors="@(["#1baf7a", "#eb6834", "#6250d6"])" />
+            <HelixSwitch Label="HigherIsBetter" @bind-Checked="_higherIsBetter" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Delta" @bind-Checked="_showDelta" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Trend (sparkline)" @bind-Checked="_trend" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Icon" @bind-Checked="_icon" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Loading" @bind-Checked="_loading" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example WpfCode="@Wpf2" Title="Rangée d'indicateurs" Description="La couleur de la variation suit le sens métier : une baisse des coûts est verte. Le signe et l'icône portent aussi l'information, pas seulement la couleur.">
+        <div class="grid-3">
+            <HelixStat Label="Production" Value="1284" Unit="MWh" Delta="4.1" DeltaFormat="+0.0 '%';-0.0 '%'" DeltaLabel="vs semaine" Trend="DemoData.Trend(6)" Culture="French" />
+            <HelixStat Label="Coût d'équilibrage" Value="18.2" Format="0.0" Unit="k€" Delta="-2.4" DeltaFormat="+0.0 '%';-0.0 '%'" DeltaLabel="vs semaine" HigherIsBetter="false" Trend="DemoData.Trend(7, 14, 120, -1.2)" TrendColor="#eb6834" Culture="French" />
+            <HelixStat Label="Disponibilité" ValueText="99,94 %" Delta="0" DeltaLabel="stable" Trend="DemoData.Trend(8, 14, 99, 0)" TrendColor="#1baf7a" Culture="French" />
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixStat" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixStat Label="Coût moyen" Value="82" Unit="€/MWh" Delta="4.2" HigherIsBetter="False" Icon="zap" />
+        <!-- Delta positif en vert, sauf HigherIsBetter="False" (coût, délai, erreurs) : il passe en rouge. -->
+        """;
+
+    private const string Wpf2 = """
+        <UniformGrid Columns="4">
+            <helix:HelixStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" />
+            <helix:HelixStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0" />
+            <helix:HelixStat Label="Coût moyen" Value="82" Unit="€/MWh" Delta="4.2" HigherIsBetter="False" />
+            <helix:HelixStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" />
+        </UniformGrid>
+        """;
+
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+
+    private string? _label = "Déséquilibre actuel";
+    private string? _unit = "MW";
+    private string? _color;
+    private double _value = 182, _delta = -24;
+    private bool _higherIsBetter, _showDelta = true, _trend = true, _icon = true, _loading;
+
+    private string Code =>
+        $"<HelixStat{A("Label", _label)} Value=\"{N(_value)}\"{A("Unit", _unit)}{(_showDelta ? $" Delta=\"{N(_delta)}\" DeltaLabel=\"vs hier\"" : "")}{(_higherIsBetter ? "" : " HigherIsBetter=\"false\"")}{(_trend ? " Trend=\"lastValues\"" : "")}{A("TrendColor", _color)}{A("Icon", _icon ? "zap" : null)}{B("Loading", _loading)} />";
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Label / Value / Unit", "string / double? / string", null, "Libellé, valeur, unité."),
+        new("Format / ValueText", "string / string", null, "Format .NET de la valeur, ou texte libre à la place."),
+        new("Delta / DeltaFormat / DeltaLabel", "double? / string / string", null, "Variation, son format (« +0.0 '%';-0.0 '%' »), son contexte (« vs hier »)."),
+        new("HigherIsBetter", "bool", null, "False quand une baisse est une bonne nouvelle (coûts, incidents…)."),
+        new("Trend / TrendColor", "IEnumerable<double?> / string", "--helix-stat-trend", "Valeurs récentes pour la mini-courbe, sa couleur."),
+        new("Icon / Loading / Bare", "string / bool / bool", null, "Icône ; squelette de chargement ; sans cadre."),
+    ];
+}

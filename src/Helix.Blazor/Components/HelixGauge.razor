@@ -1,0 +1,69 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+@{
+    var pct = Max > Min ? Math.Clamp((Value - Min) / (Max - Min) * 100, 0, 100) : 0;
+    var band = Thresholds.Where(t => Value >= t.Value).OrderByDescending(t => t.Value).FirstOrDefault();
+    var color = band is not null ? HelixColor.Resolve(band.Color).Value : Color is not null ? HelixColor.Resolve(Color).Value : "var(--helix-primary)";
+}
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-gauge").Add(Class).Build())" style="@(new StyleBuilder().Var("--_c", color).Var("--helix-gauge-size", Size).Raw(Style).Build())"
+     role="meter" aria-valuemin="@Inv(Min)" aria-valuemax="@Inv(Max)" aria-valuenow="@Inv(Value)"
+     aria-valuetext="@($"{FormatValue(Value)}{(band is null ? "" : $", {band.Label}")}")" aria-label="@Label">
+    <svg class="helix-gauge__svg" viewBox="0 0 200 112" aria-hidden="true">
+        <path class="helix-gauge__track" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100" />
+        <path class="helix-gauge__value" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100"
+              style="stroke-dasharray:@Inv(pct) 100" />
+        @foreach (var threshold in Thresholds.Where(t => t.Value > Min && t.Value < Max))
+        {
+            var angle = Math.PI * (1 - (threshold.Value - Min) / (Max - Min));
+            <line class="helix-gauge__tick"
+                  x1="@Inv(100 + 90 * Math.Cos(angle))" y1="@Inv(100 - 90 * Math.Sin(angle))"
+                  x2="@Inv(100 + 99 * Math.Cos(angle))" y2="@Inv(100 - 99 * Math.Sin(angle))" />
+        }
+    </svg>
+    <div class="helix-gauge__center">
+        <span class="helix-gauge__value-text">@FormatValue(Value)</span>
+        @if (band is not null)
+        {
+            <span class="helix-gauge__status"><span class="helix-gauge__dot"></span>@band.Label</span>
+        }
+        else if (!string.IsNullOrEmpty(Label))
+        {
+            <span class="helix-gauge__label">@Label</span>
+        }
+    </div>
+    <div class="helix-gauge__range" aria-hidden="true">
+        <span>@FormatValue(Min)</span>
+        <span>@FormatValue(Max)</span>
+    </div>
+    @if (band is not null && !string.IsNullOrEmpty(Label))
+    {
+        <span class="helix-gauge__caption">@Label</span>
+    }
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string Format { get; set; } = "#,0.#";
+
+    /// <summary>Status bands: from Value up, the gauge takes the color and shows the label (text, not only color).</summary>
+    [Parameter] public IReadOnlyList<HelixGaugeThreshold> Thresholds { get; set; } = [];
+
+    /// <summary>Color when no threshold applies.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Width, e.g. "220px".</summary>
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private static string Inv(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private string FormatValue(double value) =>
+        value.ToString(Format, Culture ?? CultureInfo.CurrentCulture) + (string.IsNullOrEmpty(Unit) ? "" : $" {Unit}");
+}

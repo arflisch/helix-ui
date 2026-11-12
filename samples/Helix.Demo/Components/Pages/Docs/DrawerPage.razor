@@ -1,0 +1,77 @@
+@page "/components/drawer"
+@inject HelixToastService Toasts
+
+<DemoPage Title="Drawer" Description="Panneau latéral pour un détail ou un formulaire sans quitter la page. À droite, à gauche ou en bas ; Échap ou clic sur le fond pour fermer.">
+    <Example WpfCode="@Wpf1" Title="Positions" Code="@Code">
+        <div class="row">
+            <HelixButton OnClick="() => Open(HelixDrawerPosition.Right)">Ouvrir à droite</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => Open(HelixDrawerPosition.Left)">À gauche</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => Open(HelixDrawerPosition.Bottom)">En bas</HelixButton>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixDrawer" Rows="Api" />
+</DemoPage>
+
+<HelixDrawer @bind-Open="_open" Position="_position" Title="Nouvelle demande" Description="Elle sera envoyée au gestionnaire de réseau."
+            Size="@(_position == HelixDrawerPosition.Bottom ? "auto" : "440px")">
+    <ChildContent>
+        <div class="stack">
+            <HelixDatePicker Label="Date" @bind-Value="_date" />
+            <HelixNumberField Label="Puissance" @bind-Value="_power" Min="0" Max="250" Step="5" Unit="MW" />
+            <HelixRadioGroup TValue="string" Items="Kinds" @bind-Value="_kind" Label="Type" Appearance="HelixRadioAppearance.Segmented" />
+        </div>
+    </ChildContent>
+    <Footer>
+        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => _open = false">Annuler</HelixButton>
+        <HelixButton OnClick="Send">Envoyer</HelixButton>
+    </Footer>
+</HelixDrawer>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixDrawer IsOpen="{Binding FiltersOpen}" Title="Filtres" Position="Right" DrawerSize="420">
+            <StackPanel>
+                <helix:HelixSelect Label="Région" ItemsSource="{Binding Regions}" />
+                <helix:HelixSwitch Content="Seulement les actifs" Margin="0,16,0,0" />
+            </StackPanel>
+            <helix:HelixDrawer.Footer>
+                <helix:HelixButton Content="Appliquer" Command="{Binding ApplyCommand}" />
+            </helix:HelixDrawer.Footer>
+        </helix:HelixDrawer>
+        <!-- Position : Right, Left ou Bottom (DrawerSize = largeur ou hauteur). Nécessite un HelixHost. -->
+        """;
+
+    private static readonly string[] Kinds = ["Directe", "Planifiée"];
+    private bool _open;
+    private HelixDrawerPosition _position;
+    private DateOnly? _date = DateOnly.FromDateTime(DateTime.Today);
+    private double? _power = 40;
+    private string? _kind = "Planifiée";
+
+    private void Open(HelixDrawerPosition position) => (_position, _open) = (position, true);
+
+    private void Send()
+    {
+        _open = false;
+        Toasts.Success($"{_kind} · {_power} MW · {_date:d}", "Demande envoyée");
+    }
+
+    private const string Code = """
+        <HelixButton OnClick="() => open = true">Ouvrir</HelixButton>
+
+        <HelixDrawer @bind-Open="open" Title="Nouvelle demande" Size="440px">
+            <ChildContent>…formulaire…</ChildContent>
+            <Footer><HelixButton OnClick="Send">Envoyer</HelixButton></Footer>
+        </HelixDrawer>
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Open", "bool", null, "Visibilité (@bind-Open)."),
+        new("Position", "HelixDrawerPosition", null, "Right, Left ou Bottom."),
+        new("Title / Description / Footer", "string / string / RenderFragment", null, "En-tête et pied."),
+        new("Size", "string", "--helix-drawer-size", "Largeur (ou hauteur en bas), 420px par défaut."),
+        new("CloseOnBackdrop", "bool", null, "Fermer au clic sur le fond (true)."),
+    ];
+}

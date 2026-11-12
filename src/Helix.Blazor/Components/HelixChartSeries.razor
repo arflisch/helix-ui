@@ -1,0 +1,68 @@
+@namespace Helix.Blazor
+@implements IDisposable
+
+@* Renders nothing by itself: HelixChart draws every series. *@
+
+@code {
+    [CascadingParameter] private HelixChart? Chart { get; set; }
+
+    /// <summary>Shown in the legend, the tooltip and the table.</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>The data. Use HelixPoint.At(time, value) for a time axis, or data.ToPoints(...).</summary>
+    [Parameter] public IEnumerable<HelixPoint>? Points { get; set; }
+
+    [Parameter] public HelixSeriesType Type { get; set; } = HelixSeriesType.Line;
+
+    /// <summary>Defaults to the next color of the validated series palette (--helix-series-N).</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Draws a dot on every point.</summary>
+    [Parameter] public bool Markers { get; set; }
+
+    /// <summary>Dashed line, e.g. for a forecast.</summary>
+    [Parameter] public bool Dashed { get; set; }
+
+    /// <summary>Starts hidden (the reader can show it from the legend).</summary>
+    [Parameter] public bool Hidden { get; set; }
+
+    internal IReadOnlyList<HelixPoint> Data { get; private set; } = [];
+
+    private object? _signature;
+
+    protected override void OnInitialized()
+    {
+        if (Chart is null)
+        {
+            throw new InvalidOperationException($"{nameof(HelixChartSeries)} must be placed inside a {nameof(HelixChart)}.");
+        }
+
+        Refresh();
+        Chart.AddSeries(this);
+    }
+
+    protected override void OnParametersSet()
+    {
+        // The chart rendered before this child received its new parameters: ask for one more render when
+        // something visible changed. The next pass sees the same signature, so it never loops.
+        if (Refresh())
+        {
+            Chart?.Invalidate();
+        }
+    }
+
+    private bool Refresh()
+    {
+        var signature = (Points, Name, Type, Color, Markers, Dashed);
+        if (Equals(signature, _signature))
+        {
+            return false;
+        }
+
+        _signature = signature;
+        Data = (Points ?? []).OrderBy(p => p.X).ToList();
+        return true;
+    }
+
+    public void Dispose() => Chart?.RemoveSeries(this);
+}

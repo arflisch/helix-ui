@@ -1,0 +1,41 @@
+@namespace Helix.Blazor
+
+@* Shared shell of every input: label (tied to the control), the control, then the error or the hint (announced with it). *@
+<div class="@(new CssBuilder("helix-field").Add("is-invalid", HasError).Add("is-disabled", Disabled).Add(Class).Build())" style="@Style">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="helix-field__label" id="@($"{Id}-label")" for="@Id">
+            @Label@if (Required) { <span class="helix-field__required" aria-hidden="true">*</span> }
+        </label>
+    }
+    @ChildContent
+    @if (HasError)
+    {
+        <p class="helix-field__error" id="@MessageId(Id)">@Error</p>
+    }
+    else if (!string.IsNullOrEmpty(Hint))
+    {
+        <p class="helix-field__hint" id="@MessageId(Id)">@Hint</p>
+    }
+</div>
+
+@code {
+    /// <summary>Id of the control; the label and the message ids derive from it.</summary>
+    [Parameter, EditorRequired] public string Id { get; set; } = "";
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool HasError => !string.IsNullOrEmpty(Error);
+
+    internal static string MessageId(string id) => $"{id}-msg";
+
+    /// <summary>Value for the control's aria-describedby: the message id when a hint or an error is shown.</summary>
+    internal static string? DescribedBy(string id, string? hint, string? error) =>
+        string.IsNullOrEmpty(error) && string.IsNullOrEmpty(hint) ? null : MessageId(id);
+}

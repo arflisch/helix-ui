@@ -1,0 +1,136 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+@using System.Text
+
+<div @attributes="Attributes" class="@(new CssBuilder("helix-stat").Add("is-bare", Bare).Add(Class).Build())" style="@StyleValue">
+    <div class="helix-stat__head">
+        <span class="helix-stat__label">@Label</span>
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="helix-stat__icon"><HelixIcon Name="@Icon" Size="16" /></span>
+        }
+    </div>
+
+    @if (Loading)
+    {
+        <span class="helix-stat__skeleton" aria-label="@Texts.Loading"></span>
+    }
+    else
+    {
+        <div class="helix-stat__value">
+            @(ValueText ?? Value?.ToString(Format, EffectiveCulture) ?? "—")
+            @if (!string.IsNullOrEmpty(Unit))
+            {
+                <span class="helix-stat__unit">@Unit</span>
+            }
+        </div>
+    }
+
+    <div class="helix-stat__foot">
+        @if (Delta is { } delta && !Loading)
+        {
+            var tone = Tone(delta);
+            <span class="helix-stat__delta is-@tone">
+                <HelixIcon Name="@(delta > 0 ? "trending-up" : delta < 0 ? "trending-down" : "minus")" Size="14" />
+                @delta.ToString(DeltaFormat, EffectiveCulture)
+                <span class="helix-sr-only">@(tone == "good" ? "(en mieux)" : tone == "bad" ? "(en moins bien)" : "")</span>
+            </span>
+            @if (!string.IsNullOrEmpty(DeltaLabel))
+            {
+                <span class="helix-stat__delta-label">@DeltaLabel</span>
+            }
+        }
+        @if (Trend is not null && !Loading)
+        {
+            var spark = Sparkline();
+            @if (spark is not null)
+            {
+                <svg class="helix-stat__spark" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="helix-stat__spark-area" d="@spark.Value.Area" />
+                    <path class="helix-stat__spark-line" d="@spark.Value.Line" />
+                    <path class="helix-stat__spark-dot" d="@spark.Value.Dot" />
+                </svg>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public double? Value { get; set; }
+
+    /// <summary>Text shown instead of the formatted Value (e.g. "3 h 20").</summary>
+    [Parameter] public string? ValueText { get; set; }
+    [Parameter] public string Format { get; set; } = "#,0.##";
+    [Parameter] public string? Unit { get; set; }
+
+    /// <summary>Change to show, e.g. 0.032 with DeltaFormat "+0.0 %;-0.0 %" or 12 with "+0;-0".</summary>
+    [Parameter] public double? Delta { get; set; }
+    [Parameter] public string DeltaFormat { get; set; } = "+0.#;-0.#;0";
+    [Parameter] public string? DeltaLabel { get; set; }
+
+    /// <summary>False when a decrease is good news (costs, incidents, imbalance…).</summary>
+    [Parameter] public bool HigherIsBetter { get; set; } = true;
+
+    /// <summary>Recent values for the sparkline (oldest first).</summary>
+    [Parameter] public IEnumerable<double?>? Trend { get; set; }
+    [Parameter] public string? TrendColor { get; set; }
+
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>Without card frame (inside a tile or a card).</summary>
+    [Parameter] public bool Bare { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--helix-stat-trend", TrendColor is null ? null : HelixColor.Resolve(TrendColor).Value)
+        .Raw(Style)
+        .Build();
+
+    private string Tone(double delta) =>
+        Math.Abs(delta) < 1e-12 ? "flat" : (delta > 0) == HigherIsBetter ? "good" : "bad";
+
+    private (string Line, string Area, string Dot)? Sparkline()
+    {
+        var values = Trend!.ToList();
+        var present = values.Where(v => v is not null).Select(v => v!.Value).ToList();
+        if (present.Count < 2)
+        {
+            return null;
+        }
+
+        var (min, max) = (present.Min(), present.Max());
+        if (max - min < 1e-9)
+        {
+            max = min + 1;
+        }
+
+        string X(int i) => HelixScale.Num(values.Count == 1 ? 50 : i * 100.0 / (values.Count - 1));
+        string Y(double v) => HelixScale.Num(29 - (v - min) / (max - min) * 26);
+
+        var line = new StringBuilder();
+        var pen = 'M';
+        int? first = null, last = null;
+        for (var i = 0; i < values.Count; i++)
+        {
+            if (values[i] is not { } v)
+            {
+                pen = 'M';
+                continue;
+            }
+
+            first ??= i;
+            last = i;
+            line.Append($"{pen}{X(i)} {Y(v)}");
+            pen = 'L';
+        }
+
+        var area = $"{line}L{X(last!.Value)} 32L{X(first!.Value)} 32Z";
+        var dot = $"M{X(last.Value)} {Y(values[last.Value]!.Value)}h0";
+        return (line.ToString(), area, dot);
+    }
+}

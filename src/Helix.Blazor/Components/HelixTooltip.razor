@@ -1,0 +1,33 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<span @attributes="Attributes" class="@ClassValue" style="@StyleValue">
+    @ChildContent
+    <span class="helix-tooltip__bubble" role="tooltip">@Text@Content</span>
+</span>
+
+@code {
+    /// <summary>The element that triggers the tooltip.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Rich content inside the bubble.</summary>
+    [Parameter] public RenderFragment? Content { get; set; }
+
+    /// <summary>Null: HelixOptions.Defaults.Tooltip.Placement, else Top.</summary>
+    [Parameter] public HelixPlacement? Placement { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? TextColor { get; set; }
+
+    /// <summary>Delay before showing, e.g. "0ms" or "500ms".</summary>
+    [Parameter] public string? Delay { get; set; }
+
+    private string ClassValue => new CssBuilder("helix-tooltip").Add($"helix-tooltip--{(Placement ?? Defaults.Tooltip.Placement ?? HelixPlacement.Top).Css()}").Add(Class).Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Var("--helix-tooltip-bg", Background)
+        .Var("--helix-tooltip-text", TextColor)
+        .Var("--helix-tooltip-delay", Delay)
+        .Raw(Style)
+        .Build();
+}

@@ -1,0 +1,37 @@
+@page "/components/pagination"
+
+<DemoPage Title="Pagination" Description="Navigation entre pages, autonome : pour une liste de cartes, des résultats de recherche ou une galerie. Pages longues repliées autour de la page courante.">
+    <Example WpfCode="@Wpf1" Title="Variantes" Code="@Code">
+        <div class="stack" style="gap:22px">
+            <HelixPagination @bind-Page="_page" TotalItems="243" PageSize="10" ShowInfo="true" />
+            <HelixPagination @bind-Page="_page" Count="25" ShowLabels="true" />
+            <HelixPagination @bind-Page="_page" Count="25" Compact="true" />
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixPagination" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixPagination Page="{Binding Page}" TotalItems="87" PageSize="10" ShowInfo="True" />
+        <helix:HelixPagination Page="{Binding Page}" Count="20" ShowLabels="True" />
+        <helix:HelixPagination Page="{Binding Page}" Count="20" IsCompact="True" />
+        """;
+
+    private int _page = 4;
+
+    private const string Code = """
+        <HelixPagination @bind-Page="page" TotalItems="243" PageSize="10" ShowInfo />
+        <HelixPagination @bind-Page="page" Count="25" ShowLabels />
+        <HelixPagination @bind-Page="page" Count="25" Compact />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Page", "int", null, "Page courante, à partir de 1 (@bind-Page)."),
+        new("Count · TotalItems + PageSize", "int", null, "Nombre de pages, ou calculé depuis le total."),
+        new("ShowInfo / ShowLabels / Compact", "bool", null, "« 31–40 sur 243 » ; textes Précédent/Suivant ; version réduite."),
+        new("Color", "string", "--helix-pagination-color", "Couleur de la page courante."),
+    ];
+}

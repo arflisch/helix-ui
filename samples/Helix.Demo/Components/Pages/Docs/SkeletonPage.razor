@@ -1,0 +1,63 @@
+@page "/components/skeleton"
+
+<DemoPage Title="Skeleton" Description="Silhouettes animées pendant le chargement : la mise en page ne saute pas quand les données arrivent.">
+    <Example WpfCode="@Wpf1" Title="Carte en chargement" Code="@Code">
+        <div class="stack">
+            <HelixSwitch Label="Chargement" @bind-Checked="_loading" />
+            <div class="grid-2">
+                <HelixCard>
+                    @if (_loading)
+                    {
+                        <div class="row" style="flex-wrap:nowrap">
+                            <HelixSkeleton Circle="true" Width="44px" />
+                            <div style="flex:1"><HelixSkeleton Lines="2" /></div>
+                        </div>
+                        <div style="margin-top:18px"><HelixSkeleton Height="120px" Radius="10px" /></div>
+                    }
+                    else
+                    {
+                        <div class="row" style="flex-wrap:nowrap">
+                            <HelixAvatar Name="Grace Hopper" Size="HelixSize.Lg" />
+                            <div><strong>Grace Hopper</strong><div class="muted" style="font-size:13px">Responsable dispatching</div></div>
+                        </div>
+                        <div style="margin-top:18px"><HelixStat Bare="true" Label="Demandes ce mois" Value="128" Delta="12" DeltaLabel="vs mois dernier" Trend="DemoData.Trend(9)" /></div>
+                    }
+                </HelixCard>
+                <HelixCard>
+                    <HelixSkeleton Lines="5" />
+                </HelixCard>
+            </div>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixSkeleton" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixCard>
+            <StackPanel>
+                <DockPanel>
+                    <helix:HelixSkeleton IsCircle="True" Width="44" Height="44" Margin="0,0,14,0" />
+                    <helix:HelixSkeleton Lines="2" VerticalAlignment="Center" />
+                </DockPanel>
+                <helix:HelixSkeleton Height="120" CornerRadius="10" Margin="0,16,0,0" />
+            </StackPanel>
+        </helix:HelixCard>
+        """;
+
+    private bool _loading = true;
+
+    private const string Code = """
+        <HelixSkeleton Circle Width="44px" />
+        <HelixSkeleton Lines="2" />
+        <HelixSkeleton Height="120px" Radius="10px" />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Lines", "int", null, "Plusieurs lignes de texte (la dernière plus courte)."),
+        new("Circle", "bool", null, "Forme ronde (avatar)."),
+        new("Width / Height / Radius", "string", null, "Dimensions et arrondi."),
+    ];
+}

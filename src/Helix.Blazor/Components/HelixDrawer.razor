@@ -1,0 +1,69 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+@if (Open)
+{
+    <div class="helix-drawer-backdrop" @onclick="OnBackdrop">
+        <aside @attributes="Attributes" @ref="_panel"
+               class="@(new CssBuilder("helix-drawer").Add($"helix-drawer--{Position.Css()}").Add(Class).Build())"
+               style="@(new StyleBuilder().Var("--helix-drawer-size", Size).Raw(Style).Build())"
+               role="dialog" aria-modal="true" aria-labelledby="@_titleId" tabindex="-1"
+               @onclick:stopPropagation="true" @onkeydown="OnKey">
+            <header class="helix-drawer__header">
+                <div>
+                    <h2 class="helix-drawer__title" id="@_titleId">@Title</h2>
+                    @if (!string.IsNullOrEmpty(Description))
+                    {
+                        <p class="helix-drawer__description">@Description</p>
+                    }
+                </div>
+                <button type="button" class="helix-close" aria-label="@Texts.Close" @onclick="Close"><HelixIcon Name="x" /></button>
+            </header>
+            <div class="helix-drawer__body">@ChildContent</div>
+            @if (Footer is not null)
+            {
+                <footer class="helix-drawer__footer">@Footer</footer>
+            }
+        </aside>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Right, Left or Bottom.</summary>
+    [Parameter] public HelixDrawerPosition Position { get; set; } = HelixDrawerPosition.Right;
+
+    /// <summary>Width (or height for Bottom), e.g. "420px" or "40vh".</summary>
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public bool CloseOnBackdrop { get; set; } = true;
+
+    private readonly string _titleId = HelixId.Next("drawer-title");
+    private ElementReference _panel;
+    private bool _wasOpen;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Open && !_wasOpen)
+        {
+            await _panel.FocusAsync();
+        }
+
+        _wasOpen = Open;
+    }
+
+    public async Task Close()
+    {
+        Open = false;
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private Task OnBackdrop() => CloseOnBackdrop ? Close() : Task.CompletedTask;
+
+    private Task OnKey(KeyboardEventArgs e) => e.Key == "Escape" ? Close() : Task.CompletedTask;
+}

@@ -1,0 +1,71 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@inject IServiceProvider Services
+
+@* Wrap your layout once: theme (light, dark or system), toasts and confirmations. *@
+@{
+    var selector = $"[data-helix-root=\"{_id}\"]";
+    var defaults = _options.Defaults.Declarations();
+    var sheet = Theme.ToStyleSheet(selector) + (defaults.Length > 0 ? $"{selector}{{{defaults}}}" : "");
+}
+@if (sheet.Length > 0)
+{
+    @* Values are sanitized by HelixTheme (no braces, semicolons or angle brackets): safe to write raw. *@
+    <style>@((MarkupString)sheet)</style>
+}
+<div @attributes="Attributes"
+     data-helix-root="@_id"
+     class="@(new CssBuilder("helix-root").Add(Class).Build())"
+     data-helix-theme="@ModeAttribute"
+     style="@Style">
+    <CascadingValue Value="_options">
+        @ChildContent
+
+        @if (ShowHosts && _hasToasts)
+        {
+            <HelixToastHost Position="ToastPosition" />
+        }
+        @if (ShowHosts && _hasConfirm)
+        {
+            <HelixConfirmHost />
+        }
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter] public HelixTheme Theme { get; set; } = new();
+    [Parameter] public HelixToastPosition ToastPosition { get; set; } = HelixToastPosition.BottomRight;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Texts and component defaults for everything inside. Null: the options registered with AddVelo.
+    /// A nested provider can pass its own, e.g. a French section in an English app.
+    /// </summary>
+    [Parameter] public HelixOptions? Options { get; set; }
+
+    /// <summary>
+    /// Renders the toast and confirmation hosts (true). Set false for a nested provider, e.g. a theme preview.
+    /// </summary>
+    [Parameter] public bool ShowHosts { get; set; } = true;
+
+    private readonly string _id = Guid.NewGuid().ToString("N")[..8];
+    private bool _hasToasts;
+    private bool _hasConfirm;
+    private HelixOptions _options = HelixOptions.Fallback;
+
+    private string ModeAttribute => Theme.Mode switch
+    {
+        HelixThemeMode.Dark => "dark",
+        HelixThemeMode.System => "system",
+        _ => "light",
+    };
+
+    protected override void OnInitialized()
+    {
+        _hasToasts = Services.GetService(typeof(HelixToastService)) is not null;
+        _hasConfirm = Services.GetService(typeof(HelixConfirmService)) is not null;
+    }
+
+    protected override void OnParametersSet() =>
+        _options = Options ?? Services.GetService(typeof(HelixOptions)) as HelixOptions ?? HelixOptions.Fallback;
+}

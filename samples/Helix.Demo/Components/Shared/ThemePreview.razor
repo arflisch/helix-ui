@@ -1,0 +1,32 @@
+@* A small, representative screen rendered with a theme forced to one mode. *@
+<HelixProvider Theme="Theme.Clone(Mode)" ShowHosts="false" Class="theme-preview">
+    <div class="theme-preview__head">
+        <span class="theme-preview__mode"><HelixIcon Name="@(Mode == HelixThemeMode.Dark ? "moon" : "sun")" Size="14" /> @(Mode == HelixThemeMode.Dark ? "Sombre" : "Clair")</span>
+        <HelixBadge Color="success" Dot="true">En ligne</HelixBadge>
+    </div>
+    <HelixCard Title="Demande de réserve" Subtitle="Envoi avant 14:00">
+        <ChildContent>
+            <div class="stack">
+                <HelixTextField Label="Site" Value="Usine de Lyon" Icon="search" />
+                <div class="grid-2">
+                    <HelixNumberField Label="Puissance" Value="120" Unit="MW" />
+                    <HelixSelect TValue="string" Label="Type" Items="Types" Value="@("Planifiée")" />
+                </div>
+                <HelixSwitch Label="Confirmer automatiquement" Checked="true" />
+                <HelixProgress Label="Capacité utilisée" Value="68" ShowValue="true" />
+            </div>
+        </ChildContent>
+        <Footer>
+            <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm">Annuler</HelixButton>
+            <HelixButton Size="HelixSize.Sm" Icon="check">Envoyer</HelixButton>
+        </Footer>
+    </HelixCard>
+    <HelixAlert Severity="HelixSeverity.Warning" Title="Seuil proche">Le déséquilibre approche 300 MW.</HelixAlert>
+</HelixProvider>
+
+@code {
+    private static readonly string[] Types = ["Directe", "Planifiée"];
+
+    [Parameter, EditorRequired] public HelixTheme Theme { get; set; } = new();
+    [Parameter] public HelixThemeMode Mode { get; set; } = HelixThemeMode.Light;
+}

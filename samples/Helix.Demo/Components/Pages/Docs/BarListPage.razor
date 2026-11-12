@@ -1,0 +1,66 @@
+@page "/components/barlist"
+@using System.Globalization
+@inject HelixToastService Toasts
+
+<DemoPage Title="BarList" Description="Classement en barres horizontales : le libellé dans la barre, la valeur à droite. Idéal pour « top N » (sites, clients, causes). Une seule couleur : les barres comparent une même mesure.">
+    <Example WpfCode="@Wpf1" Title="Top des sites" Code="@Code">
+        <div class="grid-2">
+            <HelixCard Title="Consommation par site" Subtitle="Cette semaine">
+                <HelixBarList Items="Sites" Unit="MWh" ValueFormat="N0" LabelHeader="Site" ValueHeader="MWh" Culture="French"
+                             OnItemClick="@(i => Toasts.Info($"{i.Value:N0} MWh", i.Label))" />
+            </HelixCard>
+            <HelixCard Title="Causes de rejet" Subtitle="30 derniers jours">
+                <HelixBarList Items="Causes" Limit="null" Color="#eb6834" ValueFormat="0" Culture="French" />
+            </HelixCard>
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixBarList" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixBarList x:Name="Sites" Limit="5" LabelHeader="Site" ValueHeader="Visites" Unit="k" ItemClick="OnSiteClick" />
+
+        // Code-behind
+        Sites.Items =
+        [
+            new HelixBarItem("helix-ui.dev", 128.4) { Icon = "external" },
+            new HelixBarItem("github.com", 82.1),
+            new HelixBarItem("google.com", 64.5),
+        ];
+
+        private void OnSiteClick(object sender, RoutedEventArgs e) =>
+            Open(((HelixEventArgs<HelixBarItem>)e).Value.Label);
+        """;
+
+    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+
+    private static readonly HelixBarItem[] Sites =
+    [
+        new("Usine de Lyon", 1840) { Icon = "zap" }, new("Entrepôt de Lille", 920), new("Siège Paris", 610),
+        new("Data center Marseille", 2410) { Icon = "settings" }, new("Atelier Nantes", 455), new("Agence Bordeaux", 180),
+        new("Agence Rennes", 140), new("Agence Strasbourg", 120),
+    ];
+
+    private static readonly HelixBarItem[] Causes =
+    [
+        new("Hors délai de dépôt", 14), new("Capacité insuffisante", 9), new("Prix hors bornes", 6), new("Doublon", 3),
+    ];
+
+    private const string Code = """
+        <HelixBarList Items="sites" Unit="MWh" ValueFormat="N0" Limit="5" OnItemClick="Open" />
+
+        // new HelixBarItem("Usine de Lyon", 1840) { Icon = "zap", Href = "/sites/lyon" }
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Items", "IEnumerable<HelixBarItem>", null, "HelixBarItem(Label, Value) { Icon, Href }."),
+        new("Sort / Limit", "bool / int?", null, "Tri décroissant (true) ; lignes affichées avant « Voir tout » (5, null = tout)."),
+        new("MaxValue", "double?", null, "Valeur d'une barre pleine (sinon la plus grande)."),
+        new("ValueFormat / Unit", "string", null, "Format et unité des valeurs."),
+        new("LabelHeader / ValueHeader", "string", null, "En-têtes de colonnes."),
+        new("Color / OnItemClick", "string / EventCallback<HelixBarItem>", "--helix-barlist-color", "Couleur des barres ; clic sur une ligne."),
+    ];
+}

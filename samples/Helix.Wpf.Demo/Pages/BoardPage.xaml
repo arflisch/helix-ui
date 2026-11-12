@@ -1,0 +1,79 @@
+<UserControl x:Class="Helix.Wpf.Demo.Pages.BoardPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="https://helix-ui.dev/wpf">
+    <StackPanel>
+        <TextBlock Style="{StaticResource PageTitle}" Text="Organisation" />
+        <TextBlock Style="{StaticResource PageLead}" Text="Kanban, liste à réordonner, tableau de bord personnalisable et arbres (liste ou organigramme)." />
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Kanban" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Glissez les cartes entre colonnes. La colonne « En revue » est limitée à 2 cartes (le compteur passe en rouge au-delà)." />
+        <helix:HelixKanban x:Name="Board" ColumnPath="Column" ShowAddButton="True" Height="360" Margin="0,0,0,32">
+            <helix:HelixKanban.CardTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <DockPanel Margin="0,8,0,0">
+                            <helix:HelixAvatar DockPanel.Dock="Right" DisplayName="{Binding Owner}" Size="Sm" />
+                            <helix:HelixBadge Content="{Binding Tag}" Tone="{Binding Tone}" />
+                        </DockPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </helix:HelixKanban.CardTemplate>
+        </helix:HelixKanban>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="SortableList" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Glissez une ligne, ou Alt + ↑ / ↓ sur la ligne sélectionnée." />
+        <Border Style="{StaticResource Stage}">
+            <helix:HelixSortableList x:Name="Priorities" MaxWidth="420" HorizontalAlignment="Left" />
+        </Border>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Dashboard" />
+        <TextBlock Style="{StaticResource SectionText}" Text="« Modifier la disposition » : déplacer, élargir ou masquer les tuiles. Layout garde la disposition (à enregistrer)." />
+        <helix:HelixDashboard x:Name="Dash" Title="Exploitation" ColumnCount="3" Margin="0,0,0,32">
+            <helix:HelixDashboardTile TileId="kpi" IsPlain="True" DefaultSpan="3" CanHide="False">
+                <UniformGrid Columns="3">
+                    <Border Style="{StaticResource Stage}" Margin="0,0,8,0">
+                        <helix:HelixStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" />
+                    </Border>
+                    <Border Style="{StaticResource Stage}" Margin="8,0">
+                        <helix:HelixStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0.8" />
+                    </Border>
+                    <Border Style="{StaticResource Stage}" Margin="8,0,0,0">
+                        <helix:HelixStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" />
+                    </Border>
+                </UniformGrid>
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="chart" Title="Charge" DefaultSpan="2">
+                <helix:HelixProgress Label="Réseau" ShowValue="True" Value="72" />
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="team" Title="Équipe">
+                <helix:HelixAvatarGroup Max="4">
+                    <helix:HelixAvatar DisplayName="Camille Martin" Status="Online" />
+                    <helix:HelixAvatar DisplayName="Léo Bernard" />
+                    <helix:HelixAvatar DisplayName="Inès Petit" Status="Away" />
+                    <helix:HelixAvatar DisplayName="Hugo Robert" />
+                    <helix:HelixAvatar DisplayName="Chloé Richard" />
+                    <helix:HelixAvatar DisplayName="Nathan Durand" />
+                </helix:HelixAvatarGroup>
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="alerts" Title="Alertes" DefaultSpan="3">
+                <helix:HelixAlert Severity="Warning" Title="Maintenance" Content="Turbine 3 à l'arrêt de 14 h à 16 h." />
+            </helix:HelixDashboardTile>
+        </helix:HelixDashboard>
+
+        <TextBlock Style="{StaticResource SectionTitle}" Text="TreeView" />
+        <UniformGrid Columns="2" Margin="0,0,0,32">
+            <Border Style="{StaticResource Stage}" Margin="0,0,12,0">
+                <helix:HelixTreeView x:Name="Files" ChildrenPath="Children" TextPath="Name" IconPath="Icon" ExpandDepth="2" Height="300" />
+            </Border>
+            <Border Style="{StaticResource Stage}" Margin="12,0,0,0">
+                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}"
+                           Text="Le même contrôle avec Layout=&quot;Diagram&quot; dessine un organigramme (ci-dessous). Les + / − déplient les branches." />
+            </Border>
+        </UniformGrid>
+        <Border Style="{StaticResource Stage}">
+            <helix:HelixTreeView x:Name="Org" Layout="Diagram" ChildrenPath="Children" TextPath="Name" DescriptionPath="Role" ExpandDepth="3" />
+        </Border>
+    </StackPanel>
+</UserControl>

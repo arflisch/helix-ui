@@ -1,0 +1,106 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@using System.Globalization
+@inject IJSRuntime JS
+
+<div @attributes="Attributes" @ref="_root"
+     class="@(new CssBuilder("helix-splitter").Add(Vertical ? "helix-splitter--vertical" : "helix-splitter--horizontal").Add(Class).Build())"
+     style="@(new StyleBuilder().Var("--_size", $"{Inv(Size)}%").Var("height", Height).Raw(Style).Build())">
+    <div class="helix-splitter__pane is-first">@First</div>
+    <div class="helix-splitter__divider" role="separator" tabindex="0"
+         aria-orientation="@(Vertical ? "horizontal" : "vertical")"
+         aria-valuemin="@Inv(Min)" aria-valuemax="@Inv(Max)" aria-valuenow="@Math.Round(Size)"
+         aria-label="@(AriaLabel ?? Texts.ResizePanels)" title="@Texts.ResizeHint"
+         @ondblclick="Reset">
+        <span class="helix-splitter__grip"></span>
+    </div>
+    <div class="helix-splitter__pane is-second">@Second</div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? First { get; set; }
+    [Parameter] public RenderFragment? Second { get; set; }
+
+    /// <summary>Size of the first pane, in percent. @bind-Size to keep it.</summary>
+    [Parameter] public double Size { get; set; } = 50;
+    [Parameter] public EventCallback<double> SizeChanged { get; set; }
+    [Parameter] public double Min { get; set; } = 15;
+    [Parameter] public double Max { get; set; } = 85;
+
+    /// <summary>Panes stacked (top / bottom) instead of side by side.</summary>
+    [Parameter] public bool Vertical { get; set; }
+
+    /// <summary>Container height, needed for a vertical splitter (e.g. "420px").</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>Arrow-key step in percent.</summary>
+    [Parameter] public double KeyboardStep { get; set; } = 5;
+    [Parameter] public string? AriaLabel { get; set; }
+
+    private ElementReference _root;
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _handle;
+    private DotNetObjectReference<HelixSplitter>? _self;
+    private double? _initial;
+    private object? _lastOptions;
+
+    private object Options => new { min = Min, max = Max, vertical = Vertical, step = KeyboardStep };
+
+    private static string Inv(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    protected override void OnParametersSet() => _initial ??= Size;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            var key = (Min, Max, Vertical, KeyboardStep);
+            if (firstRender)
+            {
+                _module = await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+                _self = DotNetObjectReference.Create(this);
+                _handle = await _module.InvokeAsync<IJSObjectReference>("attachSplitter", _root, _self, Options);
+            }
+            else if (_handle is not null && !Equals(key, _lastOptions))
+            {
+                await _handle.InvokeVoidAsync("update", Options);
+            }
+
+            _lastOptions = key;
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit closed.
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnResized(double size)
+    {
+        Size = Math.Round(Math.Clamp(size, Min, Max), 1);
+        await SizeChanged.InvokeAsync(Size);
+        StateHasChanged();
+    }
+
+    private Task Reset() => OnResized(_initial ?? 50);
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_handle is not null)
+            {
+                await _handle.InvokeVoidAsync("dispose");
+                await _handle.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit closed.
+        }
+
+        await HelixJs.DisposeQuietlyAsync(_module);
+        _self?.Dispose();
+    }
+}

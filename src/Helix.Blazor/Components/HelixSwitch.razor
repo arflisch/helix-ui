@@ -1,0 +1,125 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<label class="@ClassValue" style="@StyleValue">
+    <input @attributes="Attributes"
+           type="checkbox"
+           role="switch"
+           class="helix-sr-input helix-switch__input"
+           checked="@Checked"
+           disabled="@Disabled"
+           aria-checked="@(Checked ? "true" : "false")"
+           aria-describedby="@(string.IsNullOrEmpty(Description) ? null : _descriptionId)"
+           @onchange="OnChange" />
+    <span class="helix-switch__track">
+        @if (HasText)
+        {
+            <span class="helix-switch__state is-on" aria-hidden="true">@OnText</span>
+            <span class="helix-switch__state is-off" aria-hidden="true">@OffText</span>
+        }
+        <span class="helix-switch__thumb">
+            @if (!string.IsNullOrEmpty(OnIcon))
+            {
+                <HelixIcon Name="@OnIcon" Size="IconSize" StrokeWidth="2.5" Class="helix-switch__icon is-on" />
+            }
+            @if (!string.IsNullOrEmpty(OffIcon))
+            {
+                <HelixIcon Name="@OffIcon" Size="IconSize" StrokeWidth="2.5" Class="helix-switch__icon is-off" />
+            }
+        </span>
+    </span>
+    @if (!string.IsNullOrEmpty(Label) || ChildContent is not null || !string.IsNullOrEmpty(Description))
+    {
+        <span class="helix-switch__text">
+            @if (!string.IsNullOrEmpty(Label) || ChildContent is not null)
+            {
+                <span class="helix-switch__label">@Label@ChildContent</span>
+            }
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <span class="helix-switch__description" id="@_descriptionId">@Description</span>
+            }
+        </span>
+    }
+</label>
+
+@code {
+    [Parameter] public bool Checked { get; set; }
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Second line under the label, smaller and muted; read by screen readers with the switch.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Label after the switch (End) or before it (Start). Null: HelixOptions.Defaults.Switch.LabelPosition, else End.</summary>
+    [Parameter] public HelixLabelPosition? LabelPosition { get; set; }
+
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Null: the app default (Switch, then global), else Md.</summary>
+    [Parameter] public HelixSize? Size { get; set; }
+
+    /// <summary>Built-in icon shown in the thumb when ON, e.g. "check" or "moon".</summary>
+    [Parameter] public string? OnIcon { get; set; }
+
+    /// <summary>Built-in icon shown in the thumb when OFF, e.g. "x" or "sun".</summary>
+    [Parameter] public string? OffIcon { get; set; }
+
+    /// <summary>Short text inside the track when ON, e.g. "ON" or "Auto". The track grows to fit the longer text.</summary>
+    [Parameter] public string? OnText { get; set; }
+
+    /// <summary>Short text inside the track when OFF, e.g. "OFF".</summary>
+    [Parameter] public string? OffText { get; set; }
+
+    /// <summary>Minimum track width when it shows a text, e.g. "80px" so several switches line up.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Track color when ON. Semantic name or any CSS color.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Track color when OFF.</summary>
+    [Parameter] public string? TrackColor { get; set; }
+
+    /// <summary>Color of the thumb (the knob).</summary>
+    [Parameter] public string? ThumbColor { get; set; }
+
+    /// <summary>Color of the thumb when ON (defaults to <see cref="ThumbColor"/>).</summary>
+    [Parameter] public string? ThumbOnColor { get; set; }
+
+    /// <summary>Corner radius of track and thumb, e.g. "6px" for a square switch.</summary>
+    [Parameter] public string? Radius { get; set; }
+
+    private readonly string _descriptionId = HelixId.Next("switch-desc");
+
+    private HelixSize EffectiveSize => Size ?? Defaults.Switch.Size ?? Defaults.Size ?? HelixSize.Md;
+
+    private bool HasText => !string.IsNullOrEmpty(OnText) || !string.IsNullOrEmpty(OffText);
+
+    private int IconSize => EffectiveSize switch { HelixSize.Sm => 9, HelixSize.Lg => 13, _ => 11 };
+
+    private string ClassValue => new CssBuilder("helix-switch")
+        .Add($"helix-switch--{EffectiveSize.Css()}")
+        .Add("helix-switch--label-start", (LabelPosition ?? Defaults.Switch.LabelPosition) == HelixLabelPosition.Start)
+        .Add("has-text", HasText)
+        .Add("is-checked", Checked)
+        .Add("is-disabled", Disabled)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("switch", Color)
+        .Var("--helix-switch-track", TrackColor)
+        .Var("--helix-switch-thumb", ThumbColor)
+        .Var("--helix-switch-thumb-on", ThumbOnColor)
+        .Var("--helix-switch-radius", Radius)
+        .Var("--helix-switch-width", Width)
+        .Raw(Style)
+        .Build();
+
+    private Task OnChange(ChangeEventArgs e)
+    {
+        Checked = e.Value is true;
+        return CheckedChanged.InvokeAsync(Checked);
+    }
+}

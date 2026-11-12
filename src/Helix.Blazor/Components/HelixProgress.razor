@@ -1,0 +1,48 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+<div @attributes="Attributes" class="@ClassValue" style="@StyleValue">
+    @if (!string.IsNullOrEmpty(Label) || (ShowValue && !Indeterminate))
+    {
+        <div class="helix-progress__header">
+            <span class="helix-progress__label">@Label</span>
+            @if (ShowValue && !Indeterminate)
+            {
+                <span class="helix-progress__value">@Math.Round(Percent)%</span>
+            }
+        </div>
+    }
+    <div class="helix-progress__track"
+         role="progressbar"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         aria-valuenow="@(Indeterminate ? null : Math.Round(Percent).ToString(CultureInfo.InvariantCulture))">
+        <div class="helix-progress__bar" style="@(Indeterminate ? null : $"width:{Percent.ToString(CultureInfo.InvariantCulture)}%")"></div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Between 0 and <see cref="Max"/>.</summary>
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public bool Indeterminate { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool ShowValue { get; set; }
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? TrackColor { get; set; }
+
+    /// <summary>Bar thickness, e.g. "4px".</summary>
+    [Parameter] public string? Height { get; set; }
+
+    private double Percent => Max <= 0 ? 0 : Math.Clamp(Value / Max * 100, 0, 100);
+
+    private string ClassValue => new CssBuilder("helix-progress").Add("is-indeterminate", Indeterminate).Add(Class).Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("progress", Color)
+        .Var("--helix-progress-track", TrackColor)
+        .Var("--helix-progress-height", Height)
+        .Raw(Style)
+        .Build();
+}

@@ -1,0 +1,70 @@
+@page "/components/progress"
+@using static Helix.Demo.Components.Shared.Snippet
+
+<DemoPage Title="Progress" Description="Barre de progression déterminée ou indéterminée, et spinner.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:380px">
+                <HelixProgress Value="_value" Label="@_label" ShowValue="_showValue" Indeterminate="_indeterminate" Color="@_color" Height="@($"{N(_height)}px")" />
+            </div>
+        </Preview>
+        <Controls>
+            <HelixTextField Label="Label" @bind-Value="_label" />
+            <HelixSlider Label="Value" @bind-Value="_value" />
+            <HelixSlider Label="Height" @bind-Value="_height" Min="2" Max="16" Format="@(v => $"{v} px")" />
+            <ColorPicker Label="Color" @bind-Value="_color" />
+            <HelixSwitch Label="ShowValue" @bind-Checked="_showValue" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Indeterminate" @bind-Checked="_indeterminate" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example WpfCode="@Wpf2" Title="Spinner" Code="@SpinnerCode">
+        <div class="row" style="gap:24px">
+            <HelixSpinner />
+            <HelixSpinner Size="28px" Color="success" />
+            <HelixSpinner Size="36px" Thickness="3px" Color="#ec4899" />
+        </div>
+    </Example>
+
+    <ApiTable Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixProgress Label="Import des données" Value="{Binding Percent}" ShowValue="True"
+                           BarHeight="8" Accent="#10B981" TrackBrush="#DCFCE7" />
+        <helix:HelixProgress Label="Synchronisation" IsIndeterminate="True" />
+        """;
+
+    private const string Wpf2 = """
+        <helix:HelixSpinner />
+        <helix:HelixSpinner Size="28" Tone="Success" />
+        <helix:HelixSpinner Size="36" Thickness="3" Accent="#FF8A00" />
+        <!-- Dans un bouton : IsLoading="True" affiche le spinner à la place du texte -->
+        """;
+
+    private double _value = 64, _height = 8;
+    private string? _label = "Téléversement";
+    private string? _color;
+    private bool _showValue = true, _indeterminate;
+
+    private string Code =>
+        $"<HelixProgress Value=\"{N(_value)}\"{A("Label", _label)}{A("Color", _color)}{A("Height", $"{N(_height)}px", "8px")}{B("ShowValue", _showValue)}{B("Indeterminate", _indeterminate)} />";
+
+    private const string SpinnerCode = """
+        <HelixSpinner />
+        <HelixSpinner Size="28px" Color="success" />
+        <HelixSpinner Size="36px" Thickness="3px" Color="#ec4899" />
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Value / Max", "double", null, "Progression (Max = 100 par défaut)."),
+        new("Indeterminate", "bool", null, "Animation continue sans valeur."),
+        new("Label / ShowValue", "string / bool", null, "En-tête au-dessus de la barre."),
+        new("Color", "string", "--helix-progress-color", "Couleur de la barre."),
+        new("TrackColor", "string", "--helix-progress-track", "Fond de la piste."),
+        new("Height", "string", "--helix-progress-height", "Épaisseur."),
+        new("Spinner : Color / Size / Thickness", "string", "--helix-spinner-*", "Couleur, taille, épaisseur."),
+    ];
+}

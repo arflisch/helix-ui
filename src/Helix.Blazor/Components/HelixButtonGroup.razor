@@ -1,0 +1,16 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+@* Attached buttons: put HelixButtons (or a HelixMenu) inside. *@
+<div @attributes="Attributes" role="group" aria-label="@Label"
+     class="@(new CssBuilder("helix-btn-group").Add("helix-btn-group--vertical", Vertical).Add(Class).Build())" style="@Style">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Accessible name of the group, e.g. "Alignement du texte".</summary>
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Vertical { get; set; }
+}

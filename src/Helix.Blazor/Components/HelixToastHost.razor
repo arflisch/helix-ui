@@ -1,0 +1,43 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+@inject HelixToastService Toasts
+
+<div class="helix-toasts helix-toasts--@Position.Css()" role="region" aria-live="polite" aria-label="Notifications">
+    @foreach (var toast in Toasts.Toasts)
+    {
+        var color = HelixColor.FromSeverity(toast.Severity);
+        <div @key="toast.Id" class="helix-toast" style="@ToastStyle(toast, color)">
+            <span class="helix-toast__icon"><HelixIcon Name="@color" Size="18" /></span>
+            <div class="helix-toast__content">
+                @if (!string.IsNullOrEmpty(toast.Title))
+                {
+                    <p class="helix-toast__title">@toast.Title</p>
+                }
+                <p class="helix-toast__message">@toast.Message</p>
+            </div>
+            <button type="button" class="helix-close" aria-label="@Texts.Close" @onclick="() => Toasts.Dismiss(toast.Id)">
+                <HelixIcon Name="x" Size="14" />
+            </button>
+            @if (toast.Duration > TimeSpan.Zero)
+            {
+                <span class="helix-toast__progress"></span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public HelixToastPosition Position { get; set; } = HelixToastPosition.BottomRight;
+
+    protected override void OnInitialized() => Toasts.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private static string? ToastStyle(HelixToast toast, string color) => new StyleBuilder()
+        .Color("toast", color)
+        .Var("--helix-toast-duration", $"{toast.Duration.TotalMilliseconds:0}ms")
+        .Build();
+
+    public void Dispose() => Toasts.Changed -= OnChanged;
+}

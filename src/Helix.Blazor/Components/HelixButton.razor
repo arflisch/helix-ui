@@ -1,0 +1,72 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+
+<button @attributes="Attributes"
+        type="@Type"
+        class="@ClassValue"
+        style="@StyleValue"
+        disabled="@(Disabled || Loading)"
+        aria-busy="@(Loading ? "true" : null)"
+        @onclick="OnClick">
+    @if (Loading)
+    {
+        <span class="helix-btn__spinner" aria-hidden="true"></span>
+    }
+    else if (!string.IsNullOrEmpty(Icon))
+    {
+        <HelixIcon Name="@Icon" Size="IconSize" />
+    }
+    @ChildContent
+    @if (!string.IsNullOrEmpty(IconEnd))
+    {
+        <HelixIcon Name="@IconEnd" Size="IconSize" />
+    }
+</button>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Solid, Soft, Outline or Ghost.</summary>
+    /// <summary>Null: HelixOptions.Defaults.Button.Variant, else Solid.</summary>
+    [Parameter] public HelixVariant? Variant { get; set; }
+
+    /// <summary>"primary", "neutral", "success", "warning", "danger", "info" or any CSS color.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Overrides the text color (otherwise computed from <see cref="Color"/>).</summary>
+    [Parameter] public string? TextColor { get; set; }
+
+    /// <summary>Corner radius, e.g. "999px" for a pill.</summary>
+    [Parameter] public string? Radius { get; set; }
+
+    /// <summary>Null: the app default (Button, then global), else Md.</summary>
+    [Parameter] public HelixSize? Size { get; set; }
+
+    private HelixVariant EffectiveVariant => Variant ?? Defaults.Button.Variant ?? HelixVariant.Solid;
+    private HelixSize EffectiveSize => Size ?? Defaults.Button.Size ?? Defaults.Size ?? HelixSize.Md;
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? IconEnd { get; set; }
+    [Parameter] public bool Block { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    private int IconSize => EffectiveSize switch { HelixSize.Sm => 14, HelixSize.Lg => 18, _ => 16 };
+
+    private string ClassValue => new CssBuilder("helix-btn")
+        .Add($"helix-btn--{EffectiveVariant.Css()}")
+        .Add($"helix-btn--{EffectiveSize.Css()}")
+        .Add("helix-btn--block", Block)
+        .Add("helix-btn--icon-only", ChildContent is null && (Icon is not null || IconEnd is not null))
+        .Add("is-loading", Loading)
+        .Add(Class)
+        .Build();
+
+    private string? StyleValue => new StyleBuilder()
+        .Color("btn", Color)
+        .Var("--helix-btn-text", TextColor)
+        .Var("--helix-btn-radius", Radius)
+        .Raw(Style)
+        .Build();
+}
