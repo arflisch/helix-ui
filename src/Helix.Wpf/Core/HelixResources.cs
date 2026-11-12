@@ -73,6 +73,51 @@ public class HelixResources : ResourceDictionary
     public FontFamily FontFamily { get => _fontFamily; set { _fontFamily = value; Refresh(); } }
     public double FontSize { get => _fontSize; set { _fontSize = value; Refresh(); } }
 
+    private string? _follow;
+
+    /// <summary>
+    /// Takes the colors of the app's own theme, so Helix screens blend in: "MaterialDesign", or your keys,
+    /// e.g. "Primary=AccentBrush;Surface=CardBrush;Text=TextBrush" (Helix token = app brush key; "a|b" tries a then b).
+    /// Call Refresh() after the app switches theme.
+    /// </summary>
+    public string? Follow { get => _follow; set { _follow = value; Refresh(); } }
+
+    /// <summary>MaterialDesign In XAML keys (v4 and v5 names) for each Helix token.</summary>
+    public const string MaterialDesignMap =
+        "Primary=PrimaryHueMidBrush|MaterialDesign.Brush.Primary;" +
+        "OnPrimary=PrimaryHueMidForegroundBrush|MaterialDesign.Brush.Primary.Foreground;" +
+        "Background=MaterialDesignPaper|MaterialDesign.Brush.Background;" +
+        "Surface=MaterialDesignCardBackground|MaterialDesign.Brush.Card.Background;" +
+        "Text=MaterialDesignBody|MaterialDesign.Brush.Foreground;" +
+        "TextMuted=MaterialDesignBodyLight|MaterialDesign.Brush.ForegroundLight;" +
+        "Border=MaterialDesignDivider|MaterialDesign.Brush.Separator;" +
+        "Danger=MaterialDesignValidationErrorBrush|MaterialDesign.Brush.ValidationError";
+
+    /// <summary>Overrides tokens with the app's brushes (Follow).</summary>
+    private void ApplyFollow()
+    {
+        if (string.IsNullOrWhiteSpace(_follow) || Application.Current is not { } app) return;
+        var map = _follow.Trim().Equals("MaterialDesign", StringComparison.OrdinalIgnoreCase) ? MaterialDesignMap : _follow;
+        foreach (var pair in map.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var parts = pair.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length != 2) continue;
+            var helixKey = parts[0].StartsWith("Helix.", StringComparison.Ordinal) ? parts[0] : "Helix." + parts[0];
+            var brush = parts[1].Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(app.TryFindResource).OfType<SolidColorBrush>().FirstOrDefault();
+            if (brush is null) continue;
+            var copy = new SolidColorBrush(brush.Color);
+            copy.Freeze();
+            this[helixKey] = copy;
+            if (helixKey == HelixKeys.Primary)
+            {
+                var soft = new SolidColorBrush(Color.FromArgb(IsDark ? (byte)0x33 : (byte)0x1F, brush.Color.R, brush.Color.G, brush.Color.B));
+                soft.Freeze();
+                this[HelixKeys.PrimarySoft] = soft;
+            }
+        }
+    }
+
     /// <summary>True when the dark colors are in use (Dark, or System with Windows in dark mode).</summary>
     public bool IsDark => Mode == HelixThemeMode.Dark || (Mode == HelixThemeMode.System && WindowsUsesDarkMode());
 
@@ -92,6 +137,8 @@ public class HelixResources : ResourceDictionary
         var soft = new SolidColorBrush(Color.FromArgb(IsDark ? (byte)0x33 : (byte)0x1F, primary.R, primary.G, primary.B));
         soft.Freeze();
         this[HelixKeys.PrimarySoft] = soft;
+
+        ApplyFollow();
 
         this[HelixKeys.Radius] = _radius;
         this[HelixKeys.RadiusSmall] = new CornerRadius(Math.Max(0, _radius.TopLeft - 4));

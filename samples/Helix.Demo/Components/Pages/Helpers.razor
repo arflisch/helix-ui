@@ -28,6 +28,8 @@
             <HelixDescription Label="Your view in a dialog"><code>HelixDialogService.ShowAsync&lt;T&gt;</code> (Blazor), <code>HelixDialogs.ShowAsync&lt;T&gt;</code> (WPF).</HelixDescription>
             <HelixDescription Label="Remember user settings"><code>RememberAs</code> on grid, dashboard, filters, splitter: see the guide page.</HelixDescription>
             <HelixDescription Label="Filters as text"><code>HelixFilterBar.State</code>: a key → text dictionary to save or send to a server.</HelixDescription>
+            <HelixDescription Label="Blend into an existing WPF app" Span="2"><code>&lt;helix:HelixResources Follow="MaterialDesign" /&gt;</code> takes the colors of a MaterialDesign theme (v4 or v5);
+                or map your own brushes: <code>Follow="Primary=AccentBrush;Surface=CardBrush;Text=TextBrush"</code>. Call <code>Refresh()</code> after the app switches theme.</HelixDescription>
         </HelixDescriptionList>
     </section>
 </DemoPage>
