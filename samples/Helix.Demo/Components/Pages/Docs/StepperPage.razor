@@ -1,16 +1,16 @@
 @page "/components/stepper"
 @inject HelixToastService Toasts
 
-<DemoPage Title="Stepper" Description="Les étapes d'un parcours (assistant, commande, onboarding) : faites, en cours, à venir, en erreur. Les étapes terminées sont cliquables pour revenir en arrière.">
-    <Example WpfCode="@Wpf1" Title="Assistant" Code="@Code">
+<DemoPage Title="Stepper" Description="The steps of a flow (wizard, checkout, onboarding): done, current, upcoming, in error. Finished steps can be clicked to go back.">
+    <Example WpfCode="@Wpf1" Title="Wizard" Code="@Code">
         <div class="stack" style="gap:24px">
             <HelixStepper Steps="Steps" @bind-ActiveIndex="_active" ErrorSteps="@(_error ? new[] { 1 } : null)" />
             <HelixCard>
                 <p style="margin:0 0 14px"><strong>@Steps[_active].Title</strong> <span class="muted">— @Steps[_active].Description</span></p>
                 <div class="row">
-                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Disabled="@(_active == 0)" OnClick="() => _active--">Précédent</HelixButton>
-                    <HelixButton IconEnd="arrow-right" OnClick="Next">@(_active == Steps.Length - 1 ? "Terminer" : "Suivant")</HelixButton>
-                    <HelixSwitch Label="Étape 2 en erreur" @bind-Checked="_error" Size="HelixSize.Sm" />
+                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Disabled="@(_active == 0)" OnClick="() => _active--">Previous</HelixButton>
+                    <HelixButton IconEnd="arrow-right" OnClick="Next">@(_active == Steps.Length - 1 ? "Finish" : "Next")</HelixButton>
+                    <HelixSwitch Label="Step 2 in error" @bind-Checked="_error" Size="HelixSize.Sm" />
                 </div>
             </HelixCard>
         </div>
@@ -30,7 +30,7 @@
         <helix:HelixStepper Steps="{Binding Steps}" ActiveIndex="{Binding Step}" IsClickable="True" ErrorSteps="{Binding InvalidSteps}" />
 
         // ViewModel
-        Steps = [new HelixStep("Compte", "E-mail et mot de passe"), new HelixStep("Profil"), new HelixStep("Équipe"), new HelixStep("Terminé")];
+        Steps = [new HelixStep("Account", "Email and password"), new HelixStep("Profile"), new HelixStep("Team"), new HelixStep("Done")];
         """;
 
     private const string Wpf2 = """
@@ -39,10 +39,10 @@
 
     private static readonly HelixStep[] Steps =
     [
-        new("Site", "Choisir le site concerné"),
-        new("Puissance", "Indiquer la puissance et la période"),
-        new("Prix", "Fixer le prix plafond"),
-        new("Envoi", "Vérifier et envoyer"),
+        new("Site", "Choose the site"),
+        new("Power", "Enter the power and the period"),
+        new("Price", "Set the price cap"),
+        new("Send", "Check and send"),
     ];
 
     private int _active = 1;
@@ -56,7 +56,7 @@
         }
         else
         {
-            Toasts.Success("Demande envoyée");
+            Toasts.Success("Request sent");
             _active = 0;
         }
     }
@@ -64,15 +64,15 @@
     private const string Code = """
         <HelixStepper Steps="steps" @bind-ActiveIndex="active" ErrorSteps="errors" />
 
-        // new HelixStep("Puissance", "Indiquer la puissance et la période")
+        // new HelixStep("Power", "Enter the power and the period")
         """;
 
     private static readonly ApiRow[] Api =
     [
         new("Steps", "IReadOnlyList<HelixStep>", null, "(Title, Description?)."),
-        new("ActiveIndex", "int", null, "Étape courante (@bind-ActiveIndex) ; celles d'avant sont faites."),
-        new("ErrorSteps", "IReadOnlyCollection<int>", null, "Étapes en erreur (icône + texte, pas seulement du rouge)."),
-        new("Clickable / AllowSkip", "bool", null, "Revenir aux étapes faites (true) ; sauter vers l'avant."),
-        new("Vertical / Color", "bool / string", "--helix-stepper-color", "Orientation ; couleur."),
+        new("ActiveIndex", "int", null, "Current step (@bind-ActiveIndex); the ones before are done."),
+        new("ErrorSteps", "IReadOnlyCollection<int>", null, "Steps in error (icon + text, not only red)."),
+        new("Clickable / AllowSkip", "bool", null, "Go back to finished steps (true); skip ahead."),
+        new("Vertical / Color", "bool / string", "--helix-stepper-color", "Orientation; color."),
     ];
 }

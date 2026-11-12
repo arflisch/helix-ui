@@ -13,7 +13,7 @@ namespace Helix.Wpf;
 /// </summary>
 [TemplatePart(Name = "PART_Plot", Type = typeof(HelixPlot))]
 [TemplatePart(Name = "PART_Legend", Type = typeof(Panel))]
-public class HelixDonut : Control, IVeloThemeAware
+public class HelixDonut : Control, IHelixThemeAware
 {
     static HelixDonut() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixDonut), new FrameworkPropertyMetadata(typeof(HelixDonut)));
 
@@ -85,7 +85,7 @@ public class HelixDonut : Control, IVeloThemeAware
         Refresh();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Refresh();
+    void IHelixThemeAware.OnThemeChanged() => Refresh();
 
     private void SetHover(int? index)
     {
@@ -263,7 +263,7 @@ public class HelixDonut : Control, IVeloThemeAware
 }
 
 /// <summary>A dial for one value between Min and Max. Thresholds color the arc and name the zone (icon-free text, not color alone).</summary>
-public class HelixGauge : FrameworkElement, IVeloThemeAware
+public class HelixGauge : FrameworkElement, IHelixThemeAware
 {
     public HelixGauge() => HelixTheme.Watch(this);
 
@@ -291,7 +291,7 @@ public class HelixGauge : FrameworkElement, IVeloThemeAware
     public Brush? Accent { get => (Brush?)GetValue(AccentProperty); set => SetValue(AccentProperty, value); }
     public double Size { get => (double)GetValue(SizeProperty); set => SetValue(SizeProperty, value); }
 
-    void IVeloThemeAware.OnThemeChanged() => InvalidateVisual();
+    void IHelixThemeAware.OnThemeChanged() => InvalidateVisual();
 
     protected override Size MeasureOverride(Size availableSize) => new(Size, Size * 0.86);
 
@@ -348,7 +348,7 @@ public class HelixGauge : FrameworkElement, IVeloThemeAware
 /// Hover shows the exact value; ShowValues writes it in the cells.
 /// </summary>
 [TemplatePart(Name = "PART_Plot", Type = typeof(HelixPlot))]
-public class HelixHeatmap : Control, IVeloThemeAware
+public class HelixHeatmap : Control, IHelixThemeAware
 {
     static HelixHeatmap() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixHeatmap), new FrameworkPropertyMetadata(typeof(HelixHeatmap)));
 
@@ -422,7 +422,7 @@ public class HelixHeatmap : Control, IVeloThemeAware
         Refresh();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => _plot?.InvalidateVisual();
+    void IHelixThemeAware.OnThemeChanged() => _plot?.InvalidateVisual();
 
     private void Refresh()
     {
@@ -554,7 +554,7 @@ public class HelixHeatmap : Control, IVeloThemeAware
 
 /// <summary>A ranked list with proportional bars behind the labels (top pages, sources, countries…).</summary>
 [TemplatePart(Name = "PART_Rows", Type = typeof(Panel))]
-public class HelixBarList : Control, IVeloThemeAware
+public class HelixBarList : Control, IHelixThemeAware
 {
     static HelixBarList() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixBarList), new FrameworkPropertyMetadata(typeof(HelixBarList)));
 
@@ -622,7 +622,7 @@ public class HelixBarList : Control, IVeloThemeAware
         Build();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Build();
+    void IHelixThemeAware.OnThemeChanged() => Build();
 
     private void Build()
     {

@@ -5,27 +5,27 @@
 @inject EmployeeApi Server
 @implements IDisposable
 
-<DemoPage Title="DataGrid" Description="Tableau de données : colonnes déclarées en une ligne, tri, recherche, pagination, sélection, chargement et en-tête fixe. Les cellules peuvent contenir n'importe quel composant.">
+<DemoPage Title="DataGrid" Description="Data table: columns declared in one line, sorting, search, paging, selection, loading and a sticky header. Cells can hold any component.">
     <section class="demo-section">
         <h2 class="demo-section__title">Playground</h2>
         <div class="pg pg--wide">
             <div class="pg__stage pg__stage--block">
-                <HelixDataGrid Items="_employees" Culture="French" Searchable="_searchable" Selectable="_selectable" @bind-SelectedItems="_selection"
+                <HelixDataGrid Items="_employees" Culture="English" Searchable="_searchable" Selectable="_selectable" @bind-SelectedItems="_selection"
                               PageSize="_pageSize" PageSizes="@([5, 10, 25])" Striped="_striped" Density="_density" Loading="_loading"
                               MaxHeight="@(_sticky ? "360px" : null)" Color="@_color" HeaderBackground="@_header" SelectedColor="@_selectedColor"
-                              OnRowClick="RowClick" SearchPlaceholder="Rechercher un employé…"
+                              OnRowClick="RowClick" SearchPlaceholder="Search employees…"
                               ReorderableColumns="_reorder" ColumnChooser="_chooser" @bind-ColumnLayout="_columnLayout">
                     <Toolbar>
                         @if (_selection.Count > 0)
                         {
                             <HelixButton Variant="HelixVariant.Soft" Color="danger" Size="HelixSize.Sm" Icon="trash" OnClick="DeleteSelection">
-                                Supprimer (@_selection.Count)
+                                Delete (@_selection.Count)
                             </HelixButton>
                         }
-                        <HelixButton Size="HelixSize.Sm" Icon="plus">Ajouter</HelixButton>
+                        <HelixButton Size="HelixSize.Sm" Icon="plus">Add</HelixButton>
                     </Toolbar>
                     <ChildContent>
-                        <HelixColumn Field="e => e.Name" Title="Employé" Width="30%">
+                        <HelixColumn Field="e => e.Name" Title="Employee" Width="30%">
                             <Template>
                                 <div class="person">
                                     <HelixAvatar Name="@context.Name" Size="HelixSize.Sm" />
@@ -36,60 +36,60 @@
                                 </div>
                             </Template>
                         </HelixColumn>
-                        <HelixColumn Field="e => e.Department" Title="Service" />
-                        <HelixColumn Field="e => e.Role" Title="Poste" />
-                        <HelixColumn Field="e => e.Status" Title="Statut" SortBy="e => (int)e.Status">
+                        <HelixColumn Field="e => e.Department" Title="Department" />
+                        <HelixColumn Field="e => e.Role" Title="Role" />
+                        <HelixColumn Field="e => e.Status" Title="Status" SortBy="e => (int)e.Status">
                             <Template><StatusBadge Status="context.Status" /></Template>
                         </HelixColumn>
-                        <HelixColumn Field="e => e.StartDate" Title="Arrivée" Format="d MMM yyyy" />
-                        <HelixColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="HelixAlign.End" />
+                        <HelixColumn Field="e => e.StartDate" Title="Start date" Format="d MMM yyyy" />
+                        <HelixColumn Field="e => e.Salary" Title="Salary" Format="C0" Align="HelixAlign.End" />
                     </ChildContent>
                 </HelixDataGrid>
             </div>
             <aside class="pg__controls">
                 <Choice TEnum="HelixSize" Label="Density" @bind-Value="_density" />
                 <Choice TEnum="PageChoice" Label="PageSize" Value="_pageChoice" ValueChanged="SetPage" />
-                <ColorPicker Label="Color (tri, sélection, page)" @bind-Value="_color" />
+                <ColorPicker Label="Color (sort, selection, page)" @bind-Value="_color" />
                 <ColorPicker Label="HeaderBackground" @bind-Value="_header" Colors="@(["#eef2ff", "#f0fdf4", "#18181b", "#fafaf9"])" />
                 <ColorPicker Label="SelectedColor" @bind-Value="_selectedColor" Colors="@(["#fef9c3", "#dcfce7", "#fce7f3"])" />
                 <HelixSwitch Label="Searchable" @bind-Checked="_searchable" Size="HelixSize.Sm" />
                 <HelixSwitch Label="Selectable" @bind-Checked="_selectable" Size="HelixSize.Sm" />
                 <HelixSwitch Label="Striped" @bind-Checked="_striped" Size="HelixSize.Sm" />
-                <HelixSwitch Label="En-tête fixe (MaxHeight)" @bind-Checked="_sticky" Size="HelixSize.Sm" />
+                <HelixSwitch Label="Sticky header (MaxHeight)" @bind-Checked="_sticky" Size="HelixSize.Sm" />
                 <HelixSwitch Label="OnRowClick" @bind-Checked="_rowClick" Size="HelixSize.Sm" />
                 <HelixSwitch Label="Loading" @bind-Checked="_loading" Size="HelixSize.Sm" />
-                <HelixSwitch Label="ReorderableColumns (glisser les en-têtes)" @bind-Checked="_reorder" Size="HelixSize.Sm" />
-                <HelixSwitch Label="ColumnChooser (menu Colonnes)" @bind-Checked="_chooser" Size="HelixSize.Sm" />
+                <HelixSwitch Label="ReorderableColumns (drag the headers)" @bind-Checked="_reorder" Size="HelixSize.Sm" />
+                <HelixSwitch Label="ColumnChooser (Columns menu)" @bind-Checked="_chooser" Size="HelixSize.Sm" />
             </aside>
         </div>
         <CodeBlock Code="@Code" />
     </section>
 
     <section class="demo-section">
-        <h2 class="demo-section__title">Chargement côté serveur</h2>
+        <h2 class="demo-section__title">Server-side loading</h2>
         <p class="demo-section__text">
-            Remplacez <code>Items</code> par <code>ItemsProvider</code> : la grille demande une seule page à la fois (tri, recherche, pagination)
-            et votre code interroge la base ou l'API. La recherche attend la fin de la frappe, et chaque nouvelle requête annule la précédente.
-            L'API ci-dessous est simulée : réglez sa latence ou faites-la échouer.
+            Replace <code>Items</code> with <code>ItemsProvider</code>: the grid asks for one page at a time (sort, search, paging)
+            and your code queries the database or the API. Search waits for typing to stop, and each new request cancels the previous one.
+            The API below is simulated: set its latency or make it fail.
         </p>
         <div class="pg pg--wide">
             <div class="pg__stage pg__stage--block">
-                <HelixDataGrid @ref="_serverGrid" TItem="Employee" ItemsProvider="LoadEmployees" ItemKey="e => e.Id" Culture="French"
+                <HelixDataGrid @ref="_serverGrid" TItem="Employee" ItemsProvider="LoadEmployees" ItemKey="e => e.Id" Culture="English"
                               Searchable="true" Selectable="true" @bind-SelectedItems="_serverSelection" PageSize="8" PageSizes="@([8, 16, 32])"
-                              SearchPlaceholder="Rechercher (côté serveur)…" OnLoadError="OnServerError">
+                              SearchPlaceholder="Search (server side)…" OnLoadError="OnServerError">
                     <Toolbar>
                         @if (_serverSelection.Count > 0)
                         {
                             <HelixButton Variant="HelixVariant.Soft" Color="danger" Size="HelixSize.Sm" Icon="trash" Loading="_deleting" OnClick="DeleteOnServer">
-                                Supprimer (@_serverSelection.Count)
+                                Delete (@_serverSelection.Count)
                             </HelixButton>
                         }
-                        <HelixTooltip Text="Recharger">
-                            <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="download" aria-label="Recharger" OnClick="() => _serverGrid!.RefreshAsync()" />
+                        <HelixTooltip Text="Reload">
+                            <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="download" aria-label="Reload" OnClick="() => _serverGrid!.RefreshAsync()" />
                         </HelixTooltip>
                     </Toolbar>
                     <ChildContent>
-                        <HelixColumn Field="e => e.Name" Title="Employé" Width="30%">
+                        <HelixColumn Field="e => e.Name" Title="Employee" Width="30%">
                             <Template>
                                 <div class="person">
                                     <HelixAvatar Name="@context.Name" Size="HelixSize.Sm" />
@@ -100,32 +100,32 @@
                                 </div>
                             </Template>
                         </HelixColumn>
-                        <HelixColumn Field="e => e.Department" Title="Service" />
-                        <HelixColumn Field="e => e.Status" Title="Statut">
+                        <HelixColumn Field="e => e.Department" Title="Department" />
+                        <HelixColumn Field="e => e.Status" Title="Status">
                             <Template><StatusBadge Status="context.Status" /></Template>
                         </HelixColumn>
-                        <HelixColumn Field="e => e.StartDate" Title="Arrivée" Format="d MMM yyyy" />
-                        <HelixColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="HelixAlign.End" />
+                        <HelixColumn Field="e => e.StartDate" Title="Start date" Format="d MMM yyyy" />
+                        <HelixColumn Field="e => e.Salary" Title="Salary" Format="C0" Align="HelixAlign.End" />
                     </ChildContent>
                 </HelixDataGrid>
                 <p class="request-log">
-                    <span class="request-log__label">Dernière requête</span>
+                    <span class="request-log__label">Last request</span>
                     <code>@(_lastRequest is null ? "—" : Describe(_lastRequest))</code>
-                    <span class="muted">@_requestCount envoyée@(_requestCount > 1 ? "s" : "") · @_cancelledCount annulée@(_cancelledCount > 1 ? "s" : "")</span>
+                    <span class="muted">@_requestCount sent · @_cancelledCount cancelled</span>
                 </p>
             </div>
             <aside class="pg__controls">
-                <HelixSlider Label="Latence de l'API" Value="Server.Latency.TotalMilliseconds" ValueChanged="v => Server.Latency = TimeSpan.FromMilliseconds(v)"
+                <HelixSlider Label="API latency" Value="Server.Latency.TotalMilliseconds" ValueChanged="v => Server.Latency = TimeSpan.FromMilliseconds(v)"
                             Min="0" Max="2000" Step="100" Format="@(v => $"{v:0} ms")" />
-                <HelixSwitch Label="Simuler une erreur serveur" Checked="Server.SimulateFailure" CheckedChanged="v => Server.SimulateFailure = v" Color="danger" />
+                <HelixSwitch Label="Simulate a server error" Checked="Server.SimulateFailure" CheckedChanged="v => Server.SimulateFailure = v" Color="danger" />
             </aside>
         </div>
         <CodeBlock Code="@ServerRazorCode" />
         <CodeBlock Language="c#" Code="@ServerCSharpCode" />
     </section>
 
-    <Example WpfCode="@Wpf1" Title="Le minimum" Description="Une collection et des colonnes. Le titre est déduit du nom de la propriété, le tri et la recherche suivent automatiquement." Code="@MinimalCode">
-        <HelixDataGrid Items="_employees.Take(4)" PageSize="0" Culture="French">
+    <Example WpfCode="@Wpf1" Title="The minimum" Description="A collection and columns. The title comes from the property name; sorting and search follow automatically." Code="@MinimalCode">
+        <HelixDataGrid Items="_employees.Take(4)" PageSize="0" Culture="English">
             <HelixColumn Field="e => e.Name" />
             <HelixColumn Field="e => e.Department" />
             <HelixColumn Field="e => e.StartDate" Format="d" />
@@ -133,17 +133,17 @@
         </HelixDataGrid>
     </Example>
 
-    <Example WpfCode="@Wpf2" Title="Personnaliser des lignes" Description="RowClass ajoute une classe par ligne ; une simple règle CSS fait le reste." Code="@RowClassCode">
+    <Example WpfCode="@Wpf2" Title="Customize rows" Description="RowClass adds a class per row; a plain CSS rule does the rest." Code="@RowClassCode">
         <style>
             .row-leaving td { color: var(--helix-text-subtle); text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--helix-danger) 50%, transparent); }
         </style>
-        <HelixDataGrid Items="_employees.Take(6)" PageSize="0" Density="HelixSize.Sm" Culture="French"
+        <HelixDataGrid Items="_employees.Take(6)" PageSize="0" Density="HelixSize.Sm" Culture="English"
                       RowClass="@(e => e.Status == EmployeeStatus.Offboarding ? "row-leaving" : null)">
-            <HelixColumn Field="e => e.Name" Title="Employé" />
-            <HelixColumn Field="e => e.Status" Title="Statut">
+            <HelixColumn Field="e => e.Name" Title="Employee" />
+            <HelixColumn Field="e => e.Status" Title="Status">
                 <Template><StatusBadge Status="context.Status" /></Template>
             </HelixColumn>
-            <HelixColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="HelixAlign.End" />
+            <HelixColumn Field="e => e.Salary" Title="Salary" Format="C0" Align="HelixAlign.End" />
         </HelixDataGrid>
     </Example>
 
@@ -156,24 +156,24 @@
     {
         <div class="stack">
             <div class="row"><StatusBadge Status="_opened.Status" /><HelixBadge>@_opened.Department</HelixBadge></div>
-            <p style="margin:0">@_opened.Role depuis le @_opened.StartDate.ToString("d MMMM yyyy", French).</p>
+            <p style="margin:0">@_opened.Role since @_opened.StartDate.ToString("MMMM d, yyyy", English).</p>
         </div>
     }
 </HelixDialog>
 
 @code {
     private const string Wpf1 = """
-        <!-- En mémoire : Source (pas ItemsSource) pour la recherche, le tri global et la pagination -->
+        <!-- In memory: Source (not ItemsSource) for search, global sorting and paging -->
         <helix:HelixDataGrid Source="{Binding Employees}" IsSearchable="True" PageSize="10"
                            AutoGenerateColumns="False" IsReadOnly="True" ShowColumnChooser="True">
             <helix:HelixDataGrid.Columns>
-                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*" />
-                <DataGridTextColumn Header="Service" Binding="{Binding Team}" />
-                <DataGridTextColumn Header="Salaire" Binding="{Binding Salary, StringFormat=N0}" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Department" Binding="{Binding Team}" />
+                <DataGridTextColumn Header="Salary" Binding="{Binding Salary, StringFormat=N0}" />
             </helix:HelixDataGrid.Columns>
         </helix:HelixDataGrid>
 
-        // Côté serveur : une page à la fois, la requête précédente est annulée
+        // Server side: one page at a time, the previous request is cancelled
         Grid.ItemsProvider = async (request, ct) =>
         {
             var page = await api.SearchAsync(request.Search, request.SortBy, request.Descending, request.Page, request.PageSize, ct);
@@ -185,7 +185,7 @@
         <helix:HelixDataGrid Source="{Binding Plants}" IsStriped="True" Density="Sm" AutoGenerateColumns="False">
             <helix:HelixDataGrid.Columns>
                 <DataGridTextColumn Header="Site" Binding="{Binding Site}" Width="*" />
-                <DataGridTemplateColumn Header="Statut" SortMemberPath="Status">
+                <DataGridTemplateColumn Header="Status" SortMemberPath="Status">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <helix:HelixBadge Content="{Binding Status}" Tone="{Binding Tone}" ShowDot="True" />
@@ -201,7 +201,7 @@
 
     private enum PageChoice { Five, Ten, TwentyFive, All }
 
-    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-US");
 
     private List<Employee> _employees = SampleData.Employees.ToList();
     private IReadOnlyCollection<Employee> _selection = [];
@@ -239,7 +239,7 @@
         }
     }
 
-    private void OnServerError(Exception ex) => Toasts.Error(ex.Message, "Chargement impossible");
+    private void OnServerError(Exception ex) => Toasts.Error(ex.Message, "Could not load");
 
     private async Task DeleteOnServer()
     {
@@ -249,7 +249,7 @@
         {
             await Server.DeleteAsync(ids, _pageCts.Token);
             _serverSelection = [];
-            Toasts.Success($"{ids.Length} employé{(ids.Length > 1 ? "s" : "")} supprimé{(ids.Length > 1 ? "s" : "")} sur le serveur");
+            Toasts.Success($"{ids.Length} employee{(ids.Length > 1 ? "s" : "")} deleted on the server");
             await _serverGrid!.RefreshAsync();
         }
         finally
@@ -272,20 +272,20 @@
     private const string ServerRazorCode = """
         <HelixDataGrid @ref="grid" TItem="Employee" ItemsProvider="LoadEmployees" ItemKey="e => e.Id"
                       Searchable Selectable @bind-SelectedItems="selection">
-            <HelixColumn Field="e => e.Name" Title="Employé" />
-            <HelixColumn Field="e => e.Department" Title="Service" />
-            <HelixColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="HelixAlign.End" />
+            <HelixColumn Field="e => e.Name" Title="Employee" />
+            <HelixColumn Field="e => e.Department" Title="Department" />
+            <HelixColumn Field="e => e.Salary" Title="Salary" Format="C0" Align="HelixAlign.End" />
         </HelixDataGrid>
 
         @code {
             private HelixDataGrid<Employee>? grid;
 
-            // Après un ajout / une suppression :  await grid!.RefreshAsync();
+            // After an add / a delete:  await grid!.RefreshAsync();
         }
         """;
 
     private const string ServerCSharpCode = """
-        // Une seule méthode : la grille passe la page demandée et un jeton d'annulation.
+        // A single method: the grid passes the requested page and a cancellation token.
         private async Task<HelixGridResult<Employee>> LoadEmployees(HelixGridRequest request, CancellationToken ct)
         {
             var query = db.Employees.AsNoTracking();
@@ -295,8 +295,8 @@
 
             var total = await query.CountAsync(ct);
             var items = await query
-                .ApplySort(request)   // ORDER BY <colonne cliquée>, fourni par Helix
-                .ApplyPage(request)   // OFFSET / FETCH, fourni par Helix
+                .ApplySort(request)   // ORDER BY <clicked column>, provided by Helix
+                .ApplyPage(request)   // OFFSET / FETCH, provided by Helix
                 .ToListAsync(ct);
 
             return new HelixGridResult<Employee>(items, total);
@@ -323,7 +323,7 @@
         var count = _selection.Count;
         _employees = _employees.Except(_selection).ToList();
         _selection = [];
-        Toasts.Success($"{count} employé{(count > 1 ? "s" : "")} supprimé{(count > 1 ? "s" : "")}");
+        Toasts.Success($"{count} employee{(count > 1 ? "s" : "")} deleted");
     }
 
     private string Code
@@ -346,18 +346,18 @@
                 _chooser ? " ColumnChooser @bind-ColumnLayout=\"columnLayout\"" : "");
             return $"""
                 <HelixDataGrid Items="employees"{attrs}>
-                    <HelixColumn Field="e => e.Name" Title="Employé">
+                    <HelixColumn Field="e => e.Name" Title="Employee">
                         <Template>
                             <HelixAvatar Name="@context.Name" Size="HelixSize.Sm" /> @context.Name
                         </Template>
                     </HelixColumn>
-                    <HelixColumn Field="e => e.Department" Title="Service" />
-                    <HelixColumn Field="e => e.Role" Title="Poste" />
-                    <HelixColumn Field="e => e.Status" Title="Statut" SortBy="e => (int)e.Status">
+                    <HelixColumn Field="e => e.Department" Title="Department" />
+                    <HelixColumn Field="e => e.Role" Title="Role" />
+                    <HelixColumn Field="e => e.Status" Title="Status" SortBy="e => (int)e.Status">
                         <Template><StatusBadge Status="context.Status" /></Template>
                     </HelixColumn>
-                    <HelixColumn Field="e => e.StartDate" Title="Arrivée" Format="d MMM yyyy" />
-                    <HelixColumn Field="e => e.Salary" Title="Salaire" Format="C0" Align="HelixAlign.End" />
+                    <HelixColumn Field="e => e.StartDate" Title="Start date" Format="d MMM yyyy" />
+                    <HelixColumn Field="e => e.Salary" Title="Salary" Format="C0" Align="HelixAlign.End" />
                 </HelixDataGrid>
                 """;
         }
@@ -383,38 +383,38 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Items", "IEnumerable<T>", null, "Les lignes."),
-        new("Searchable / SearchPlaceholder", "bool / string", null, "Recherche sur toutes les colonnes."),
-        new("Toolbar", "RenderFragment", null, "Contenu à droite de la barre d'outils."),
-        new("PageSize / PageSizes", "int / int[]", null, "Lignes par page (0 = tout) et choix proposés."),
-        new("Selectable / SelectedItems", "bool / IReadOnlyCollection<T>", null, "Colonne de cases à cocher, @bind-SelectedItems."),
-        new("OnRowClick", "EventCallback<T>", null, "Clic sur une ligne (sinon le clic sélectionne)."),
-        new("RowClass", "Func<T, string?>", null, "Classe CSS par ligne."),
-        new("Density", "HelixSize", null, "Sm (compact), Md, Lg (aéré)."),
-        new("Striped / Loading", "bool", null, "Lignes alternées / squelettes de chargement."),
-        new("EmptyContent / EmptyText", "RenderFragment / string", null, "Affichage sans données."),
-        new("Culture", "CultureInfo", null, "Culture des formats (dates, montants)."),
-        new("ReorderableColumns", "bool", null, "Glisser les en-têtes pour réordonner les colonnes."),
-        new("ColumnChooser", "bool", null, "Bouton « Colonnes » : afficher / masquer des colonnes."),
-        new("ColumnLayout", "IReadOnlyList<HelixColumnState>", null, "Ordre et visibilité choisis (Key, Visible), à sauvegarder et restaurer (@bind-ColumnLayout)."),
-        new("Color", "string", "--helix-grid-color", "Tri, sélection et page active."),
-        new("HeaderBackground", "string", "--helix-grid-header-bg", "Fond de l'en-tête."),
-        new("HoverColor", "string", "--helix-grid-hover", "Fond d'une ligne survolée."),
-        new("StripeColor", "string", "--helix-grid-stripe", "Fond des lignes paires (Striped)."),
-        new("SelectedColor", "string", "--helix-grid-selected", "Fond d'une ligne sélectionnée."),
-        new("Radius", "string", "--helix-grid-radius", "Arrondi."),
-        new("MaxHeight", "string", "--helix-grid-max-height", "Hauteur maximale avec en-tête fixe."),
-        new("—", "", "--helix-grid-header-text, --helix-grid-border, --helix-grid-row-border, --helix-grid-bg", "Texte d'en-tête, bordures, fond."),
+        new("Items", "IEnumerable<T>", null, "The rows."),
+        new("Searchable / SearchPlaceholder", "bool / string", null, "Search across every column."),
+        new("Toolbar", "RenderFragment", null, "Content on the right of the toolbar."),
+        new("PageSize / PageSizes", "int / int[]", null, "Rows per page (0 = all) and the offered choices."),
+        new("Selectable / SelectedItems", "bool / IReadOnlyCollection<T>", null, "Checkbox column, @bind-SelectedItems."),
+        new("OnRowClick", "EventCallback<T>", null, "Click on a row (otherwise a click selects)."),
+        new("RowClass", "Func<T, string?>", null, "CSS class per row."),
+        new("Density", "HelixSize", null, "Sm (compact), Md, Lg (roomy)."),
+        new("Striped / Loading", "bool", null, "Alternating rows / loading skeletons."),
+        new("EmptyContent / EmptyText", "RenderFragment / string", null, "Display when there is no data."),
+        new("Culture", "CultureInfo", null, "Culture for formats (dates, amounts)."),
+        new("ReorderableColumns", "bool", null, "Drag the headers to reorder the columns."),
+        new("ColumnChooser", "bool", null, "“Columns” button: show / hide columns."),
+        new("ColumnLayout", "IReadOnlyList<HelixColumnState>", null, "Chosen order and visibility (Key, Visible), to save and restore (@bind-ColumnLayout)."),
+        new("Color", "string", "--helix-grid-color", "Sort, selection and active page."),
+        new("HeaderBackground", "string", "--helix-grid-header-bg", "Header background."),
+        new("HoverColor", "string", "--helix-grid-hover", "Background of a hovered row."),
+        new("StripeColor", "string", "--helix-grid-stripe", "Background of even rows (Striped)."),
+        new("SelectedColor", "string", "--helix-grid-selected", "Background of a selected row."),
+        new("Radius", "string", "--helix-grid-radius", "Corner radius."),
+        new("MaxHeight", "string", "--helix-grid-max-height", "Maximum height with a sticky header."),
+        new("—", "", "--helix-grid-header-text, --helix-grid-border, --helix-grid-row-border, --helix-grid-bg", "Header text, borders, background."),
     ];
 
     private static readonly ApiRow[] ColumnApi =
     [
-        new("Field", "Expression<Func<T, object?>>", null, "Propriété affichée, triée et recherchée."),
-        new("Title", "string", null, "En-tête (nom de la propriété par défaut)."),
-        new("Format", "string", null, "Format .NET : \"C0\", \"d\", \"N2\", \"P1\"…"),
-        new("Template", "RenderFragment<T>", null, "Contenu libre de la cellule (context = la ligne)."),
-        new("SortBy", "Func<T, object?>", null, "Clé de tri personnalisée."),
-        new("Sortable / Searchable", "bool", null, "Désactiver le tri / la recherche sur la colonne."),
-        new("Align / Width / CellClass", "HelixAlign / string / string", null, "Alignement, largeur, classe des cellules."),
+        new("Field", "Expression<Func<T, object?>>", null, "Property displayed, sorted and searched."),
+        new("Title", "string", null, "Header (the property name by default)."),
+        new("Format", "string", null, "A .NET format: \"C0\", \"d\", \"N2\", \"P1\"…"),
+        new("Template", "RenderFragment<T>", null, "Free cell content (context = the row)."),
+        new("SortBy", "Func<T, object?>", null, "Custom sort key."),
+        new("Sortable / Searchable", "bool", null, "Turn off sorting / search on the column."),
+        new("Align / Width / CellClass", "HelixAlign / string / string", null, "Alignment, width, cell class."),
     ];
 }

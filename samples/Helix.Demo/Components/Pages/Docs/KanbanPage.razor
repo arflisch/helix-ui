@@ -1,12 +1,12 @@
 @page "/components/kanban"
 @inject HelixToastService Toasts
 
-<DemoPage Title="Kanban" Description="Tableau de cartes : glisser-déposer entre et dans les colonnes, limites de travail en cours, règles de déplacement, ajout de carte. Au clavier : Entrée pour saisir une carte, flèches pour la déplacer, Entrée pour la déposer, Échap pour annuler.">
+<DemoPage Title="Kanban" Description="Card board: drag and drop between and within columns, work-in-progress limits, move rules, adding cards. From the keyboard: Enter to pick up a card, arrows to move it, Enter to drop it, Escape to cancel.">
     <section class="demo-section">
-        <h2 class="demo-section__title">Exemple</h2>
+        <h2 class="demo-section__title">Example</h2>
         <p class="demo-section__text">
-            Règle de l'exemple (<code>CanMove</code>) : une carte n'entre dans <strong>Terminé</strong> qu'en venant de <strong>En revue</strong>.
-            La colonne refusée se colore pendant le glissement. « En cours » est limitée à 3 cartes, « En revue » à 2.
+            The example's rule (<code>CanMove</code>): a card can only enter <strong>Done</strong> from <strong>In review</strong>.
+            The refused column is highlighted during the drag. “In progress” is limited to 3 cards, “In review” to 2.
         </p>
         <HelixKanban TItem="Ticket" Items="_tickets" Columns="DemoData.KanbanColumns" ColumnOf="t => t.Column" ItemKey="t => t.Id"
                     CanMove="(t, column) => column != DoneColumn || t.Column is ReviewColumn or DoneColumn"
@@ -46,9 +46,9 @@
         </helix:HelixKanban>
 
         // ViewModel
-        Columns = [new HelixKanbanColumn("todo", "À faire"), new HelixKanbanColumn("review", "En revue", "series-4", limit: 2)];
-        // Sans gestionnaire, la carte change de colonne (propriété Status) et de place toute seule.
-        // Avec CardMoved : e.Item, e.From, e.To, e.Index — mettez e.Handled = true pour refuser ou appliquer vous-même.
+        Columns = [new HelixKanbanColumn("todo", "To do"), new HelixKanbanColumn("review", "In review", "series-4", limit: 2)];
+        // Without a handler, the card changes column (Status property) and position on its own.
+        // With CardMoved: e.Item, e.From, e.To, e.Index — set e.Handled = true to refuse or apply it yourself.
         """;
 
     private const string DoneColumn = "done";
@@ -63,19 +63,19 @@
         if (move.From != move.To)
         {
             var to = DemoData.KanbanColumns.First(c => c.Key == move.To).Title;
-            Toasts.Show($"#{move.Item.Id} déplacée vers « {to} »", HelixSeverity.Info, duration: TimeSpan.FromSeconds(2));
+            Toasts.Show($"#{move.Item.Id} moved to “{to}”", HelixSeverity.Info, duration: TimeSpan.FromSeconds(2));
         }
     }
 
     private void Add(string column) =>
-        _tickets.Add(new Ticket(_nextId++, "Nouvelle tâche", column, "Alan Turing", "Basse", 1));
+        _tickets.Add(new Ticket(_nextId++, "New task", column, "Alan Turing", "Low", 1));
 
     private void Open(Ticket ticket) => Toasts.Info(ticket.Title, $"Ticket #{ticket.Id}");
 
     private static string PriorityColor(string priority) => priority switch
     {
-        "Haute" => "danger",
-        "Moyenne" => "warning",
+        "High" => "danger",
+        "Medium" => "warning",
         _ => "neutral",
     };
 
@@ -89,13 +89,13 @@
         @code {
             private HelixKanbanColumn[] columns =
             [
-                new("todo", "À faire"),
-                new("doing", "En cours", Limit: 3),
-                new("review", "En revue", Limit: 2),
-                new("done", "Terminé", "success"),
+                new("todo", "To do"),
+                new("doing", "In progress", Limit: 3),
+                new("review", "In review", Limit: 2),
+                new("done", "Done", "success"),
             ];
 
-            // Une ligne pour appliquer le déplacement (ou appelez votre API).
+            // One line to apply the move (or call your API).
             private void Move(HelixKanbanMove<Ticket> move) =>
                 tickets = move.ApplyTo(tickets, t => t.Column, (t, col) => t with { Column = col });
         }
@@ -103,13 +103,13 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Items / Columns / ColumnOf", "IReadOnlyList<T> / IReadOnlyList<HelixKanbanColumn> / Func<T, string>", null, "Les cartes, les colonnes, et la colonne d'une carte."),
-        new("CardTemplate", "RenderFragment<T>", null, "Contenu d'une carte."),
-        new("OnCardMoved", "EventCallback<HelixKanbanMove<T>>", null, "Item, From, To, Index ; move.ApplyTo(…) applique le déplacement."),
-        new("CanMove", "Func<T, string, bool>", null, "Règles métier : la colonne refusée est signalée pendant le glissement."),
-        new("HelixKanbanColumn", "(Key, Title, Color?, Limit?)", null, "Limit = limite de travail en cours (compteur en rouge au-delà)."),
-        new("OnAdd / OnCardClick", "EventCallback<string> / EventCallback<T>", null, "Bouton + par colonne ; clic sur une carte."),
-        new("ColumnWidth", "string", "--helix-kanban-column-w", "Largeur des colonnes ; défilement horizontal au-delà."),
-        new("—", "", "--helix-kanban-column-bg", "Fond des colonnes."),
+        new("Items / Columns / ColumnOf", "IReadOnlyList<T> / IReadOnlyList<HelixKanbanColumn> / Func<T, string>", null, "The cards, the columns, and a card's column."),
+        new("CardTemplate", "RenderFragment<T>", null, "Content of a card."),
+        new("OnCardMoved", "EventCallback<HelixKanbanMove<T>>", null, "Item, From, To, Index; move.ApplyTo(…) applies the move."),
+        new("CanMove", "Func<T, string, bool>", null, "Business rules: the refused column is flagged during the drag."),
+        new("HelixKanbanColumn", "(Key, Title, Color?, Limit?)", null, "Limit = work-in-progress limit (the counter turns red beyond it)."),
+        new("OnAdd / OnCardClick", "EventCallback<string> / EventCallback<T>", null, "+ button per column; click on a card."),
+        new("ColumnWidth", "string", "--helix-kanban-column-w", "Column width; horizontal scrolling beyond it."),
+        new("—", "", "--helix-kanban-column-bg", "Column background."),
     ];
 }

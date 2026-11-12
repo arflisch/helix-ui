@@ -155,7 +155,7 @@ internal static class HelixDraw
 [TemplatePart(Name = "PART_Plot", Type = typeof(HelixPlot))]
 [TemplatePart(Name = "PART_Legend", Type = typeof(Panel))]
 [System.Windows.Markup.ContentProperty(nameof(Series))]
-public class HelixChart : Control, IVeloThemeAware
+public class HelixChart : Control, IHelixThemeAware
 {
     static HelixChart() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixChart), new FrameworkPropertyMetadata(typeof(HelixChart)));
 
@@ -263,7 +263,7 @@ public class HelixChart : Control, IVeloThemeAware
         Refresh();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Refresh();
+    void IHelixThemeAware.OnThemeChanged() => Refresh();
 
     private void StartNowTimer()
     {

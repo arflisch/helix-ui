@@ -1,16 +1,16 @@
 @page "/components/colorpicker"
 
-<DemoPage Title="ColorPicker" Description="Sélecteur de couleur complet : zone saturation / luminosité (souris, tactile, flèches), teinte, opacité, saisie hexadécimale, couleurs proposées et pipette pour prendre une couleur à l'écran (Chrome, Edge).">
-    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
+<DemoPage Title="ColorPicker" Description="Full color picker: saturation / brightness area (mouse, touch, arrows), hue, opacity, hex input, suggested colors and an eyedropper to pick a color on screen (Chrome, Edge).">
+    <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
         <div class="grid-3">
-            <HelixColorPicker Label="Couleur de marque" @bind-Value="_brand" Hint="Utilisée pour les boutons." />
-            <HelixColorPicker Label="Fond avec transparence" @bind-Value="_overlay" ShowAlpha="true" />
-            <HelixColorPicker Label="Palette imposée" @bind-Value="_series" Swatches="@(["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#6250d6"])" />
+            <HelixColorPicker Label="Brand color" @bind-Value="_brand" Hint="Used for buttons." />
+            <HelixColorPicker Label="Background with transparency" @bind-Value="_overlay" ShowAlpha="true" />
+            <HelixColorPicker Label="Fixed palette" @bind-Value="_series" Swatches="@(["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#6250d6"])" />
         </div>
         <div class="row" style="margin-top:20px">
-            <HelixButton Color="@_brand">Bouton de marque</HelixButton>
+            <HelixButton Color="@_brand">Brand button</HelixButton>
             <span style="display:inline-block;width:120px;height:36px;border-radius:8px;background:@_overlay;box-shadow:inset 0 0 0 1px rgb(0 0 0 / .1)"></span>
-            <HelixBadge Color="@_series" Variant="HelixBadgeVariant.Solid">Série</HelixBadge>
+            <HelixBadge Color="@_series" Variant="HelixBadgeVariant.Solid">Series</HelixBadge>
         </div>
     </Example>
 
@@ -19,10 +19,10 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixColorPicker Label="Couleur de marque" SelectedColor="{Binding BrandColor}" />
-        <helix:HelixColorPicker Label="Avec opacité" ShowAlpha="True" Hint="Format #RRGGBBAA" />
+        <helix:HelixColorPicker Label="Brand color" SelectedColor="{Binding BrandColor}" />
+        <helix:HelixColorPicker Label="With opacity" ShowAlpha="True" Hint="Format #RRGGBBAA" />
 
-        // SelectedColor est un Color? (deux sens). Swatches remplace les couleurs proposées :
+        // SelectedColor is a two-way Color?. Swatches replaces the suggested colors:
         Picker.Swatches = [Colors.OrangeRed, Colors.SeaGreen, Colors.SteelBlue];
         """;
 
@@ -31,17 +31,17 @@
     private string? _series = "#1baf7a";
 
     private const string Code = """
-        <HelixColorPicker Label="Couleur de marque" @bind-Value="brand" />
-        <HelixColorPicker Label="Fond" @bind-Value="overlay" ShowAlpha />
-        <HelixColorPicker Label="Palette imposée" @bind-Value="color" Swatches="brandColors" />
+        <HelixColorPicker Label="Brand color" @bind-Value="brand" />
+        <HelixColorPicker Label="Background" @bind-Value="overlay" ShowAlpha />
+        <HelixColorPicker Label="Fixed palette" @bind-Value="color" Swatches="brandColors" />
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Value", "string?", null, "« #rrggbb », ou « #rrggbbaa » avec ShowAlpha sous 100 %."),
-        new("ShowAlpha", "bool", null, "Curseur d'opacité."),
-        new("Swatches", "IReadOnlyList<string>", null, "Couleurs proposées (votre charte)."),
-        new("Label / Hint / Placeholder / Disabled", "string / bool", null, "Textes, désactivé."),
-        new("Clavier", "", null, "Zone : flèches (Maj = pas plus grand) ; curseurs natifs ; saisie hexadécimale."),
+        new("Value", "string?", null, "“#rrggbb”, or “#rrggbbaa” with ShowAlpha below 100%."),
+        new("ShowAlpha", "bool", null, "Opacity slider."),
+        new("Swatches", "IReadOnlyList<string>", null, "Suggested colors (your brand guide)."),
+        new("Label / Hint / Placeholder / Disabled", "string / bool", null, "Texts, disabled."),
+        new("Keyboard", "", null, "Area: arrows (Shift = bigger step); native sliders; hex input."),
     ];
 }

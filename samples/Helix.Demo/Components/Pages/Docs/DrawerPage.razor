@@ -1,77 +1,77 @@
 @page "/components/drawer"
 @inject HelixToastService Toasts
 
-<DemoPage Title="Drawer" Description="Panneau latéral pour un détail ou un formulaire sans quitter la page. À droite, à gauche ou en bas ; Échap ou clic sur le fond pour fermer.">
+<DemoPage Title="Drawer" Description="Side panel for a detail or a form without leaving the page. Right, left or bottom; Escape or a click on the backdrop closes it.">
     <Example WpfCode="@Wpf1" Title="Positions" Code="@Code">
         <div class="row">
-            <HelixButton OnClick="() => Open(HelixDrawerPosition.Right)">Ouvrir à droite</HelixButton>
-            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => Open(HelixDrawerPosition.Left)">À gauche</HelixButton>
-            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => Open(HelixDrawerPosition.Bottom)">En bas</HelixButton>
+            <HelixButton OnClick="() => Open(HelixDrawerPosition.Right)">Open on the right</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => Open(HelixDrawerPosition.Left)">On the left</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="() => Open(HelixDrawerPosition.Bottom)">At the bottom</HelixButton>
         </div>
     </Example>
 
     <ApiTable Title="HelixDrawer" Rows="Api" />
 </DemoPage>
 
-<HelixDrawer @bind-Open="_open" Position="_position" Title="Nouvelle demande" Description="Elle sera envoyée au gestionnaire de réseau."
+<HelixDrawer @bind-Open="_open" Position="_position" Title="New request" Description="It will be sent to the grid operator."
             Size="@(_position == HelixDrawerPosition.Bottom ? "auto" : "440px")">
     <ChildContent>
         <div class="stack">
             <HelixDatePicker Label="Date" @bind-Value="_date" />
-            <HelixNumberField Label="Puissance" @bind-Value="_power" Min="0" Max="250" Step="5" Unit="MW" />
+            <HelixNumberField Label="Power" @bind-Value="_power" Min="0" Max="250" Step="5" Unit="MW" />
             <HelixRadioGroup TValue="string" Items="Kinds" @bind-Value="_kind" Label="Type" Appearance="HelixRadioAppearance.Segmented" />
         </div>
     </ChildContent>
     <Footer>
-        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => _open = false">Annuler</HelixButton>
-        <HelixButton OnClick="Send">Envoyer</HelixButton>
+        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => _open = false">Cancel</HelixButton>
+        <HelixButton OnClick="Send">Send</HelixButton>
     </Footer>
 </HelixDrawer>
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixDrawer IsOpen="{Binding FiltersOpen}" Title="Filtres" Position="Right" DrawerSize="420">
+        <helix:HelixDrawer IsOpen="{Binding FiltersOpen}" Title="Filters" Position="Right" DrawerSize="420">
             <StackPanel>
-                <helix:HelixSelect Label="Région" ItemsSource="{Binding Regions}" />
-                <helix:HelixSwitch Content="Seulement les actifs" Margin="0,16,0,0" />
+                <helix:HelixSelect Label="Region" ItemsSource="{Binding Regions}" />
+                <helix:HelixSwitch Content="Active only" Margin="0,16,0,0" />
             </StackPanel>
             <helix:HelixDrawer.Footer>
-                <helix:HelixButton Content="Appliquer" Command="{Binding ApplyCommand}" />
+                <helix:HelixButton Content="Apply" Command="{Binding ApplyCommand}" />
             </helix:HelixDrawer.Footer>
         </helix:HelixDrawer>
-        <!-- Position : Right, Left ou Bottom (DrawerSize = largeur ou hauteur). Nécessite un HelixHost. -->
+        <!-- Position: Right, Left or Bottom (DrawerSize = width or height). Needs a HelixHost. -->
         """;
 
-    private static readonly string[] Kinds = ["Directe", "Planifiée"];
+    private static readonly string[] Kinds = ["Direct", "Scheduled"];
     private bool _open;
     private HelixDrawerPosition _position;
     private DateOnly? _date = DateOnly.FromDateTime(DateTime.Today);
     private double? _power = 40;
-    private string? _kind = "Planifiée";
+    private string? _kind = "Scheduled";
 
     private void Open(HelixDrawerPosition position) => (_position, _open) = (position, true);
 
     private void Send()
     {
         _open = false;
-        Toasts.Success($"{_kind} · {_power} MW · {_date:d}", "Demande envoyée");
+        Toasts.Success($"{_kind} · {_power} MW · {_date:d}", "Request sent");
     }
 
     private const string Code = """
-        <HelixButton OnClick="() => open = true">Ouvrir</HelixButton>
+        <HelixButton OnClick="() => open = true">Open</HelixButton>
 
-        <HelixDrawer @bind-Open="open" Title="Nouvelle demande" Size="440px">
-            <ChildContent>…formulaire…</ChildContent>
-            <Footer><HelixButton OnClick="Send">Envoyer</HelixButton></Footer>
+        <HelixDrawer @bind-Open="open" Title="New request" Size="440px">
+            <ChildContent>…form…</ChildContent>
+            <Footer><HelixButton OnClick="Send">Send</HelixButton></Footer>
         </HelixDrawer>
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Open", "bool", null, "Visibilité (@bind-Open)."),
-        new("Position", "HelixDrawerPosition", null, "Right, Left ou Bottom."),
-        new("Title / Description / Footer", "string / string / RenderFragment", null, "En-tête et pied."),
-        new("Size", "string", "--helix-drawer-size", "Largeur (ou hauteur en bas), 420px par défaut."),
-        new("CloseOnBackdrop", "bool", null, "Fermer au clic sur le fond (true)."),
+        new("Open", "bool", null, "Visibility (@bind-Open)."),
+        new("Position", "HelixDrawerPosition", null, "Right, Left or Bottom."),
+        new("Title / Description / Footer", "string / string / RenderFragment", null, "Header and footer."),
+        new("Size", "string", "--helix-drawer-size", "Width (or height at the bottom), 420px by default."),
+        new("CloseOnBackdrop", "bool", null, "Close on backdrop click (true)."),
     ];
 }

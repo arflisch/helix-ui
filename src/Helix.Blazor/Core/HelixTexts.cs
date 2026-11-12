@@ -6,7 +6,7 @@ namespace Helix.Blazor;
 /// Every text the components write on their own: buttons, empty states, screen-reader labels and announcements.
 /// English and French are built in and picked from the UI culture; change any of them in one place:
 /// <code>
-/// builder.Services.AddVelo(o => o.Texts = HelixTexts.English with { Cancel = "Back", NoData = "Nothing yet" });
+/// builder.Services.AddHelix(o => o.Texts = HelixTexts.English with { Cancel = "Back", NoData = "Nothing yet" });
 /// </code>
 /// Texts with <c>{0}</c>, <c>{1}</c>… are format strings.
 /// </summary>
@@ -53,6 +53,9 @@ public sealed record HelixTexts
     public string DropFilesHere { get; init; } = "Drop your files here";
     public string ReleaseToAdd { get; init; } = "Release to add";
     public string PerFile { get; init; } = " per file";
+    public string OrClickToBrowse { get; init; } = "or click to browse";
+    /// <summary>{0} = the file name.</summary>
+    public string RemoveFile { get; init; } = "Remove {0}";
 
     // ----- Data grid and pagination ------------------------------------------------------------
     public string Search { get; init; } = "Search…";
@@ -144,6 +147,9 @@ public sealed record HelixTexts
     public string Width { get; init; } = "Width";
     /// <summary>{0} = tile title.</summary>
     public string HideTile { get; init; } = "Hide {0}";
+    public string Customize { get; init; } = "Customize";
+    public string Done { get; init; } = "Done";
+    public string DashboardEditHint { get; init; } = "Drag the tiles to rearrange them, change their width or hide them.";
 
     /// <summary>Formats a text that has {0}, {1}… placeholders.</summary>
     public static string Format(string text, params object?[] args) => string.Format(CultureInfo.CurrentCulture, text, args);
@@ -164,6 +170,7 @@ public sealed record HelixTexts
         SaturationBrightnessValue = "Saturation {0} %, luminosité {1} %", Opacity = "Opacité", HexCode = "Code hexadécimal",
         PickFromScreen = "Prendre une couleur à l'écran", Eyedropper = "Pipette", SuggestedColors = "Couleurs proposées",
         Rating = "Note", DropFilesHere = "Glissez vos fichiers ici", ReleaseToAdd = "Relâchez pour ajouter", PerFile = " par fichier",
+        OrClickToBrowse = "ou cliquez pour parcourir", RemoveFile = "Retirer {0}",
 
         Search = "Rechercher…", NoResultsFor = "Aucun résultat pour « {0} »", LoadError = "Impossible de charger les données.",
         Columns = "Colonnes", VisibleColumns = "Colonnes affichées", SelectAll = "Tout sélectionner", SelectPage = "Sélectionner la page",
@@ -193,6 +200,7 @@ public sealed record HelixTexts
         MoveCancelled = "Déplacement annulé.", PositionAnnouncement = "Position {0} sur {1}.",
         TileLayout = "Disposition de {0}", MoveBefore = "Déplacer avant", MoveAfter = "Déplacer après",
         Narrower = "Plus étroit", Wider = "Plus large", Width = "Largeur", HideTile = "Masquer {0}",
+        Customize = "Personnaliser", Done = "Terminé", DashboardEditHint = "Glissez les tuiles pour les réorganiser, changez leur largeur ou masquez-les.",
     };
 
     /// <summary>French for a French UI culture, English otherwise.</summary>

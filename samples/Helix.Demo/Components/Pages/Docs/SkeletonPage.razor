@@ -1,9 +1,9 @@
 @page "/components/skeleton"
 
-<DemoPage Title="Skeleton" Description="Silhouettes animées pendant le chargement : la mise en page ne saute pas quand les données arrivent.">
-    <Example WpfCode="@Wpf1" Title="Carte en chargement" Code="@Code">
+<DemoPage Title="Skeleton" Description="Animated placeholders while loading: the layout doesn't jump when the data arrives.">
+    <Example WpfCode="@Wpf1" Title="Loading card" Code="@Code">
         <div class="stack">
-            <HelixSwitch Label="Chargement" @bind-Checked="_loading" />
+            <HelixSwitch Label="Loading" @bind-Checked="_loading" />
             <div class="grid-2">
                 <HelixCard>
                     @if (_loading)
@@ -18,9 +18,9 @@
                     {
                         <div class="row" style="flex-wrap:nowrap">
                             <HelixAvatar Name="Grace Hopper" Size="HelixSize.Lg" />
-                            <div><strong>Grace Hopper</strong><div class="muted" style="font-size:13px">Responsable dispatching</div></div>
+                            <div><strong>Grace Hopper</strong><div class="muted" style="font-size:13px">Dispatching lead</div></div>
                         </div>
-                        <div style="margin-top:18px"><HelixStat Bare="true" Label="Demandes ce mois" Value="128" Delta="12" DeltaLabel="vs mois dernier" Trend="DemoData.Trend(9)" /></div>
+                        <div style="margin-top:18px"><HelixStat Bare="true" Label="Requests this month" Value="128" Delta="12" DeltaLabel="vs last month" Trend="DemoData.Trend(9)" /></div>
                     }
                 </HelixCard>
                 <HelixCard>
@@ -56,8 +56,8 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Lines", "int", null, "Plusieurs lignes de texte (la dernière plus courte)."),
-        new("Circle", "bool", null, "Forme ronde (avatar)."),
-        new("Width / Height / Radius", "string", null, "Dimensions et arrondi."),
+        new("Lines", "int", null, "Several lines of text (the last one shorter)."),
+        new("Circle", "bool", null, "Round shape (avatar)."),
+        new("Width / Height / Radius", "string", null, "Size and corner radius."),
     ];
 }

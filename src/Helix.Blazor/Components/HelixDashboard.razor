@@ -21,19 +21,19 @@
                             @TitleOf(hidden.Id)
                         </HelixButton>
                     }
-                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" OnClick="Reset">Réinitialiser</HelixButton>
-                    <HelixButton Size="HelixSize.Sm" Icon="check" OnClick="() => SetEditing(false)">Terminé</HelixButton>
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" OnClick="Reset">@Texts.Reset</HelixButton>
+                    <HelixButton Size="HelixSize.Sm" Icon="check" OnClick="() => SetEditing(false)">@Texts.Done</HelixButton>
                 }
                 else
                 {
-                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="layout" OnClick="() => SetEditing(true)">Personnaliser</HelixButton>
+                    <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" Icon="layout" OnClick="() => SetEditing(true)">@Texts.Customize</HelixButton>
                 }
             </div>
         </div>
     }
     @if (_editing)
     {
-        <p class="helix-dashboard__hint">Glissez les tuiles pour les réorganiser, changez leur largeur ou masquez-les.</p>
+        <p class="helix-dashboard__hint">@Texts.DashboardEditHint</p>
     }
     <div class="helix-dashboard__grid">
         <CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>

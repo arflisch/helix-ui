@@ -2,14 +2,14 @@
 <div class="ctl">
     <span class="ctl__label">@Label</span>
     <div class="ctl-colors">
-        <button class="@Swatch(null)" title="Par défaut" @onclick="() => Set(null)">
+        <button class="@Swatch(null)" title="Default" @onclick="() => Set(null)">
             <HelixIcon Svg="<path d='M5 19 19 5'/>" Size="12" />
         </button>
         @foreach (var color in Colors)
         {
             <button class="@Swatch(color)" title="@color" style="background:@Css(color)" @onclick="() => Set(color)"></button>
         }
-        <label class="@Swatch(IsCustom ? Value : "__none")" title="Couleur libre">
+        <label class="@Swatch(IsCustom ? Value : "__none")" title="Custom color">
             <input type="color" value="@(IsCustom ? Value : "#8b5cf6")" @onchange="OnPick" />
             <HelixIcon Name="plus" Size="12" />
         </label>

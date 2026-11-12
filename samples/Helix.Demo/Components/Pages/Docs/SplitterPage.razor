@@ -1,7 +1,7 @@
 @page "/components/splitter"
 
-<DemoPage Title="Splitter" Description="Deux panneaux redimensionnables : glissez la séparation, ou utilisez les flèches (Début / Fin pour les bornes) une fois la séparation sélectionnée au clavier. Double-clic pour revenir à la taille initiale.">
-    <Example WpfCode="@Wpf1" Title="Liste + détail" Code="@Code">
+<DemoPage Title="Splitter" Description="Two resizable panes: drag the divider, or use the arrows (Home / End for the bounds) once the divider has keyboard focus. Double-click to go back to the initial size.">
+    <Example WpfCode="@Wpf1" Title="List + detail" Code="@Code">
         <HelixSplitter @bind-Size="_size" Min="20" Max="70" Height="300px">
             <First>
                 <ul class="split-list">
@@ -16,7 +16,7 @@
             <Second>
                 <div style="padding:20px">
                     <div class="row"><HelixAvatar Name="@_selected" Size="HelixSize.Lg" /><strong style="font-size:16px">@_selected</strong></div>
-                    <p class="muted" style="margin:14px 0 0;line-height:1.6">Panneau de détail. La séparation est à <strong>@_size.ToString("0") %</strong> ; la valeur est liée par <code>@@bind-Size</code>, vous pouvez la sauvegarder comme préférence.</p>
+                    <p class="muted" style="margin:14px 0 0;line-height:1.6">Detail pane. The divider is at <strong>@_size.ToString("0")%</strong>; the value is bound with <code>@@bind-Size</code>, so you can save it as a preference.</p>
                 </div>
             </Second>
         </HelixSplitter>
@@ -24,8 +24,8 @@
 
     <Example WpfCode="@Wpf2" Title="Vertical" Code="@VerticalCode">
         <HelixSplitter Vertical="true" Size="60" Height="260px">
-            <First><div style="padding:16px" class="muted">Éditeur (haut)</div></First>
-            <Second><div style="padding:16px" class="muted">Console (bas)</div></Second>
+            <First><div style="padding:16px" class="muted">Editor (top)</div></First>
+            <Second><div style="padding:16px" class="muted">Console (bottom)</div></Second>
         </HelixSplitter>
     </Example>
 
@@ -65,8 +65,8 @@
 
     private const string Code = """
         <HelixSplitter @bind-Size="size" Min="20" Max="70" Height="300px">
-            <First>…liste…</First>
-            <Second>…détail…</Second>
+            <First>…list…</First>
+            <Second>…detail…</Second>
         </HelixSplitter>
         """;
 
@@ -74,9 +74,9 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("First / Second", "RenderFragment", null, "Les deux panneaux."),
-        new("Size", "double", "--_size", "Taille du premier panneau en % (@bind-Size)."),
-        new("Min / Max / KeyboardStep", "double", null, "Bornes (15–85) et pas des flèches (5)."),
-        new("Vertical / Height", "bool / string", null, "Panneaux empilés ; hauteur du conteneur."),
+        new("First / Second", "RenderFragment", null, "The two panes."),
+        new("Size", "double", "--_size", "Size of the first pane in % (@bind-Size)."),
+        new("Min / Max / KeyboardStep", "double", null, "Bounds (15–85) and arrow step (5)."),
+        new("Vertical / Height", "bool / string", null, "Stacked panes; container height."),
     ];
 }

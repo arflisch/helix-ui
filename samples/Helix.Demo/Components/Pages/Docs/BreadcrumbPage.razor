@@ -1,7 +1,7 @@
 @page "/components/breadcrumb"
 
-<DemoPage Title="Breadcrumb" Description="Fil d'Ariane : où suis-je, et comment remonter. Les chemins longs se replient en « … » (cliquez pour tout voir).">
-    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
+<DemoPage Title="Breadcrumb" Description="Breadcrumb: where am I, and how to go back up. Long paths collapse into “…” (click to see everything).">
+    <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
         <div class="stack">
             <HelixBreadcrumb Items="Short" />
             <HelixBreadcrumb Items="Long" MaxItems="3" />
@@ -18,10 +18,10 @@
         // Code-behind
         Path.ItemsSource = new[]
         {
-            new HelixBreadcrumbItem("Accueil", "home") { Tag = "/" },
-            new HelixBreadcrumbItem("Projets") { Tag = "/projets" },
-            new HelixBreadcrumbItem("Énergie"),
-            new HelixBreadcrumbItem("Rapport de mars"),   // le dernier = page courante
+            new HelixBreadcrumbItem("Home", "home") { Tag = "/" },
+            new HelixBreadcrumbItem("Projects") { Tag = "/projects" },
+            new HelixBreadcrumbItem("Energy"),
+            new HelixBreadcrumbItem("March report"),   // the last one = current page
         };
 
         private void OnCrumbClick(object sender, RoutedEventArgs e) =>
@@ -30,28 +30,28 @@
 
     private static readonly HelixBreadcrumbItem[] Short =
     [
-        new("Accueil", "", "layout"), new("Composants", "components/button"), new("Breadcrumb"),
+        new("Home", "", "layout"), new("Components", "components/button"), new("Breadcrumb"),
     ];
 
     private static readonly HelixBreadcrumbItem[] Long =
     [
-        new("Accueil", "", "layout"), new("Exploitation", "components/dashboard"), new("Sites", "components/barlist"),
-        new("Lyon", "components/barlist"), new("Compteurs", "components/datagrid"), new("Compteur 42"),
+        new("Home", "", "layout"), new("Operations", "components/dashboard"), new("Sites", "components/barlist"),
+        new("Lyon", "components/barlist"), new("Meters", "components/datagrid"), new("Meter 42"),
     ];
 
     private const string Code = """
         <HelixBreadcrumb MaxItems="3" Items="@([
-            new("Accueil", "/", "layout"),
+            new("Home", "/", "layout"),
             new("Sites", "/sites"),
             new("Lyon", "/sites/lyon"),
-            new("Compteur 42"),
+            new("Meter 42"),
         ])" />
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Items", "IEnumerable<HelixBreadcrumbItem>", null, "(Text, Href?, Icon?) ; le dernier est la page courante."),
-        new("MaxItems", "int?", null, "Au-delà, les éléments du milieu se replient en « … »."),
-        new("AriaLabel", "string", null, "Nom de la navigation (« Fil d'Ariane »)."),
+        new("Items", "IEnumerable<HelixBreadcrumbItem>", null, "(Text, Href?, Icon?); the last one is the current page."),
+        new("MaxItems", "int?", null, "Beyond it, the middle items collapse into “…”."),
+        new("AriaLabel", "string", null, "Name of the navigation (“Breadcrumb”)."),
     ];
 }

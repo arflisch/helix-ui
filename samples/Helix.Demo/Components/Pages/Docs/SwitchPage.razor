@@ -1,7 +1,7 @@
 @page "/components/switch"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Switch" Description="L'interrupteur. Chaque partie a son paramètre : la piste, la pastille, une icône ou un texte dedans, une description, le côté du libellé. Aucun template à copier.">
+<DemoPage Title="Switch" Description="The toggle switch. Every part has its own parameter: the track, the thumb, an icon or text inside, a description, the label side. No template to copy.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <HelixSwitch @bind-Checked="_checked" Label="@_label" Description="@_description" LabelPosition="_position" Size="_size"
@@ -12,43 +12,43 @@
             <HelixTextField Label="Label" @bind-Value="_label" />
             <HelixTextField Label="Description" @bind-Value="_description" />
             <Choice TEnum="HelixLabelPosition" Label="LabelPosition" @bind-Value="_position" />
-            <Choice TEnum="Inside" Label="Dans l'interrupteur" @bind-Value="_inside" />
+            <Choice TEnum="Inside" Label="Inside the switch" @bind-Value="_inside" />
             <Choice TEnum="HelixSize" Label="Size" @bind-Value="_size" />
-            <ColorPicker Label="Color (piste allumée)" @bind-Value="_color" />
-            <ColorPicker Label="TrackColor (piste éteinte)" @bind-Value="_track" Colors="@(["#d4d4d8", "#fecaca", "#bfdbfe", "#18181b"])" />
-            <ColorPicker Label="ThumbColor (pastille)" @bind-Value="_thumb" Colors="@(["#ffffff", "#f59e0b", "#18181b", "#e11d48", "#a7f3d0"])" />
-            <ColorPicker Label="ThumbOnColor (pastille allumée)" @bind-Value="_thumbOn" Colors="@(["#ffffff", "#fef3c7", "#18181b", "#dcfce7"])" />
-            <HelixSlider Label="Radius" @bind-Value="_radius" Min="0" Max="12" Format="@(v => v >= 12 ? "rond" : $"{v} px")" />
+            <ColorPicker Label="Color (track on)" @bind-Value="_color" />
+            <ColorPicker Label="TrackColor (track off)" @bind-Value="_track" Colors="@(["#d4d4d8", "#fecaca", "#bfdbfe", "#18181b"])" />
+            <ColorPicker Label="ThumbColor (thumb)" @bind-Value="_thumb" Colors="@(["#ffffff", "#f59e0b", "#18181b", "#e11d48", "#a7f3d0"])" />
+            <ColorPicker Label="ThumbOnColor (thumb on)" @bind-Value="_thumbOn" Colors="@(["#ffffff", "#fef3c7", "#18181b", "#dcfce7"])" />
+            <HelixSlider Label="Radius" @bind-Value="_radius" Min="0" Max="12" Format="@(v => v >= 12 ? "round" : $"{v} px")" />
             <HelixSwitch Label="Checked" @bind-Checked="_checked" Size="HelixSize.Sm" />
             <HelixSwitch Label="Disabled" @bind-Checked="_disabled" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Changer la couleur de la pastille" Description="Le cas qui demande un template complet ailleurs : ici c'est un paramètre." Code="@ThumbCode">
+    <Example WpfCode="@Wpf2" Title="Change the thumb color" Description="The case that needs a full template elsewhere: here it is a parameter." Code="@ThumbCode">
         <div class="row" style="gap:28px">
-            <HelixSwitch @bind-Checked="_demo" ThumbColor="#f59e0b" Label="Ambre" />
+            <HelixSwitch @bind-Checked="_demo" ThumbColor="#f59e0b" Label="Amber" />
             <HelixSwitch @bind-Checked="_demo" ThumbColor="#18181b" TrackColor="#e4e4e7" Color="#a3e635" Label="Lime" />
             <HelixSwitch @bind-Checked="_demo" Color="danger" ThumbOnColor="#ffe4e6" Label="Danger" />
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf3" Title="Icône ou texte dans l'interrupteur" Description="OnIcon / OffIcon dans la pastille, OnText / OffText dans la piste (elle s'élargit). Ils changent à l'instant du clic." Code="@InsideCode">
+    <Example WpfCode="@Wpf3" Title="Icon or text inside the switch" Description="OnIcon / OffIcon in the thumb, OnText / OffText in the track (it widens). They change the moment you click." Code="@InsideCode">
         <div class="row" style="gap:28px">
-            <HelixSwitch @bind-Checked="_demo" OnIcon="check" OffIcon="x" Label="Icônes" />
-            <HelixSwitch @bind-Checked="_demo" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Thème" />
-            <HelixSwitch @bind-Checked="_demo" OnText="On" OffText="Off" Label="Texte" />
-            <HelixSwitch @bind-Checked="_demo" OnText="Auto" OffText="Manuel" Color="#ff8a00" Size="HelixSize.Lg" Label="Pilote" />
+            <HelixSwitch @bind-Checked="_demo" OnIcon="check" OffIcon="x" Label="Icons" />
+            <HelixSwitch @bind-Checked="_demo" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Theme" />
+            <HelixSwitch @bind-Checked="_demo" OnText="On" OffText="Off" Label="Text" />
+            <HelixSwitch @bind-Checked="_demo" OnText="Auto" OffText="Manual" Color="#ff8a00" Size="HelixSize.Lg" Label="Pilot" />
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf4" Title="Description et côté du libellé" Description="Une deuxième ligne sous le libellé, lue avec l'interrupteur. LabelPosition=Start pour les listes de réglages." Code="@DescriptionCode">
+    <Example WpfCode="@Wpf4" Title="Description and label side" Description="A second line under the label, read with the switch. LabelPosition=Start for settings lists." Code="@DescriptionCode">
         <div class="stack" style="max-width:420px">
-            <HelixSwitch @bind-Checked="_demo" Label="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
-            <HelixSwitch @bind-Checked="_demo2" LabelPosition="HelixLabelPosition.Start" Label="Synchronisation" Description="Chaque nuit à 2 h." Style="width:100%;justify-content:space-between" />
+            <HelixSwitch @bind-Checked="_demo" Label="Notifications" Description="Get an email when a report is ready." />
+            <HelixSwitch @bind-Checked="_demo2" LabelPosition="HelixLabelPosition.Start" Label="Sync" Description="Every night at 2 am." Style="width:100%;justify-content:space-between" />
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf5" Title="Tailles" Code="@SizesCode">
+    <Example WpfCode="@Wpf5" Title="Sizes" Code="@SizesCode">
         <div class="row" style="gap:28px">
             <HelixSwitch @bind-Checked="_demo" Size="HelixSize.Sm" Label="Sm" />
             <HelixSwitch @bind-Checked="_demo" Label="Md" />
@@ -61,28 +61,28 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixSwitch Content="Mode avion" Description="Coupe toutes les connexions."
+        <helix:HelixSwitch Content="Airplane mode" Description="Turns off every connection."
                          IsChecked="{Binding IsOn}" LabelPosition="End" Size="Md"
                          Accent="#10B981" TrackBrush="#E4E4E7" ThumbBrush="White" ThumbOnBrush="#DCFCE7"
                          OnIcon="check" OffIcon="x" CornerRadius="999" />
         """;
 
     private const string Wpf2 = """
-        <helix:HelixSwitch Content="Ambre" IsChecked="True" ThumbBrush="#F59E0B" />
+        <helix:HelixSwitch Content="Amber" IsChecked="True" ThumbBrush="#F59E0B" />
         <helix:HelixSwitch Content="Lime" IsChecked="True" ThumbBrush="#18181B" TrackBrush="#E4E4E7" Accent="#A3E635" />
         <helix:HelixSwitch Content="Danger" IsChecked="True" Tone="Danger" ThumbOnBrush="#FFE4E6" />
         """;
 
     private const string Wpf3 = """
-        <helix:HelixSwitch Content="Icônes" OnIcon="check" OffIcon="x" />
-        <helix:HelixSwitch Content="Thème" OnIcon="moon" OffIcon="sun" Accent="#312E81" />
-        <helix:HelixSwitch Content="Texte" OnText="ON" OffText="OFF" />
-        <helix:HelixSwitch Content="Pilote" OnText="AUTO" OffText="MANUEL" Accent="#FF8A00" Size="Lg" />
+        <helix:HelixSwitch Content="Icons" OnIcon="check" OffIcon="x" />
+        <helix:HelixSwitch Content="Theme" OnIcon="moon" OffIcon="sun" Accent="#312E81" />
+        <helix:HelixSwitch Content="Text" OnText="ON" OffText="OFF" />
+        <helix:HelixSwitch Content="Pilot" OnText="AUTO" OffText="MANUAL" Accent="#FF8A00" Size="Lg" />
         """;
 
     private const string Wpf4 = """
-        <helix:HelixSwitch Content="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
-        <helix:HelixSwitch Content="Synchronisation" Description="Chaque nuit à 2 h."
+        <helix:HelixSwitch Content="Notifications" Description="Get an email when a report is ready." />
+        <helix:HelixSwitch Content="Sync" Description="Every night at 2 am."
                          LabelPosition="Start" HorizontalAlignment="Stretch" />
         """;
 
@@ -92,18 +92,18 @@
         <helix:HelixSwitch Content="Lg" Size="Lg" />
         """;
 
-    private enum Inside { Rien, Icônes, Texte }
+    private enum Inside { None, Icons, Text }
 
     private bool _checked = true, _disabled, _demo = true, _demo2;
     private string? _description;
     private HelixLabelPosition _position = HelixLabelPosition.End;
-    private Inside _inside = Inside.Rien;
+    private Inside _inside = Inside.None;
 
-    private string? OnIcon => _inside == Inside.Icônes ? "check" : null;
-    private string? OffIcon => _inside == Inside.Icônes ? "x" : null;
-    private string? OnText => _inside == Inside.Texte ? "On" : null;
-    private string? OffText => _inside == Inside.Texte ? "Off" : null;
-    private string? _label = "Mode avion";
+    private string? OnIcon => _inside == Inside.Icons ? "check" : null;
+    private string? OffIcon => _inside == Inside.Icons ? "x" : null;
+    private string? OnText => _inside == Inside.Text ? "On" : null;
+    private string? OffText => _inside == Inside.Text ? "Off" : null;
+    private string? _label = "Airplane mode";
     private HelixSize _size = HelixSize.Md;
     private string? _color, _track, _thumb, _thumbOn;
     private double _radius = 12;
@@ -114,21 +114,21 @@
         $"<HelixSwitch @bind-Checked=\"isOn\"{A("Label", _label)}{A("Description", _description)}{A("LabelPosition", _position, HelixLabelPosition.End)}{A("OnIcon", OnIcon)}{A("OffIcon", OffIcon)}{A("OnText", OnText)}{A("OffText", OffText)}{A("Size", _size, HelixSize.Md)}{A("Color", _color)}{A("TrackColor", _track)}{A("ThumbColor", _thumb)}{A("ThumbOnColor", _thumbOn)}{A("Radius", Radius)}{B("Disabled", _disabled)} />";
 
     private const string ThumbCode = """
-        <HelixSwitch @bind-Checked="on" ThumbColor="#f59e0b" Label="Ambre" />
+        <HelixSwitch @bind-Checked="on" ThumbColor="#f59e0b" Label="Amber" />
         <HelixSwitch @bind-Checked="on" ThumbColor="#18181b" TrackColor="#e4e4e7" Color="#a3e635" Label="Lime" />
         <HelixSwitch @bind-Checked="on" Color="danger" ThumbOnColor="#ffe4e6" Label="Danger" />
         """;
 
     private const string InsideCode = """
-        <HelixSwitch @bind-Checked="on" OnIcon="check" OffIcon="x" Label="Icônes" />
-        <HelixSwitch @bind-Checked="on" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Thème" />
-        <HelixSwitch @bind-Checked="on" OnText="On" OffText="Off" Label="Texte" />
-        <HelixSwitch @bind-Checked="on" OnText="Auto" OffText="Manuel" Color="#ff8a00" Size="HelixSize.Lg" Label="Pilote" />
+        <HelixSwitch @bind-Checked="on" OnIcon="check" OffIcon="x" Label="Icons" />
+        <HelixSwitch @bind-Checked="on" OnIcon="moon" OffIcon="sun" Color="#312e81" Label="Theme" />
+        <HelixSwitch @bind-Checked="on" OnText="On" OffText="Off" Label="Text" />
+        <HelixSwitch @bind-Checked="on" OnText="Auto" OffText="Manual" Color="#ff8a00" Size="HelixSize.Lg" Label="Pilot" />
         """;
 
     private const string DescriptionCode = """
-        <HelixSwitch @bind-Checked="on" Label="Notifications" Description="Recevoir un e-mail quand un rapport est prêt." />
-        <HelixSwitch @bind-Checked="sync" LabelPosition="HelixLabelPosition.Start" Label="Synchronisation" Description="Chaque nuit à 2 h." />
+        <HelixSwitch @bind-Checked="on" Label="Notifications" Description="Get an email when a report is ready." />
+        <HelixSwitch @bind-Checked="sync" LabelPosition="HelixLabelPosition.Start" Label="Sync" Description="Every night at 2 am." />
         """;
 
     private const string SizesCode = """
@@ -139,18 +139,18 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Checked", "bool", null, "État (@bind-Checked)."),
-        new("Color", "string", "--helix-switch-color", "Piste quand allumé. Nom sémantique ou couleur CSS."),
-        new("TrackColor", "string", "--helix-switch-track", "Piste quand éteint."),
-        new("ThumbColor", "string", "--helix-switch-thumb", "Pastille."),
-        new("ThumbOnColor", "string", "--helix-switch-thumb-on", "Pastille quand allumé (ThumbColor par défaut)."),
-        new("Radius", "string", "--helix-switch-radius", "Arrondi de la piste et de la pastille."),
-        new("Size", "HelixSize?", null, "Sm, Md ou Lg. Par défaut : Defaults.Switch.Size, puis Defaults.Size, puis Md."),
-        new("Label / ChildContent", "string / RenderFragment", null, "Libellé cliquable."),
-        new("Description", "string", null, "Deuxième ligne sous le libellé, lue par les lecteurs d'écran."),
-        new("LabelPosition", "HelixLabelPosition?", null, "End (après, par défaut) ou Start (avant)."),
-        new("OnIcon / OffIcon", "string", null, "Icône intégrée dans la pastille selon l'état (check, x, sun, moon…)."),
-        new("OnText / OffText", "string", null, "Texte court dans la piste selon l'état ; la piste s'élargit."),
-        new("Width", "string", "--helix-switch-width", "Largeur minimale de la piste avec un texte (elle s'adapte sinon au texte le plus long)."),
+        new("Checked", "bool", null, "State (@bind-Checked)."),
+        new("Color", "string", "--helix-switch-color", "Track when on. Semantic name or CSS color."),
+        new("TrackColor", "string", "--helix-switch-track", "Track when off."),
+        new("ThumbColor", "string", "--helix-switch-thumb", "Thumb."),
+        new("ThumbOnColor", "string", "--helix-switch-thumb-on", "Thumb when on (ThumbColor by default)."),
+        new("Radius", "string", "--helix-switch-radius", "Corner radius of the track and thumb."),
+        new("Size", "HelixSize?", null, "Sm, Md or Lg. Default: Defaults.Switch.Size, then Defaults.Size, then Md."),
+        new("Label / ChildContent", "string / RenderFragment", null, "Clickable label."),
+        new("Description", "string", null, "Second line under the label, read by screen readers."),
+        new("LabelPosition", "HelixLabelPosition?", null, "End (after, the default) or Start (before)."),
+        new("OnIcon / OffIcon", "string", null, "Icon inside the thumb depending on the state (check, x, sun, moon…)."),
+        new("OnText / OffText", "string", null, "Short text in the track depending on the state; the track widens."),
+        new("Width", "string", "--helix-switch-width", "Minimum track width with a text (otherwise it fits the longest text)."),
     ];
 }

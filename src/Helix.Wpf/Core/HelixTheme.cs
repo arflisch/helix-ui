@@ -4,7 +4,7 @@ using System.Windows.Media;
 namespace Helix.Wpf;
 
 /// <summary>Implemented by controls that draw with theme colors in code and must redraw when the theme changes.</summary>
-internal interface IVeloThemeAware
+internal interface IHelixThemeAware
 {
     void OnThemeChanged();
 }
@@ -16,7 +16,7 @@ public static class HelixTheme
     // so this property changes too and tells the control to redraw. No event subscription to leak.
     internal static readonly DependencyProperty StampProperty = DependencyProperty.RegisterAttached(
         "Stamp", typeof(object), typeof(HelixTheme),
-        new PropertyMetadata(null, (d, _) => (d as IVeloThemeAware)?.OnThemeChanged()));
+        new PropertyMetadata(null, (d, _) => (d as IHelixThemeAware)?.OnThemeChanged()));
 
     /// <summary>Call from the constructor of a control drawn in code.</summary>
     internal static void Watch(FrameworkElement element) => element.SetResourceReference(StampProperty, HelixKeys.Text);

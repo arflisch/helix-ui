@@ -1,28 +1,28 @@
 @page "/components/checkbox"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Checkbox" Description="Case à cocher animée et accessible (vraie input native). La couleur de la case et celle de la coche sont des paramètres.">
+<DemoPage Title="Checkbox" Description="Animated, accessible checkbox (a real native input). The box color and the check color are parameters.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <HelixCheckbox @bind-Checked="_checked" Label="@_label" Color="@_color" CheckColor="@_checkColor" Radius="@Radius" Disabled="_disabled" />
         </Preview>
         <Controls>
             <HelixTextField Label="Label" @bind-Value="_label" />
-            <ColorPicker Label="Color (case)" @bind-Value="_color" />
-            <ColorPicker Label="CheckColor (coche)" @bind-Value="_checkColor" Colors="@(["#ffffff", "#18181b", "#fde047", "#a7f3d0"])" />
+            <ColorPicker Label="Color (box)" @bind-Value="_color" />
+            <ColorPicker Label="CheckColor (check)" @bind-Value="_checkColor" Colors="@(["#ffffff", "#18181b", "#fde047", "#a7f3d0"])" />
             <HelixSlider Label="Radius" @bind-Value="_radius" Min="0" Max="10" Format="@(v => $"{v} px")" />
             <HelixSwitch Label="Checked" @bind-Checked="_checked" Size="HelixSize.Sm" />
             <HelixSwitch Label="Disabled" @bind-Checked="_disabled" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Liste d'options" Code="@ListCode">
+    <Example WpfCode="@Wpf2" Title="List of options" Code="@ListCode">
         <div class="stack">
             @foreach (var option in _options)
             {
                 <HelixCheckbox @bind-Checked="option.Selected" Label="@option.Name" />
             }
-            <p class="muted" style="margin:0;font-size:13px">Sélection : @string.Join(", ", _options.Where(o => o.Selected).Select(o => o.Name))</p>
+            <p class="muted" style="margin:0;font-size:13px">Selection: @string.Join(", ", _options.Where(o => o.Selected).Select(o => o.Name))</p>
         </div>
     </Example>
 
@@ -31,13 +31,13 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixCheckBox Content="Rapport hebdomadaire" Description="Envoyé le lundi matin."
+        <helix:HelixCheckBox Content="Weekly report" Description="Sent on Monday morning."
                            IsChecked="{Binding WeeklyReport}" Accent="#10B981" CheckBrush="White" CornerRadius="5" />
         """;
 
     private const string Wpf2 = """
         <StackPanel>
-            <helix:HelixCheckBox Content="Tout sélectionner" IsThreeState="True" IsChecked="{x:Null}" />
+            <helix:HelixCheckBox Content="Select all" IsThreeState="True" IsChecked="{x:Null}" />
             <helix:HelixCheckBox Content="E-mail" IsChecked="True" Margin="24,8,0,0" />
             <helix:HelixCheckBox Content="SMS" Margin="24,8,0,0" />
         </StackPanel>
@@ -51,7 +51,7 @@
 
     private readonly List<Option> _options = [new("Email", true), new("SMS", false), new("Push", true)];
     private bool _checked = true, _disabled;
-    private string? _label = "Se souvenir de moi";
+    private string? _label = "Remember me";
     private string? _color, _checkColor;
     private double _radius = 5;
 
@@ -69,11 +69,11 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Checked", "bool", null, "État (@bind-Checked)."),
-        new("Label / ChildContent", "string / RenderFragment", null, "Libellé texte ou riche."),
-        new("Color", "string", "--helix-check-color", "Couleur de la case cochée."),
-        new("CheckColor", "string", "--helix-check-mark", "Couleur de la coche."),
-        new("Radius", "string", "--helix-check-radius", "Arrondi de la case."),
-        new("—", "", "--helix-check-border", "Bordure au repos."),
+        new("Checked", "bool", null, "State (@bind-Checked)."),
+        new("Label / ChildContent", "string / RenderFragment", null, "Plain or rich label."),
+        new("Color", "string", "--helix-check-color", "Color of the checked box."),
+        new("CheckColor", "string", "--helix-check-mark", "Color of the check mark."),
+        new("Radius", "string", "--helix-check-radius", "Corner radius of the box."),
+        new("—", "", "--helix-check-border", "Border at rest."),
     ];
 }

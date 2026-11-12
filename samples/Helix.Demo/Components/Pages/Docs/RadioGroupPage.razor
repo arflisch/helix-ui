@@ -1,12 +1,12 @@
 @page "/components/radiogroup"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="RadioGroup" Description="Un choix parmi quelques options, toutes visibles. Trois apparences : classique, cartes (avec description) ou segmentée. Vraies cases radio natives : les flèches du clavier fonctionnent.">
+<DemoPage Title="RadioGroup" Description="One choice among a few options, all visible. Three appearances: classic, cards (with description) or segmented. Real native radio buttons: the keyboard arrows work.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:560px">
                 <HelixRadioGroup TValue="Plan" Items="Plans" @bind-Value="_plan" ItemText="p => p.Name" ItemDescription="@(_descriptions ? p => p.Description : null)"
-                                Label="Formule" Appearance="_appearance" Horizontal="_horizontal" Color="@_color" />
+                                Label="Plan" Appearance="_appearance" Horizontal="_horizontal" Color="@_color" />
             </div>
         </Preview>
         <Controls>
@@ -22,20 +22,20 @@
 
 @code {
     private const string Wpf1 = """
-        <!-- Appearance : Default (liste), Cards (cartes) ou Segmented -->
-        <helix:HelixRadioGroup Label="Formule" Appearance="Cards" Columns="3"
+        <!-- Appearance: Default (list), Cards or Segmented -->
+        <helix:HelixRadioGroup Label="Plan" Appearance="Cards" Columns="3"
                              ItemsSource="{Binding Plans}" SelectedItem="{Binding Plan}"
-                             Hint="Changeable à tout moment." Accent="#8B5CF6" CornerRadius="14" />
+                             Hint="Can be changed at any time." Accent="#8B5CF6" CornerRadius="14" />
 
-        // ViewModel : titre, description et icône par option
-        Plans = [new HelixRadioOption("Découverte", "Jusqu'à 3 sites", "star"),
-                 new HelixRadioOption("Pro", "Sites illimités", "zap"),
-                 new HelixRadioOption("Entreprise", "SSO et support dédié", "lock")];
+        // ViewModel: title, description and icon per option
+        Plans = [new HelixRadioOption("Starter", "Up to 3 sites", "star"),
+                 new HelixRadioOption("Pro", "Unlimited sites", "zap"),
+                 new HelixRadioOption("Enterprise", "SSO and dedicated support", "lock")];
 
-        <!-- Ou des options écrites en XAML -->
-        <helix:HelixRadioGroup Label="Livraison" SelectedIndex="0">
-            <helix:HelixRadioItem Content="Standard" Description="3 à 5 jours" />
-            <helix:HelixRadioItem Content="Express" Description="Demain" />
+        <!-- Or options written in XAML -->
+        <helix:HelixRadioGroup Label="Delivery" SelectedIndex="0">
+            <helix:HelixRadioItem Content="Standard" Description="3 to 5 days" />
+            <helix:HelixRadioItem Content="Express" Description="Tomorrow" />
         </helix:HelixRadioGroup>
         """;
 
@@ -43,9 +43,9 @@
 
     private static readonly Plan[] Plans =
     [
-        new("Essentiel", "Jusqu'à 3 sites, données sur 30 jours"),
-        new("Pro", "Sites illimités, alertes, export"),
-        new("Entreprise", "SSO, SLA 99,9 %, support dédié"),
+        new("Essential", "Up to 3 sites, 30 days of data"),
+        new("Pro", "Unlimited sites, alerts, export"),
+        new("Enterprise", "SSO, 99.9% SLA, dedicated support"),
     ];
 
     private Plan? _plan = Plans[1];
@@ -54,15 +54,15 @@
     private bool _horizontal, _descriptions = true;
 
     private string Code =>
-        $"<HelixRadioGroup Items=\"plans\" @bind-Value=\"plan\" ItemText=\"p => p.Name\"{(_descriptions ? " ItemDescription=\"p => p.Description\"" : "")} Label=\"Formule\"{A("Appearance", _appearance, HelixRadioAppearance.Default)}{B("Horizontal", _horizontal)}{A("Color", _color)} />";
+        $"<HelixRadioGroup Items=\"plans\" @bind-Value=\"plan\" ItemText=\"p => p.Name\"{(_descriptions ? " ItemDescription=\"p => p.Description\"" : "")} Label=\"Plan\"{A("Appearance", _appearance, HelixRadioAppearance.Default)}{B("Horizontal", _horizontal)}{A("Color", _color)} />";
 
     private static readonly ApiRow[] Api =
     [
-        new("Items / Value", "IEnumerable<T> / T?", null, "Les options et le choix (@bind-Value)."),
-        new("ItemText / ItemDescription / ItemDisabled", "Func<T, …>", null, "Libellé, description, option désactivée."),
-        new("ItemTemplate", "RenderFragment<T>", null, "Contenu libre d'une option."),
-        new("Appearance", "HelixRadioAppearance", null, "Default, Cards ou Segmented."),
-        new("Horizontal / Label / Hint", "bool / string / string", null, "Disposition, titre (legend), aide."),
-        new("Color", "string", "--helix-radio-color", "Couleur du choix."),
+        new("Items / Value", "IEnumerable<T> / T?", null, "The options and the choice (@bind-Value)."),
+        new("ItemText / ItemDescription / ItemDisabled", "Func<T, …>", null, "Label, description, disabled option."),
+        new("ItemTemplate", "RenderFragment<T>", null, "Free content of an option."),
+        new("Appearance", "HelixRadioAppearance", null, "Default, Cards or Segmented."),
+        new("Horizontal / Label / Hint", "bool / string / string", null, "Layout, title (legend), hint."),
+        new("Color", "string", "--helix-radio-color", "Color of the choice."),
     ];
 }

@@ -8,7 +8,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<Routes>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddVelo(o => o.Texts = HelixTexts.French); // the demo site is in French
+builder.Services.AddHelix(o => o.Texts = HelixTexts.English); // the demo site is in English
 builder.Services.AddScoped<DemoThemeState>();
 builder.Services.AddScoped<DemoCodeState>();
 builder.Services.AddSingleton(TimeProvider.System);

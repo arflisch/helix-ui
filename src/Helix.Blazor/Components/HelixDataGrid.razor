@@ -178,7 +178,7 @@
     {
         <div class="helix-grid__footer">
             <span class="helix-grid__info">
-                @(view.From)–@(view.To) sur @view.Total
+                @HelixTexts.Format(Texts.RangeOf, view.From, view.To, view.Total)
                 @if (Selectable && _selected.Count > 0)
                 {
                     <span class="helix-grid__info-sel"> · @HelixTexts.Format(Texts.SelectedCount, _selected.Count)</span>

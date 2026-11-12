@@ -89,7 +89,7 @@ public static class HelixServiceCollectionExtensions
     /// <summary>
     /// Registers toasts, confirmations and the app-wide <see cref="HelixOptions"/> (texts and component defaults).
     /// </summary>
-    public static IServiceCollection AddVelo(this IServiceCollection services, Action<HelixOptions>? configure = null)
+    public static IServiceCollection AddHelix(this IServiceCollection services, Action<HelixOptions>? configure = null)
     {
         var options = new HelixOptions();
         configure?.Invoke(options);

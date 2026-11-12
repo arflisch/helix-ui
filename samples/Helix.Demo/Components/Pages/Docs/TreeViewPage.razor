@@ -1,23 +1,23 @@
 @page "/components/treeview"
 @inject HelixToastService Toasts
 
-<DemoPage Title="TreeView" Description="Une hiérarchie, en liste (explorateur) ou en diagramme (organigramme). Mêmes données, mêmes options : dépliage, sélection, modèle de nœud. Au clavier : ↑ ↓ pour se déplacer, → pour déplier ou entrer, ← pour replier ou remonter, Entrée pour sélectionner.">
-    <Example WpfCode="@Wpf1" Title="Liste (explorateur)" Code="@ListCode">
+<DemoPage Title="TreeView" Description="A hierarchy, as a list (explorer) or a diagram (org chart). Same data, same options: expanding, selection, node template. From the keyboard: ↑ ↓ to move, → to expand or enter, ← to collapse or go up, Enter to select.">
+    <Example WpfCode="@Wpf1" Title="List (explorer)" Code="@ListCode">
         <div class="grid-2">
             <HelixCard Padding="8px">
                 <HelixTreeView TItem="Node" Items="Sites" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemIcon="n => n.Icon"
                               ItemKey="n => n.Name" @bind-SelectedItem="_selected" ExpandDepth="2" />
             </HelixCard>
-            <HelixCard Title="@(_selected?.Name ?? "Aucune sélection")" Subtitle="@_selected?.Role">
-                <p class="muted" style="margin:0">@(_selected is null ? "Choisissez un élément dans l'arborescence." : $"{_selected.Children?.Count ?? 0} élément(s) en dessous.")</p>
+            <HelixCard Title="@(_selected?.Name ?? "Nothing selected")" Subtitle="@_selected?.Role">
+                <p class="muted" style="margin:0">@(_selected is null ? "Choose an item in the tree." : $"{_selected.Children?.Count ?? 0} item(s) below.")</p>
             </HelixCard>
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf2" Title="Diagramme (organigramme)" Description="Cliquez sur le badge sous un nœud pour le déplier ou le replier." Code="@DiagramCode">
+    <Example WpfCode="@Wpf2" Title="Diagram (org chart)" Description="Click the badge under a node to expand or collapse it." Code="@DiagramCode">
         <HelixTreeView TItem="Node" Items="Org" ChildrenOf="n => n.Children" ItemText="n => n.Name" ItemDescription="n => n.Role"
                       ItemKey="n => n.Name" Layout="HelixTreeLayout.Diagram" ExpandDepth="2"
-                      SelectedItemChanged="n => Toasts.Info(n?.Role ?? string.Empty, n?.Name)" AriaLabel="Organigramme">
+                      SelectedItemChanged="n => Toasts.Info(n?.Role ?? string.Empty, n?.Name)" AriaLabel="Org chart">
         </HelixTreeView>
     </Example>
 
@@ -26,11 +26,11 @@
 
 @code {
     private const string Wpf1 = """
-        <!-- Sans template : ChildrenPath + TextPath (et IconPath, DescriptionPath) suffisent -->
+        <!-- No template: ChildrenPath + TextPath (and IconPath, DescriptionPath) are enough -->
         <helix:HelixTreeView ItemsSource="{Binding Folders}" ChildrenPath="Children" TextPath="Name"
                            IconPath="Icon" ExpandDepth="2" SelectedItemChanged="OnSelected" />
 
-        <!-- Ou votre HierarchicalDataTemplate habituel -->
+        <!-- Or your usual HierarchicalDataTemplate -->
         <helix:HelixTreeView ItemsSource="{Binding Folders}">
             <helix:HelixTreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}">
@@ -49,24 +49,24 @@
 
     private static readonly Node[] Sites =
     [
-        new("France", "Pays", "layout", [
-            new("Auvergne-Rhône-Alpes", "Région", "columns", [
-                new("Usine de Lyon", "Site industriel", "zap", [new("Compteur 41", "Compteur", "settings"), new("Compteur 42", "Compteur", "settings")]),
-                new("Entrepôt de Grenoble", "Logistique", "download"),
+        new("France", "Country", "layout", [
+            new("Auvergne-Rhône-Alpes", "Region", "columns", [
+                new("Lyon plant", "Industrial site", "zap", [new("Meter 41", "Meter", "settings"), new("Meter 42", "Meter", "settings")]),
+                new("Grenoble warehouse", "Logistics", "download"),
             ]),
-            new("Île-de-France", "Région", "columns", [
-                new("Siège Paris", "Bureaux", "user"),
-                new("Data center Saclay", "Informatique", "lock", [new("Salle A", "Salle"), new("Salle B", "Salle")]),
+            new("Île-de-France", "Region", "columns", [
+                new("Paris head office", "Offices", "user"),
+                new("Saclay data center", "IT", "lock", [new("Room A", "Room"), new("Room B", "Room")]),
             ]),
         ]),
-        new("Belgique", "Pays", "layout", [new("Agence Bruxelles", "Bureaux", "user")]),
+        new("Belgium", "Country", "layout", [new("Brussels office", "Offices", "user")]),
     ];
 
     private static readonly Node[] Org =
     [
-        new("Ada Lovelace", "Directrice générale", Children: [
-            new("Alan Turing", "Exploitation", Children: [new("Grace Hopper", "Dispatching"), new("Ken Thompson", "Astreinte")]),
-            new("Margaret Hamilton", "Data", Children: [new("Barbara Liskov", "Prévisions"), new("Dennis Ritchie", "Plateforme"), new("Linus Torvalds", "Outillage")]),
+        new("Ada Lovelace", "Chief executive", Children: [
+            new("Alan Turing", "Operations", Children: [new("Grace Hopper", "Dispatching"), new("Ken Thompson", "On call")]),
+            new("Margaret Hamilton", "Data", Children: [new("Barbara Liskov", "Forecasting"), new("Dennis Ritchie", "Platform"), new("Linus Torvalds", "Tooling")]),
             new("Katherine Johnson", "Finance"),
         ]),
     ];
@@ -85,11 +85,11 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Items / ChildrenOf", "IEnumerable<T> / Func<T, IEnumerable<T>?>", null, "Les racines et les enfants d'un élément."),
-        new("Layout", "HelixTreeLayout", null, "List (explorateur) ou Diagram (organigramme)."),
-        new("ItemText / ItemIcon / ItemDescription", "Func<T, string?>", null, "Libellé, icône, seconde ligne (diagramme)."),
-        new("ItemTemplate", "RenderFragment<T>", null, "Contenu libre d'un nœud."),
-        new("SelectedItem / ItemKey", "T? / Func<T, object>", null, "Sélection (@bind-SelectedItem) ; identité d'un élément."),
-        new("ExpandDepth / ShowLines", "int / bool", "--helix-tree-line", "Niveaux dépliés au départ ; lignes de guidage."),
+        new("Items / ChildrenOf", "IEnumerable<T> / Func<T, IEnumerable<T>?>", null, "The roots and an item's children."),
+        new("Layout", "HelixTreeLayout", null, "List (explorer) or Diagram (org chart)."),
+        new("ItemText / ItemIcon / ItemDescription", "Func<T, string?>", null, "Label, icon, second line (diagram)."),
+        new("ItemTemplate", "RenderFragment<T>", null, "Free content of a node."),
+        new("SelectedItem / ItemKey", "T? / Func<T, object>", null, "Selection (@bind-SelectedItem); identity of an item."),
+        new("ExpandDepth / ShowLines", "int / bool", "--helix-tree-line", "Levels expanded at first; guide lines."),
     ];
 }

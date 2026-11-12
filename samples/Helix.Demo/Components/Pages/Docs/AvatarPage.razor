@@ -1,7 +1,7 @@
 @page "/components/avatar"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Avatar" Description="Initiales calculées depuis le nom, avec une couleur stable par personne. Image, statut et forme au choix.">
+<DemoPage Title="Avatar" Description="Initials computed from the name, with a stable color per person. Image, status and shape as you like.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <HelixAvatar Name="@_name" Size="_size" Status="_status" Color="@_color" Radius="@(_square ? "10px" : null)" />
@@ -10,12 +10,12 @@
             <HelixTextField Label="Name" @bind-Value="_name" />
             <Choice TEnum="HelixSize" Label="Size" @bind-Value="_size" />
             <Choice TEnum="HelixAvatarStatus" Label="Status" @bind-Value="_status" />
-            <ColorPicker Label="Color (auto par défaut)" @bind-Value="_color" />
-            <HelixSwitch Label="Carré arrondi" @bind-Checked="_square" Size="HelixSize.Sm" />
+            <ColorPicker Label="Color (auto by default)" @bind-Value="_color" />
+            <HelixSwitch Label="Rounded square" @bind-Checked="_square" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Couleur automatique" Description="Chaque nom donne toujours la même couleur, sans rien configurer." Code="@AutoCode">
+    <Example WpfCode="@Wpf2" Title="Automatic color" Description="Each name always gives the same color, with nothing to configure." Code="@AutoCode">
         <div class="row">
             @foreach (var name in Names)
             {
@@ -24,7 +24,7 @@
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf3" Title="Groupe" Code="@GroupCode">
+    <Example WpfCode="@Wpf3" Title="Group" Code="@GroupCode">
         <HelixAvatarGroup>
             @foreach (var name in Names.Take(5))
             {
@@ -44,7 +44,7 @@
         """;
 
     private const string Wpf2 = """
-        <!-- Sans Accent, la couleur vient du nom : la même personne a toujours la même couleur. -->
+        <!-- Without Accent, the color comes from the name: the same person always has the same color. -->
         <helix:HelixAvatar DisplayName="Camille Martin" />
         <helix:HelixAvatar DisplayName="Léo Bernard" />
         <helix:HelixAvatar DisplayName="Inès Petit" />
@@ -57,7 +57,7 @@
             <helix:HelixAvatar DisplayName="Inès Petit" />
             <helix:HelixAvatar DisplayName="Hugo Robert" />
             <helix:HelixAvatar DisplayName="Chloé Richard" />
-        </helix:HelixAvatarGroup>   <!-- affiche 3 avatars + « +2 » -->
+        </helix:HelixAvatarGroup>   <!-- shows 3 avatars + “+2” -->
         """;
 
     private static readonly string[] Names = ["Ada Lovelace", "Alan Turing", "Grace Hopper", "Linus Torvalds", "Margaret Hamilton", "Dennis Ritchie", "Barbara Liskov", "Ken Thompson"];
@@ -83,11 +83,11 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Name", "string", null, "Nom complet : initiales, infobulle et couleur automatique."),
-        new("Src", "string", null, "Image (remplace les initiales)."),
-        new("Size", "HelixSize", null, "Sm, Md ou Lg."),
+        new("Name", "string", null, "Full name: initials, tooltip and automatic color."),
+        new("Src", "string", null, "Image (replaces the initials)."),
+        new("Size", "HelixSize", null, "Sm, Md or Lg."),
         new("Status", "HelixAvatarStatus", null, "Online, Away, Busy, Offline."),
-        new("Color", "string", "--helix-avatar-color", "Remplace la couleur automatique."),
-        new("Radius", "string", "--helix-avatar-radius", "Arrondi (rond par défaut)."),
+        new("Color", "string", "--helix-avatar-color", "Replaces the automatic color."),
+        new("Radius", "string", "--helix-avatar-radius", "Corner radius (round by default)."),
     ];
 }

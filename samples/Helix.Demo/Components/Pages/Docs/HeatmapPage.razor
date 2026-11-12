@@ -2,13 +2,13 @@
 @using System.Globalization
 @inject HelixToastService Toasts
 
-<DemoPage Title="Heatmap" Description="Une grille de valeurs colorées : repérez d'un coup d'œil les heures et les jours qui comptent. Échelle simple (une teinte, du clair au foncé) pour une quantité, ou divergente (deux teintes autour d'un point neutre) pour un écart.">
-    <Example WpfCode="@Wpf1" Title="Échelle divergente : déficit ou surplus" Description="Bleu = déficit, rouge = surplus, gris = équilibre (Midpoint = 0). L'échelle est symétrique : la même distance donne la même intensité des deux côtés. Les cases hachurées n'ont pas de données." Code="@DivergingCode">
-        <HelixHeatmap Title="Déséquilibre moyen (MW)" Cells="_weekly" Diverging="true" Unit="MW" Format="N0" ColumnLabelEvery="2" Culture="French" OnCellClick="Show" />
+<DemoPage Title="Heatmap" Description="A grid of colored values: spot at a glance the hours and days that matter. Single scale (one hue, light to dark) for a quantity, or diverging (two hues around a neutral point) for a gap.">
+    <Example WpfCode="@Wpf1" Title="Diverging scale: deficit or surplus" Description="Blue = deficit, red = surplus, gray = balance (Midpoint = 0). The scale is symmetric: the same distance gives the same intensity on both sides. Hatched cells have no data." Code="@DivergingCode">
+        <HelixHeatmap Title="Average imbalance (MW)" Cells="_weekly" Diverging="true" Unit="MW" Format="N0" ColumnLabelEvery="2" Culture="English" OnCellClick="Show" />
     </Example>
 
-    <Example WpfCode="@Wpf2" Title="Échelle simple : une quantité" Description="Nombre d'activations de réserve. ShowValues affiche les chiffres dans les cases ; le texte passe en blanc sur les cases foncées." Code="@SequentialCode">
-        <HelixHeatmap Title="Activations par heure" Cells="_activations" ShowValues="true" Format="0" CellHeight="30px" CellMinWidth="30px" Culture="French" />
+    <Example WpfCode="@Wpf2" Title="Single scale: a quantity" Description="Number of reserve activations. ShowValues shows the numbers in the cells; the text turns white on dark cells." Code="@SequentialCode">
+        <HelixHeatmap Title="Activations per hour" Cells="_activations" ShowValues="true" Format="0" CellHeight="30px" CellMinWidth="30px" Culture="English" />
     </Example>
 
     <ApiTable Title="HelixHeatmap" Rows="Api" />
@@ -16,47 +16,47 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixHeatmap Title="Écart à l'objectif" Unit="MW" IsDiverging="True" Midpoint="0"
+        <helix:HelixHeatmap Title="Gap to target" Unit="MW" IsDiverging="True" Midpoint="0"
                           ShowValues="True" Rows="{Binding Units}" Columns="{Binding Hours}" Cells="{Binding Gaps}"
                           CellClick="OnCellClick" />
 
-        // ViewModel : une cellule par (ligne, colonne), null = pas de donnée
+        // ViewModel: one cell per (row, column), null = no data
         Gaps = units.SelectMany(u => hours.Select(h => new HelixHeatCell(u, h, Gap(u, h)))).ToList();
         """;
 
     private const string Wpf2 = """
-        <helix:HelixHeatmap Title="Consommation par heure" Unit="MW" ColumnLabelEvery="3" CellHeight="24"
+        <helix:HelixHeatmap Title="Consumption per hour" Unit="MW" ColumnLabelEvery="3" CellHeight="24"
                           Rows="{Binding Days}" Columns="{Binding Hours}" Cells="{Binding Load}" />
         """;
 
-    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
 
     private readonly IReadOnlyList<HelixHeatCell> _weekly = DemoData.WeeklyImbalance();
     private readonly IReadOnlyList<HelixHeatCell> _activations = DemoData.Activations();
 
     private void Show(HelixHeatCell cell) =>
-        Toasts.Info(cell.Value is null ? "Aucune donnée" : $"{cell.Value:N0} MW", $"{cell.Row} · {cell.Column}");
+        Toasts.Info(cell.Value is null ? "No data" : $"{cell.Value:N0} MW", $"{cell.Row} · {cell.Column}");
 
     private const string DivergingCode = """
-        <HelixHeatmap Title="Déséquilibre moyen (MW)" Cells="cells" Diverging Unit="MW" ColumnLabelEvery="2" OnCellClick="Show" />
+        <HelixHeatmap Title="Average imbalance (MW)" Cells="cells" Diverging Unit="MW" ColumnLabelEvery="2" OnCellClick="Show" />
 
-        // cells = mesures.Select(m => new HelixHeatCell(m.Day, $"{m.Hour:00}h", m.Mw))
+        // cells = readings.Select(m => new HelixHeatCell(m.Day, $"{m.Hour:00}h", m.Mw))
         """;
 
     private const string SequentialCode = """
-        <HelixHeatmap Title="Activations par heure" Cells="cells" ShowValues Format="0" CellHeight="30px" />
+        <HelixHeatmap Title="Activations per hour" Cells="cells" ShowValues Format="0" CellHeight="30px" />
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Cells", "IEnumerable<HelixHeatCell>", null, "HelixHeatCell(Row, Column, Value) ; Value = null pour « pas de donnée »."),
-        new("Rows / Columns", "IReadOnlyList<string>", null, "Ordre des lignes et colonnes (sinon ordre d'apparition)."),
-        new("Diverging / Midpoint", "bool / double", "--helix-heat-neg, --helix-heat-mid, --helix-heat-pos", "Deux teintes autour d'un point neutre (0)."),
-        new("—", "", "--helix-heat-lo, --helix-heat-hi", "Échelle simple : du clair au foncé (une seule teinte)."),
-        new("Min / Max", "double?", null, "Bornes fixes (sinon celles des données)."),
-        new("ShowValues / Format / Unit", "bool / string / string", null, "Chiffres dans les cases, format, unité."),
-        new("ColumnLabelEvery", "int", null, "N'afficher qu'un libellé de colonne sur N."),
-        new("CellHeight / CellMinWidth", "string", "--helix-heatmap-cell-h", "Taille des cases."),
-        new("OnCellClick", "EventCallback<HelixHeatCell>", null, "Clic (ou Entrée) sur une case."),
+        new("Cells", "IEnumerable<HelixHeatCell>", null, "HelixHeatCell(Row, Column, Value); Value = null for “no data”."),
+        new("Rows / Columns", "IReadOnlyList<string>", null, "Order of rows and columns (otherwise the order they appear)."),
+        new("Diverging / Midpoint", "bool / double", "--helix-heat-neg, --helix-heat-mid, --helix-heat-pos", "Two hues around a neutral point (0)."),
+        new("—", "", "--helix-heat-lo, --helix-heat-hi", "Single scale: light to dark (one hue)."),
+        new("Min / Max", "double?", null, "Fixed bounds (otherwise the data's)."),
+        new("ShowValues / Format / Unit", "bool / string / string", null, "Numbers in the cells, format, unit."),
+        new("ColumnLabelEvery", "int", null, "Show only one column label in N."),
+        new("CellHeight / CellMinWidth", "string", "--helix-heatmap-cell-h", "Cell size."),
+        new("OnCellClick", "EventCallback<HelixHeatCell>", null, "Click (or Enter) on a cell."),
     ];
 }

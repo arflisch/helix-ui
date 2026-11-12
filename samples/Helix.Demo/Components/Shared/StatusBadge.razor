@@ -13,9 +13,9 @@
 
     private string Label => Status switch
     {
-        EmployeeStatus.Active => "Actif",
-        EmployeeStatus.Remote => "Télétravail",
-        EmployeeStatus.Leave => "Congé",
-        _ => "Départ",
+        EmployeeStatus.Active => "Active",
+        EmployeeStatus.Remote => "Remote",
+        EmployeeStatus.Leave => "On leave",
+        _ => "Left",
     };
 }

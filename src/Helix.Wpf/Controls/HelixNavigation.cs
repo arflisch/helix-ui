@@ -391,7 +391,7 @@ public class HelixPagination : Control
 /// ActiveIndex is two-way; IsClickable lets the user go back (or anywhere with AllowSkip).
 /// </summary>
 [TemplatePart(Name = "PART_Steps", Type = typeof(Grid))]
-public class HelixStepper : Control, IVeloThemeAware
+public class HelixStepper : Control, IHelixThemeAware
 {
     static HelixStepper() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixStepper), new FrameworkPropertyMetadata(typeof(HelixStepper)));
 
@@ -450,7 +450,7 @@ public class HelixStepper : Control, IVeloThemeAware
         Build();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Build();
+    void IHelixThemeAware.OnThemeChanged() => Build();
 
     private void Build()
     {

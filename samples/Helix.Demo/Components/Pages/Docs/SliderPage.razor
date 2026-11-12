@@ -1,7 +1,7 @@
 @page "/components/slider"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Slider" Description="Curseur basé sur l'input range native : léger, accessible au clavier, avec remplissage coloré et format d'affichage libre.">
+<DemoPage Title="Slider" Description="Slider built on the native range input: lightweight, keyboard accessible, with a colored fill and any display format.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:360px">
@@ -11,19 +11,19 @@
         </Preview>
         <Controls>
             <HelixTextField Label="Label" @bind-Value="_label" />
-            <HelixTextField Label="Unité" @bind-Value="_unit" />
+            <HelixTextField Label="Unit" @bind-Value="_unit" />
             <Choice TEnum="StepChoice" Label="Step" Value="_stepChoice" ValueChanged="SetStep" />
-            <ColorPicker Label="Color (remplissage)" @bind-Value="_color" />
+            <ColorPicker Label="Color (fill)" @bind-Value="_color" />
             <ColorPicker Label="ThumbColor" @bind-Value="_thumb" Colors="@(["#ffffff", "#18181b", "#f59e0b"])" />
             <HelixSwitch Label="Disabled" @bind-Checked="_disabled" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Couleurs" Code="@ColorsCode">
+    <Example WpfCode="@Wpf2" Title="Colors" Code="@ColorsCode">
         <div class="grid-3">
-            <HelixSlider Label="Basses" @bind-Value="_a" Color="success" />
-            <HelixSlider Label="Médiums" @bind-Value="_b" Color="warning" />
-            <HelixSlider Label="Aigus" @bind-Value="_c" Color="#ec4899" />
+            <HelixSlider Label="Bass" @bind-Value="_a" Color="success" />
+            <HelixSlider Label="Mids" @bind-Value="_b" Color="warning" />
+            <HelixSlider Label="Treble" @bind-Value="_c" Color="#ec4899" />
         </div>
     </Example>
 
@@ -44,7 +44,7 @@
 
     private double _value = 40, _max = 100, _step = 1, _a = 70, _b = 45, _c = 25;
     private StepChoice _stepChoice;
-    private string? _label = "Luminosité";
+    private string? _label = "Brightness";
     private string? _unit = "%";
     private string? _color, _thumb;
     private bool _disabled;
@@ -59,20 +59,20 @@
         $"<HelixSlider @bind-Value=\"brightness\"{A("Label", _label)}{(_step == 1 ? "" : $" Step=\"{N(_step)}\"")}{A("Color", _color)}{A("ThumbColor", _thumb)}{B("Disabled", _disabled)} Format=\"@(v => $\"{{v}} {_unit}\")\" />";
 
     private const string ColorsCode = """
-        <HelixSlider Label="Basses" @bind-Value="bass" Color="success" />
-        <HelixSlider Label="Médiums" @bind-Value="mid" Color="warning" />
-        <HelixSlider Label="Aigus" @bind-Value="treble" Color="#ec4899" />
+        <HelixSlider Label="Bass" @bind-Value="bass" Color="success" />
+        <HelixSlider Label="Mids" @bind-Value="mid" Color="warning" />
+        <HelixSlider Label="Treble" @bind-Value="treble" Color="#ec4899" />
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Value", "double", null, "Valeur (@bind-Value)."),
-        new("Min / Max / Step", "double", null, "Bornes et pas (0, 100, 1 par défaut)."),
-        new("Format", "Func<double, string>", null, "Affichage de la valeur, ex. v => $\"{v} %\"."),
-        new("ShowValue", "bool", null, "Affiche la valeur à droite du label (true)."),
-        new("Color", "string", "--helix-slider-color", "Couleur du remplissage."),
-        new("TrackColor", "string", "--helix-slider-track", "Partie non remplie."),
-        new("ThumbColor", "string", "--helix-slider-thumb", "Pastille."),
-        new("—", "", "--helix-slider-height", "Épaisseur de la piste."),
+        new("Value", "double", null, "Value (@bind-Value)."),
+        new("Min / Max / Step", "double", null, "Bounds and step (0, 100, 1 by default)."),
+        new("Format", "Func<double, string>", null, "Value display, e.g. v => $\"{v} %\"."),
+        new("ShowValue", "bool", null, "Shows the value to the right of the label (true)."),
+        new("Color", "string", "--helix-slider-color", "Fill color."),
+        new("TrackColor", "string", "--helix-slider-track", "Unfilled part."),
+        new("ThumbColor", "string", "--helix-slider-thumb", "Thumb."),
+        new("—", "", "--helix-slider-height", "Track thickness."),
     ];
 }

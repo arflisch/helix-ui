@@ -7,7 +7,7 @@ Helix.slnx
 ├─ src/Helix.Blazor        la librairie (Razor Class Library, .NET 10)
 │  ├─ Components/         HelixButton, HelixMenu, HelixDatePicker, HelixColorPicker, HelixDataGrid, HelixChart, HelixDonut, HelixTreeView, HelixCarousel… (45+ composants)
 │  ├─ Core/               HelixTheme, builders CSS, enums
-│  ├─ Services/           HelixToastService + AddVelo()
+│  ├─ Services/           HelixToastService + AddHelix()
 │  ├─ wwwroot/helix.css    tokens + styles (spécificité zéro)
 │  └─ wwwroot/helix.js     glisser-déposer de la timeline (chargé à la demande)
 ├─ src/Helix.Wpf           la même librairie pour WPF (.NET 10, Windows)
@@ -30,7 +30,7 @@ Puis ouvrir http://localhost:5040.
 
 ```csharp
 // Program.cs
-builder.Services.AddVelo();
+builder.Services.AddHelix();
 ```
 
 ```razor

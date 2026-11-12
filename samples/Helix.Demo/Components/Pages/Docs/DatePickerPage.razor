@@ -1,13 +1,13 @@
 @page "/components/datepicker"
 @using System.Globalization
 
-<DemoPage Title="DatePicker" Description="Sélecteur de date avec calendrier : semaine qui commence selon la culture (lundi en français), dates interdites, bornes. Au clavier : flèches pour les jours, Page ↑/↓ pour les mois (Maj : années), Début/Fin pour la semaine, Entrée pour choisir.">
-    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
+<DemoPage Title="DatePicker" Description="Date picker with a calendar: the week starts according to the culture (Monday in British English or French), disabled dates, bounds. From the keyboard: arrows for days, Page ↑/↓ for months (Shift: years), Home/End for the week, Enter to choose.">
+    <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
         <div class="grid-3">
-            <HelixDatePicker Label="Date de livraison" @bind-Value="_delivery" Culture="French" Hint="@($"Choisie : {_delivery?.ToString("dddd d MMMM", French) ?? "aucune"}")" />
-            <HelixDatePicker Label="Jour ouvré (14 jours)" @bind-Value="_workday" Culture="French"
+            <HelixDatePicker Label="Delivery date" @bind-Value="_delivery" Culture="English" Hint="@($"Chosen: {_delivery?.ToString("dddd d MMMM", English) ?? "none"}")" />
+            <HelixDatePicker Label="Working day (14 days)" @bind-Value="_workday" Culture="English"
                             Min="Today" Max="Today.AddDays(14)" IsDateDisabled="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday" />
-            <HelixDatePicker Label="Format court" @bind-Value="_short" Format="dd/MM/yyyy" Culture="French" Clearable="false" />
+            <HelixDatePicker Label="Short format" @bind-Value="_short" Format="dd/MM/yyyy" Culture="English" Clearable="false" />
         </div>
     </Example>
 
@@ -16,12 +16,12 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixDatePicker Label="Date de début" SelectedDate="{Binding Start}" Hint="Format jj/mm/aaaa"
+        <helix:HelixDatePicker Label="Start date" SelectedDate="{Binding Start}" Hint="Format dd/mm/yyyy"
                              DisplayDateStart="{Binding Today}" IsRequired="True" />
-        <helix:HelixDatePicker Label="Échéance" Error="{Binding DueDateError}" Accent="#FF8A00" />
+        <helix:HelixDatePicker Label="Due date" Error="{Binding DueDateError}" Accent="#FF8A00" />
         """;
 
-    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
 
     private DateOnly? _delivery = DateOnly.FromDateTime(DateTime.Today.AddDays(3));
@@ -29,21 +29,21 @@
     private DateOnly? _short = DateOnly.FromDateTime(DateTime.Today);
 
     private const string Code = """
-        <HelixDatePicker Label="Jour ouvré" @bind-Value="date" Min="today" Max="today.AddDays(14)"
+        <HelixDatePicker Label="Working day" @bind-Value="date" Min="today" Max="today.AddDays(14)"
                         IsDateDisabled="d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday" />
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Value", "DateOnly?", null, "Date choisie (@bind-Value)."),
-        new("Min / Max / IsDateDisabled", "DateOnly? / DateOnly? / Func<DateOnly, bool>", null, "Dates autorisées (les autres sont barrées)."),
-        new("Format", "string", null, "Affichage, « d MMMM yyyy » par défaut."),
-        new("Culture", "CultureInfo", null, "Noms des mois et jours, premier jour de la semaine."),
-        new("Clearable / Label / Hint / Error", "bool / string", null, "Bouton d'effacement, textes."),
-        new("TimeProvider", "TimeProvider", null, "Horloge pour « Aujourd'hui » (tests)."),
-        new("Prefix / Suffix", "RenderFragment", null, "Contenu au début / à la fin du champ (icône, signe, unité…). Même slots sur tous les champs."),
-        new("Hint / Error", "string", null, "Aide sous le champ, ou erreur qui la remplace ; reliées au champ pour les lecteurs d'écran (aria-describedby)."),
-        new("Required", "bool", null, "Astérisque après le libellé et attribut required."),
-        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Même apparence sur tous les champs ; valeurs par défaut via Defaults.Field."),
+        new("Value", "DateOnly?", null, "Chosen date (@bind-Value)."),
+        new("Min / Max / IsDateDisabled", "DateOnly? / DateOnly? / Func<DateOnly, bool>", null, "Allowed dates (the others are struck through)."),
+        new("Format", "string", null, "Display, “d MMMM yyyy” by default."),
+        new("Culture", "CultureInfo", null, "Month and day names, first day of the week."),
+        new("Clearable / Label / Hint / Error", "bool / string", null, "Clear button, texts."),
+        new("TimeProvider", "TimeProvider", null, "Clock for “Today” (tests)."),
+        new("Prefix / Suffix", "RenderFragment", null, "Content at the start / end of the field (icon, sign, unit…). Same slots on every field."),
+        new("Hint / Error", "string", null, "Hint under the field, or an error that replaces it; linked to the field for screen readers (aria-describedby)."),
+        new("Required", "bool", null, "Asterisk after the label and required attribute."),
+        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Same look on every field; defaults through Defaults.Field."),
     ];
 }

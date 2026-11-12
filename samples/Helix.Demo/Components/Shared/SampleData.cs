@@ -15,11 +15,11 @@ public static class SampleData
 
     private static readonly (string Department, string[] Roles)[] Departments =
     [
-        ("Ingénierie", ["Développeur", "Tech lead", "DevOps", "QA"]),
-        ("Design", ["Designer produit", "Designer UI"]),
-        ("Produit", ["Product manager", "Product owner"]),
-        ("Ventes", ["Account executive", "Sales manager"]),
-        ("Support", ["Chargé de support", "Responsable support"]),
+        ("Engineering", ["Developer", "Tech lead", "DevOps", "QA"]),
+        ("Design", ["Product designer", "UI designer"]),
+        ("Product", ["Product manager", "Product owner"]),
+        ("Sales", ["Account executive", "Sales manager"]),
+        ("Support", ["Support agent", "Support lead"]),
     ];
 
     public static readonly IReadOnlyList<Employee> Employees = Build(48);
@@ -40,7 +40,7 @@ public static class SampleData
                 9 => EmployeeStatus.Offboarding,
                 _ => EmployeeStatus.Leave,
             };
-            var email = $"{Slug(first)}.{Slug(last)}@exemple.fr";
+            var email = $"{Slug(first)}.{Slug(last)}@example.com";
             var salary = 36_000 + random.Next(0, 56) * 1_000;
             var start = new DateOnly(2016, 1, 1).AddDays(random.Next(0, 3500));
             list.Add(new Employee(i, $"{first} {last}", email, department, roles[random.Next(roles.Length)], status, salary, start));

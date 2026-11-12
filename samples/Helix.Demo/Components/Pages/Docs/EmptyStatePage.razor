@@ -1,15 +1,15 @@
 @page "/components/emptystate"
 
-<DemoPage Title="EmptyState" Description="Ce qu'on affiche quand il n'y a rien : expliquer pourquoi, et proposer l'action suivante.">
-    <Example WpfCode="@Wpf1" Title="Variantes" Code="@Code">
+<DemoPage Title="EmptyState" Description="What to show when there is nothing: explain why, and offer the next action.">
+    <Example WpfCode="@Wpf1" Title="Variants" Code="@Code">
         <div class="grid-3">
-            <HelixEmptyState Framed="true" Icon="calendar" Title="Aucune demande planifiée" Description="Planifiez une demande pour la voir apparaître dans la timeline.">
-                <Actions><HelixButton Icon="plus" Size="HelixSize.Sm">Planifier</HelixButton></Actions>
+            <HelixEmptyState Framed="true" Icon="calendar" Title="No scheduled requests" Description="Schedule a request to see it in the timeline.">
+                <Actions><HelixButton Icon="plus" Size="HelixSize.Sm">Schedule</HelixButton></Actions>
             </HelixEmptyState>
-            <HelixEmptyState Framed="true" Icon="search" Title="Aucun résultat" Description="Essayez un autre mot-clé ou retirez des filtres.">
-                <Actions><HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm">Effacer les filtres</HelixButton></Actions>
+            <HelixEmptyState Framed="true" Icon="search" Title="No results" Description="Try another keyword or remove filters.">
+                <Actions><HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm">Clear filters</HelixButton></Actions>
             </HelixEmptyState>
-            <HelixEmptyState Framed="true" Icon="success" Color="success" Title="Tout est à jour" Description="Aucune alerte en cours." />
+            <HelixEmptyState Framed="true" Icon="success" Color="success" Title="All up to date" Description="No active alerts." />
         </div>
     </Example>
 
@@ -18,26 +18,26 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixEmptyState Icon="search" Title="Aucun résultat"
-                             Description="Aucun rapport ne correspond à ces filtres.">
+        <helix:HelixEmptyState Icon="search" Title="No results"
+                             Description="No report matches these filters.">
             <helix:HelixEmptyState.Actions>
-                <helix:HelixButton Content="Effacer les filtres" Variant="Soft" />
+                <helix:HelixButton Content="Clear filters" Variant="Soft" />
             </helix:HelixEmptyState.Actions>
         </helix:HelixEmptyState>
-        <helix:HelixEmptyState Icon="bell" Title="Tout est lu" Tone="Success" Padding="12" />
+        <helix:HelixEmptyState Icon="bell" Title="All read" Tone="Success" Padding="12" />
         """;
 
     private const string Code = """
-        <HelixEmptyState Icon="calendar" Title="Aucune demande planifiée" Description="Planifiez une demande…">
-            <Actions><HelixButton Icon="plus">Planifier</HelixButton></Actions>
+        <HelixEmptyState Icon="calendar" Title="No scheduled requests" Description="Schedule a request…">
+            <Actions><HelixButton Icon="plus">Schedule</HelixButton></Actions>
         </HelixEmptyState>
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Icon / Title / Description", "string", null, "Illustration et textes."),
-        new("Actions", "RenderFragment", null, "Boutons d'action."),
-        new("Compact / Framed", "bool", null, "Version réduite ; cadre en pointillés."),
-        new("Color", "string", "--helix-empty-color", "Couleur de l'illustration."),
+        new("Icon / Title / Description", "string", null, "Illustration and texts."),
+        new("Actions", "RenderFragment", null, "Action buttons."),
+        new("Compact / Framed", "bool", null, "Smaller version; dashed frame."),
+        new("Color", "string", "--helix-empty-color", "Illustration color."),
     ];
 }

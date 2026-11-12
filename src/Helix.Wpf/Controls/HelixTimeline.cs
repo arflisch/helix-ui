@@ -18,7 +18,7 @@ namespace Helix.Wpf;
 [TemplatePart(Name = "PART_Canvas", Type = typeof(Canvas))]
 [TemplatePart(Name = "PART_Legend", Type = typeof(Panel))]
 [TemplatePart(Name = "PART_Toggle", Type = typeof(ButtonBase))]
-public class HelixTimeline : Control, IVeloThemeAware
+public class HelixTimeline : Control, IHelixThemeAware
 {
     static HelixTimeline() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixTimeline), new FrameworkPropertyMetadata(typeof(HelixTimeline)));
 
@@ -154,7 +154,7 @@ public class HelixTimeline : Control, IVeloThemeAware
         Build();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Build();
+    void IHelixThemeAware.OnThemeChanged() => Build();
 
     private void OnToggle(object sender, RoutedEventArgs e) => SetCurrentValue(IsCollapsedProperty, !IsCollapsed);
 

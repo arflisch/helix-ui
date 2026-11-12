@@ -2,12 +2,12 @@
 @inject HelixConfirmService Confirm
 @inject HelixToastService Toasts
 
-<DemoPage Title="Confirm" Description="Demander une confirmation depuis n'importe quel code, en une ligne qui attend la réponse : if (await Confirm.AskAsync(…)). Pas de dialogue à déclarer dans la page : HelixProvider l'affiche.">
-    <Example WpfCode="@Wpf1" Title="Exemples" Code="@Code">
+<DemoPage Title="Confirm" Description="Ask for confirmation from any code, in one line that awaits the answer: if (await Confirm.AskAsync(…)). No dialog to declare in the page: HelixProvider shows it.">
+    <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
         <div class="row">
-            <HelixButton Color="danger" Variant="HelixVariant.Soft" Icon="trash" OnClick="Delete">Supprimer le planning</HelixButton>
-            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="Publish">Publier</HelixButton>
-            <span class="muted" style="font-size:13px">Dernière réponse : @_last</span>
+            <HelixButton Color="danger" Variant="HelixVariant.Soft" Icon="trash" OnClick="Delete">Delete the schedule</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="Publish">Publish</HelixButton>
+            <span class="muted" style="font-size:13px">Last answer: @_last</span>
         </div>
     </Example>
 
@@ -16,15 +16,15 @@
 
 @code {
     private const string Wpf1 = """
-        <!-- MainWindow.xaml : une fois, autour du contenu -->
+        <!-- MainWindow.xaml: once, around the content -->
         <helix:HelixHost> … </helix:HelixHost>
 
-        // Code-behind ou ViewModel
-        if (await HelixConfirm.AskAsync("Supprimer le rapport ?", "Cette action est définitive.",
-                                       danger: true, confirmText: "Supprimer"))
+        // Code-behind or ViewModel
+        if (await HelixConfirm.AskAsync("Delete the report?", "This action is permanent.",
+                                       danger: true, confirmText: "Delete"))
         {
             await reports.DeleteAsync(id);
-            HelixToasts.Success("Rapport supprimé.");
+            HelixToasts.Success("Report deleted.");
         }
         """;
 
@@ -32,46 +32,46 @@
 
     private async Task Delete()
     {
-        var ok = await Confirm.AskAsync(new HelixConfirmOptions("Supprimer le planning ?")
+        var ok = await Confirm.AskAsync(new HelixConfirmOptions("Delete the schedule?")
         {
-            Message = "Les 12 demandes planifiées seront annulées. Cette action est définitive.",
-            ConfirmText = "Supprimer",
+            Message = "The 12 scheduled requests will be cancelled. This action is permanent.",
+            ConfirmText = "Delete",
             Danger = true,
         });
-        _last = ok ? "confirmé" : "annulé";
+        _last = ok ? "confirmed" : "cancelled";
         if (ok)
         {
-            Toasts.Error("Planning supprimé");
+            Toasts.Error("Schedule deleted");
         }
     }
 
     private async Task Publish()
     {
-        _last = await Confirm.AskAsync("Publier le planning ?", "Il sera visible par toute l'équipe.") ? "confirmé" : "annulé";
+        _last = await Confirm.AskAsync("Publish the schedule?", "It will be visible to the whole team.") ? "confirmed" : "cancelled";
     }
 
     private const string Code = """
         @inject HelixConfirmService Confirm
 
-        if (await Confirm.AskAsync(new HelixConfirmOptions("Supprimer le planning ?")
+        if (await Confirm.AskAsync(new HelixConfirmOptions("Delete the schedule?")
             {
-                Message = "Cette action est définitive.",
-                ConfirmText = "Supprimer",
+                Message = "This action is permanent.",
+                ConfirmText = "Delete",
                 Danger = true,
             }))
         {
             await planning.DeleteAsync();
         }
 
-        // Version courte
-        if (await Confirm.AskAsync("Publier le planning ?")) { … }
+        // Short version
+        if (await Confirm.AskAsync("Publish the schedule?")) { … }
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("AskAsync(title, message, danger, confirmText)", "Task<bool>", null, "Version courte."),
-        new("AskAsync(HelixConfirmOptions, CancellationToken)", "Task<bool>", null, "true = confirmé ; false = annulé, fermé ou jeton annulé."),
+        new("AskAsync(title, message, danger, confirmText)", "Task<bool>", null, "Short version."),
+        new("AskAsync(HelixConfirmOptions, CancellationToken)", "Task<bool>", null, "true = confirmed; false = cancelled, closed or token cancelled."),
         new("HelixConfirmOptions", "record", null, "Title, Message, ConfirmText, CancelText, Danger."),
-        new("Inscription", "AddVelo()", null, "Service enregistré par AddVelo ; affiché par HelixProvider."),
+        new("Registration", "AddHelix()", null, "Service registered by AddHelix; shown by HelixProvider."),
     ];
 }

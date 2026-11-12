@@ -1,25 +1,25 @@
 @page "/components/button"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Button" Description="Le bouton : quatre variantes, toutes les couleurs (sémantiques ou libres), trois tailles, icônes et état de chargement.">
+<DemoPage Title="Button" Description="The button: four variants, every color (semantic or custom), three sizes, icons and a loading state.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <HelixButton Variant="_variant" Color="@_color" Size="_size" Radius="@Radius" Loading="_loading" Disabled="_disabled"
                         Icon="@(_icon ? "sparkles" : null)">@_label</HelixButton>
         </Preview>
         <Controls>
-            <HelixTextField Label="Texte" @bind-Value="_label" />
+            <HelixTextField Label="Text" @bind-Value="_label" />
             <Choice TEnum="HelixVariant" Label="Variant" @bind-Value="_variant" />
             <Choice TEnum="HelixSize" Label="Size" @bind-Value="_size" />
             <ColorPicker Label="Color" @bind-Value="_color" />
             <HelixSlider Label="Radius" @bind-Value="_radius" Min="0" Max="24" Format="@(v => $"{v} px")" />
-            <HelixSwitch Label="Icône" @bind-Checked="_icon" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Icon" @bind-Checked="_icon" Size="HelixSize.Sm" />
             <HelixSwitch Label="Loading" @bind-Checked="_loading" Size="HelixSize.Sm" />
             <HelixSwitch Label="Disabled" @bind-Checked="_disabled" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Variantes" Code="@VariantsCode">
+    <Example WpfCode="@Wpf2" Title="Variants" Code="@VariantsCode">
         <div class="row">
             <HelixButton>Solid</HelixButton>
             <HelixButton Variant="HelixVariant.Soft">Soft</HelixButton>
@@ -28,7 +28,7 @@
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf3" Title="Couleurs" Description="Un nom sémantique ou n'importe quelle couleur CSS. Les états hover, focus et le texte sont calculés automatiquement.">
+    <Example WpfCode="@Wpf3" Title="Colors" Description="A semantic name or any CSS color. Hover and focus states and the text color are computed automatically.">
         <div class="stack">
             @foreach (var variant in Enum.GetValues<HelixVariant>())
             {
@@ -42,14 +42,14 @@
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf4" Title="Icônes, tailles et chargement" Code="@IconsCode">
+    <Example WpfCode="@Wpf4" Title="Icons, sizes and loading" Code="@IconsCode">
         <div class="row">
-            <HelixButton Icon="download" Size="HelixSize.Sm">Télécharger</HelixButton>
-            <HelixButton Variant="HelixVariant.Outline" Color="neutral" IconEnd="arrow-right">Continuer</HelixButton>
-            <HelixButton Size="HelixSize.Lg" Color="danger" Icon="trash">Supprimer</HelixButton>
-            <HelixButton Variant="HelixVariant.Soft" Icon="heart" aria-label="J'aime" />
-            <HelixButton Loading="true">Enregistrement</HelixButton>
-            <HelixButton Radius="999px" Color="#18181b">Pilule</HelixButton>
+            <HelixButton Icon="download" Size="HelixSize.Sm">Download</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" IconEnd="arrow-right">Continue</HelixButton>
+            <HelixButton Size="HelixSize.Lg" Color="danger" Icon="trash">Delete</HelixButton>
+            <HelixButton Variant="HelixVariant.Soft" Icon="heart" aria-label="Like" />
+            <HelixButton Loading="true">Saving</HelixButton>
+            <HelixButton Radius="999px" Color="#18181b">Pill</HelixButton>
         </div>
     </Example>
 
@@ -58,11 +58,11 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixButton Content="Enregistrer" Variant="Solid" Tone="Primary" Size="Md"
+        <helix:HelixButton Content="Save" Variant="Solid" Tone="Primary" Size="Md"
                          Icon="check" CornerRadius="10" Click="OnSave" />
 
-        <!-- N'importe quelle couleur : le texte devient noir ou blanc selon le contraste -->
-        <helix:HelixButton Content="Envoyer" Accent="#FF8A00" />
+        <!-- Any color: the text turns black or white for contrast -->
+        <helix:HelixButton Content="Send" Accent="#FF8A00" />
         """;
 
     private const string Wpf2 = """
@@ -81,15 +81,15 @@
         """;
 
     private const string Wpf4 = """
-        <helix:HelixButton Content="Télécharger" Icon="download" Size="Sm" />
-        <helix:HelixButton Content="Continuer" IconEnd="arrow-right" Size="Lg" />
-        <helix:HelixButton Icon="settings" Variant="Ghost" Tone="Neutral" Padding="0" Width="38" ToolTip="Réglages" />
-        <helix:HelixButton x:Name="Save" Content="Enregistrer" IsLoading="{Binding IsSaving}" />
+        <helix:HelixButton Content="Download" Icon="download" Size="Sm" />
+        <helix:HelixButton Content="Continue" IconEnd="arrow-right" Size="Lg" />
+        <helix:HelixButton Icon="settings" Variant="Ghost" Tone="Neutral" Padding="0" Width="38" ToolTip="Settings" />
+        <helix:HelixButton x:Name="Save" Content="Save" IsLoading="{Binding IsSaving}" />
         """;
 
     private static readonly string[] Colors = ["primary", "neutral", "success", "warning", "danger", "#8b5cf6"];
 
-    private string? _label = "Enregistrer";
+    private string? _label = "Save";
     private HelixVariant _variant;
     private HelixSize _size = HelixSize.Md;
     private string? _color;
@@ -109,24 +109,24 @@
         """;
 
     private const string IconsCode = """
-        <HelixButton Icon="download" Size="HelixSize.Sm">Télécharger</HelixButton>
-        <HelixButton Variant="HelixVariant.Outline" Color="neutral" IconEnd="arrow-right">Continuer</HelixButton>
-        <HelixButton Size="HelixSize.Lg" Color="danger" Icon="trash">Supprimer</HelixButton>
-        <HelixButton Variant="HelixVariant.Soft" Icon="heart" aria-label="J'aime" />
-        <HelixButton Loading="true">Enregistrement</HelixButton>
-        <HelixButton Radius="999px" Color="#18181b">Pilule</HelixButton>
+        <HelixButton Icon="download" Size="HelixSize.Sm">Download</HelixButton>
+        <HelixButton Variant="HelixVariant.Outline" Color="neutral" IconEnd="arrow-right">Continue</HelixButton>
+        <HelixButton Size="HelixSize.Lg" Color="danger" Icon="trash">Delete</HelixButton>
+        <HelixButton Variant="HelixVariant.Soft" Icon="heart" aria-label="Like" />
+        <HelixButton Loading="true">Saving</HelixButton>
+        <HelixButton Radius="999px" Color="#18181b">Pill</HelixButton>
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Variant", "HelixVariant", null, "Solid, Soft, Outline ou Ghost."),
-        new("Color", "string", "--helix-btn-color", "Nom sémantique (primary, danger…) ou couleur CSS."),
-        new("TextColor", "string", "--helix-btn-text", "Force la couleur du texte."),
-        new("Radius", "string", "--helix-btn-radius", "Arrondi, ex. \"999px\" pour une pilule."),
-        new("Size", "HelixSize", "--helix-btn-height", "Sm, Md ou Lg."),
-        new("Icon / IconEnd", "string", null, "Nom d'icône avant / après le texte. Sans texte, le bouton devient carré."),
-        new("Loading", "bool", null, "Affiche un spinner et désactive le bouton."),
-        new("Block", "bool", null, "Prend toute la largeur."),
-        new("OnClick", "EventCallback", null, "Clic."),
+        new("Variant", "HelixVariant", null, "Solid, Soft, Outline or Ghost."),
+        new("Color", "string", "--helix-btn-color", "Semantic name (primary, danger…) or CSS color."),
+        new("TextColor", "string", "--helix-btn-text", "Forces the text color."),
+        new("Radius", "string", "--helix-btn-radius", "Corner radius, e.g. \"999px\" for a pill."),
+        new("Size", "HelixSize", "--helix-btn-height", "Sm, Md or Lg."),
+        new("Icon / IconEnd", "string", null, "Icon name before / after the text. Without text, the button becomes square."),
+        new("Loading", "bool", null, "Shows a spinner and disables the button."),
+        new("Block", "bool", null, "Takes the full width."),
+        new("OnClick", "EventCallback", null, "Click."),
     ];
 }

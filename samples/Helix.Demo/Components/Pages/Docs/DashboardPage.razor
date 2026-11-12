@@ -4,39 +4,39 @@
 @inject IJSRuntime JS
 @inject HelixToastService Toasts
 
-<DemoPage Title="Dashboard" Description="Un tableau de bord que chaque utilisateur arrange : glisser les tuiles, changer leur largeur, les masquer et les rappeler. La disposition est un simple objet à sauvegarder où vous voulez ; ici dans le navigateur (localStorage), elle survit au rechargement.">
+<DemoPage Title="Dashboard" Description="A dashboard each user arranges: drag the tiles, change their width, hide them and bring them back. The layout is a plain object you save wherever you want; here in the browser (localStorage), it survives a reload.">
     <section class="demo-section">
-        <HelixDashboard Title="Exploitation du jour" Columns="4" Layout="_layout" LayoutChanged="SaveLayout" @bind-Editing="_editing">
+        <HelixDashboard Title="Today's operations" Columns="4" Layout="_layout" LayoutChanged="SaveLayout" @bind-Editing="_editing">
             <Toolbar>
-                <HelixBadge Color="success" Dot="true">Données en direct</HelixBadge>
+                <HelixBadge Color="success" Dot="true">Live data</HelixBadge>
             </Toolbar>
             <ChildContent>
                 <HelixDashboardTile Id="imbalance" Plain="true">
-                    <HelixStat Label="Déséquilibre actuel" Value="182" Unit="MW" Delta="-24" DeltaLabel="vs il y a 1 h" HigherIsBetter="false"
-                              Trend="DemoData.Trend(1, 14, 260, -6)" Icon="zap" Culture="French" />
+                    <HelixStat Label="Current imbalance" Value="182" Unit="MW" Delta="-24" DeltaLabel="vs 1 h ago" HigherIsBetter="false"
+                              Trend="DemoData.Trend(1, 14, 260, -6)" Icon="zap" Culture="English" />
                 </HelixDashboardTile>
                 <HelixDashboardTile Id="reserve" Plain="true">
-                    <HelixStat Label="Réserve activée" Value="350" Unit="MW" Delta="50" DeltaLabel="vs hier" Trend="DemoData.Trend(2, 14, 280, 5)" TrendColor="#1baf7a" Icon="trending-up" Culture="French" />
+                    <HelixStat Label="Activated reserve" Value="350" Unit="MW" Delta="50" DeltaLabel="vs yesterday" Trend="DemoData.Trend(2, 14, 280, 5)" TrendColor="#1baf7a" Icon="trending-up" Culture="English" />
                 </HelixDashboardTile>
                 <HelixDashboardTile Id="price" Plain="true">
-                    <HelixStat Label="Prix moyen" Value="91.4" Format="0.0" Unit="€/MWh" Delta="3.2" DeltaFormat="+0.0 '%';-0.0 '%'" DeltaLabel="vs hier" HigherIsBetter="false"
-                              Trend="DemoData.Trend(3, 14, 84, 0.6)" TrendColor="#eb6834" Icon="star" Culture="French" />
+                    <HelixStat Label="Average price" Value="91.4" Format="0.0" Unit="€/MWh" Delta="3.2" DeltaFormat="+0.0 '%';-0.0 '%'" DeltaLabel="vs yesterday" HigherIsBetter="false"
+                              Trend="DemoData.Trend(3, 14, 84, 0.6)" TrendColor="#eb6834" Icon="star" Culture="English" />
                 </HelixDashboardTile>
                 <HelixDashboardTile Id="rejected" Plain="true">
-                    <HelixStat Label="Demandes rejetées" Value="3" Delta="0" DeltaLabel="stable" HigherIsBetter="false" Trend="DemoData.Trend(4, 14, 4, -0.05)" TrendColor="var(--helix-text-subtle)" Icon="danger" Culture="French" />
+                    <HelixStat Label="Rejected requests" Value="3" Delta="0" DeltaLabel="stable" HigherIsBetter="false" Trend="DemoData.Trend(4, 14, 4, -0.05)" TrendColor="var(--helix-text-subtle)" Icon="danger" Culture="English" />
                 </HelixDashboardTile>
 
-                <HelixDashboardTile Id="chart" Title="Équilibrage" DefaultSpan="3" MinSpan="2">
+                <HelixDashboardTile Id="chart" Title="Balancing" DefaultSpan="3" MinSpan="2">
                     <Actions><HelixBadge>MW</HelixBadge></Actions>
                     <ChildContent>
-                        <HelixChart Height="240px" Unit="MW" YFormat="N0" ShowNow="true" ShowTableToggle="false" Culture="French">
-                            <HelixChartSeries Name="Déséquilibre" Points="_imbalance" Type="HelixSeriesType.Area" />
-                            <HelixChartSeries Name="Prévision" Points="_forecast" Dashed="true" />
+                        <HelixChart Height="240px" Unit="MW" YFormat="N0" ShowNow="true" ShowTableToggle="false" Culture="English">
+                            <HelixChartSeries Name="Imbalance" Points="_imbalance" Type="HelixSeriesType.Area" />
+                            <HelixChartSeries Name="Forecast" Points="_forecast" Dashed="true" />
                         </HelixChart>
                     </ChildContent>
                 </HelixDashboardTile>
 
-                <HelixDashboardTile Id="priorities" Title="Priorités de l'équipe">
+                <HelixDashboardTile Id="priorities" Title="Team priorities">
                     <HelixSortableList TItem="Priority" Items="_priorities" ItemsChanged="p => _priorities = p.ToList()" ItemKey="p => p.Id">
                         <ItemTemplate>
                             <div class="prio">
@@ -47,40 +47,40 @@
                     </HelixSortableList>
                 </HelixDashboardTile>
 
-                <HelixDashboardTile Id="heatmap" Title="Déséquilibre moyen par heure" DefaultSpan="4" MinSpan="2">
-                    <HelixHeatmap Cells="_weekly" Diverging="true" Unit="MW" Format="N0" ColumnLabelEvery="3" CellHeight="24px" CellMinWidth="18px" Culture="French" />
+                <HelixDashboardTile Id="heatmap" Title="Average imbalance per hour" DefaultSpan="4" MinSpan="2">
+                    <HelixHeatmap Cells="_weekly" Diverging="true" Unit="MW" Format="N0" ColumnLabelEvery="3" CellHeight="24px" CellMinWidth="18px" Culture="English" />
                 </HelixDashboardTile>
             </ChildContent>
         </HelixDashboard>
     </section>
 
     <section class="demo-section">
-        <h2 class="demo-section__title">Disposition enregistrée</h2>
-        <p class="demo-section__text">Ce que reçoit <code>LayoutChanged</code> : l'ordre, la largeur et la visibilité de chaque tuile. Rechargez la page, elle est conservée.</p>
+        <h2 class="demo-section__title">Saved layout</h2>
+        <p class="demo-section__text">What <code>LayoutChanged</code> receives: the order, width and visibility of each tile. Reload the page: it is kept.</p>
         <CodeBlock Language="json" Code="@LayoutJson" />
         <CodeBlock Code="@Code" WpfCode="@WpfExample" />
     </section>
 
-    <ApiTable Title="HelixDashboard et HelixDashboardTile" Rows="Api" />
+    <ApiTable Title="HelixDashboard and HelixDashboardTile" Rows="Api" />
 </DemoPage>
 
 @code {
     private const string WpfExample = """
-        <helix:HelixDashboard Title="Exploitation" ColumnCount="3" IsEditing="{Binding Editing}" Layout="{Binding SavedLayout}">
+        <helix:HelixDashboard Title="Operations" ColumnCount="3" IsEditing="{Binding Editing}" Layout="{Binding SavedLayout}">
             <helix:HelixDashboardTile TileId="kpi" IsPlain="True" DefaultSpan="3" CanHide="False">
                 <UniformGrid Columns="3"> … </UniformGrid>
             </helix:HelixDashboardTile>
-            <helix:HelixDashboardTile TileId="load" Title="Charge" DefaultSpan="2" MinSpan="1" MaxSpan="3">
+            <helix:HelixDashboardTile TileId="load" Title="Load" DefaultSpan="2" MinSpan="1" MaxSpan="3">
                 <helix:HelixChart … />
             </helix:HelixDashboardTile>
-            <helix:HelixDashboardTile TileId="team" Title="Équipe" />
+            <helix:HelixDashboardTile TileId="team" Title="Team" />
         </helix:HelixDashboard>
 
-        // Layout (IReadOnlyList<HelixTileState>) est mis à jour à chaque changement : enregistrez-le.
+        // Layout (IReadOnlyList<HelixTileState>) is updated on every change: save it.
         """;
 
     private const string StorageKey = "helix-demo-dashboard";
-    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
     private readonly IReadOnlyList<HelixPoint> _imbalance = EnergyData.Imbalance(DateTime.Now);
@@ -118,20 +118,20 @@
         await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, JsonSerializer.Serialize(layout));
     }
 
-    private string LayoutJson => _layout is null ? "// Disposition par défaut : cliquez sur « Personnaliser »." : JsonSerializer.Serialize(_layout, Json);
+    private string LayoutJson => _layout is null ? "// Default layout: click “Customize”." : JsonSerializer.Serialize(_layout, Json);
 
     private const string Code = """
-        <HelixDashboard Title="Exploitation du jour" Columns="4" Layout="layout" LayoutChanged="Save">
+        <HelixDashboard Title="Today's operations" Columns="4" Layout="layout" LayoutChanged="Save">
             <HelixDashboardTile Id="imbalance" Plain>
-                <HelixStat Label="Déséquilibre actuel" Value="182" Unit="MW" Delta="-24" HigherIsBetter="false" Trend="trend" />
+                <HelixStat Label="Current imbalance" Value="182" Unit="MW" Delta="-24" HigherIsBetter="false" Trend="trend" />
             </HelixDashboardTile>
-            <HelixDashboardTile Id="chart" Title="Équilibrage" DefaultSpan="3" MinSpan="2">
+            <HelixDashboardTile Id="chart" Title="Balancing" DefaultSpan="3" MinSpan="2">
                 <HelixChart …>…</HelixChart>
             </HelixDashboardTile>
         </HelixDashboard>
 
         @code {
-            private IReadOnlyList<HelixTileState>? layout;   // chargé depuis votre base, localStorage…
+            private IReadOnlyList<HelixTileState>? layout;   // loaded from your database, localStorage…
 
             private Task Save(IReadOnlyList<HelixTileState> l) => store.SaveAsync(userId, l);
         }
@@ -139,13 +139,13 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Columns", "int", "--helix-dashboard-cols", "Colonnes de la grille (4). Passe à 2 puis 1 sur petit écran."),
-        new("Layout / LayoutChanged", "IReadOnlyList<HelixTileState>", null, "Disposition à restaurer / à sauvegarder (Id, Span, Hidden)."),
-        new("Editing", "bool", null, "Mode personnalisation (@bind-Editing), sinon via le bouton « Personnaliser »."),
-        new("Title / Toolbar / ShowToolbar", "string / RenderFragment / bool", null, "Barre au-dessus de la grille."),
-        new("Gap", "string", "--helix-dashboard-gap", "Espace entre les tuiles (16px)."),
-        new("Tile Id / Title / Actions", "string / string / RenderFragment", null, "Identifiant stable (pour la sauvegarde), titre, actions."),
-        new("Tile DefaultSpan / MinSpan / MaxSpan", "int", null, "Largeur par défaut et bornes autorisées."),
-        new("Tile CanHide / Plain / MinHeight", "bool / bool / string", null, "Peut être masquée ; sans cadre (pour une HelixStat) ; hauteur minimale."),
+        new("Columns", "int", "--helix-dashboard-cols", "Grid columns (4). Drops to 2, then 1 on small screens."),
+        new("Layout / LayoutChanged", "IReadOnlyList<HelixTileState>", null, "Layout to restore / to save (Id, Span, Hidden)."),
+        new("Editing", "bool", null, "Customization mode (@bind-Editing), otherwise through the “Customize” button."),
+        new("Title / Toolbar / ShowToolbar", "string / RenderFragment / bool", null, "Bar above the grid."),
+        new("Gap", "string", "--helix-dashboard-gap", "Space between tiles (16px)."),
+        new("Tile Id / Title / Actions", "string / string / RenderFragment", null, "Stable identifier (for saving), title, actions."),
+        new("Tile DefaultSpan / MinSpan / MaxSpan", "int", null, "Default width and allowed bounds."),
+        new("Tile CanHide / Plain / MinHeight", "bool / bool / string", null, "Can be hidden; no frame (for a HelixStat); minimum height."),
     ];
 }

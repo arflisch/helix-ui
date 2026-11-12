@@ -3,11 +3,11 @@
 @using System.Text
 @inject DemoThemeState ThemeState
 
-<DemoPage Title="Thèmes clair et sombre" Eyebrow="Guide"
-          Description="Un thème Helix a deux palettes : une pour le mode clair, une pour le mode sombre. Partez d'un thème prêt à l'emploi, ajustez chaque couleur, et l'application suit le mode choisi par l'utilisateur, y compris « Système » qui suit le réglage de l'ordinateur en direct. Tout ce que vous changez ici s'applique à ce site et est gardé dans votre navigateur.">
+<DemoPage Title="Light and dark themes" Eyebrow="Guide"
+          Description="A Helix theme has two palettes: one for light mode, one for dark mode. Start from a ready-made theme, adjust each color, and the app follows the mode the user picks, including “System”, which follows the computer setting live. Everything you change here applies to this site and is kept in your browser.">
 
     <section class="demo-section">
-        <h2 class="demo-section__title">1. Point de départ</h2>
+        <h2 class="demo-section__title">1. Starting point</h2>
         <div class="presets">
             @foreach (var (name, create) in HelixThemes.All)
             {
@@ -25,13 +25,13 @@
     </section>
 
     <section class="demo-section">
-        <h2 class="demo-section__title">2. Mode de l'application</h2>
+        <h2 class="demo-section__title">2. App mode</h2>
         <HelixRadioGroup TValue="HelixThemeMode" Items="Modes" Value="Theme.Mode" ValueChanged="SetMode" ItemText="ModeText" Appearance="HelixRadioAppearance.Segmented" />
-        <p class="demo-section__text" style="margin-top:10px">« Système » écrit les deux palettes ; le navigateur choisit selon le réglage de l'ordinateur, sans aller-retour serveur.</p>
+        <p class="demo-section__text" style="margin-top:10px">“System” writes both palettes; the browser picks one from the computer setting, with no server round trip.</p>
     </section>
 
     <section class="demo-section">
-        <h2 class="demo-section__title">3. Les deux palettes</h2>
+        <h2 class="demo-section__title">3. The two palettes</h2>
         <div class="palettes">
             @foreach (var mode in new[] { HelixThemeMode.Light, HelixThemeMode.Dark })
             {
@@ -39,16 +39,16 @@
                 var defaults = mode == HelixThemeMode.Light ? LightDefaults : DarkDefaults;
                 <div class="palette">
                     <div class="palette__tokens">
-                        <h3 class="palette__title"><HelixIcon Name="@(mode == HelixThemeMode.Light ? "sun" : "moon")" Size="15" /> @(mode == HelixThemeMode.Light ? "Mode clair" : "Mode sombre")</h3>
+                        <h3 class="palette__title"><HelixIcon Name="@(mode == HelixThemeMode.Light ? "sun" : "moon")" Size="15" /> @(mode == HelixThemeMode.Light ? "Light mode" : "Dark mode")</h3>
                         @foreach (var token in Tokens)
                         {
                             <ColorToken Label="@token.Label" Value="@token.Get(palette)" Default="@defaults[token.Key]"
                                         ValueChanged="v => Edit(() => token.Set(palette, v))" />
                         }
                         <div class="contrast">
-                            @Contrast("Texte sur fond", token: "text", on: "bg", palette, defaults, 4.5)
-                            @Contrast("Texte secondaire", token: "muted", on: "surface", palette, defaults, 4.5)
-                            @Contrast("Bouton principal", token: "onPrimary", on: "primary", palette, defaults, 4.5)
+                            @Contrast("Text on background", token: "text", on: "bg", palette, defaults, 4.5)
+                            @Contrast("Secondary text", token: "muted", on: "surface", palette, defaults, 4.5)
+                            @Contrast("Primary button", token: "onPrimary", on: "primary", palette, defaults, 4.5)
                         </div>
                     </div>
                     <ThemePreview Theme="Theme" Mode="mode" />
@@ -58,20 +58,20 @@
     </section>
 
     <section class="demo-section">
-        <h2 class="demo-section__title">4. Réglages communs aux deux modes</h2>
+        <h2 class="demo-section__title">4. Settings shared by both modes</h2>
         <div class="grid-3">
-            <HelixSlider Label="Arrondi" Value="RadiusValue" ValueChanged="SetRadius" Min="0" Max="20" Format="@(v => $"{v} px")" />
-            <HelixSlider Label="Hauteur des contrôles" Value="HeightValue" ValueChanged="SetHeight" Min="30" Max="46" Format="@(v => $"{v} px")" />
-            <HelixSelect TValue="string" Label="Police" Items="Fonts.Keys" Value="FontName" ValueChanged="f => Edit(() => Theme.FontFamily = f is null ? null : Fonts[f])" />
+            <HelixSlider Label="Corner radius" Value="RadiusValue" ValueChanged="SetRadius" Min="0" Max="20" Format="@(v => $"{v} px")" />
+            <HelixSlider Label="Control height" Value="HeightValue" ValueChanged="SetHeight" Min="30" Max="46" Format="@(v => $"{v} px")" />
+            <HelixSelect TValue="string" Label="Font" Items="Fonts.Keys" Value="FontName" ValueChanged="f => Edit(() => Theme.FontFamily = f is null ? null : Fonts[f])" />
         </div>
         <div class="row" style="margin-top:16px">
-            <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" OnClick="() => ThemeState.Apply(new HelixTheme(), HelixThemes.All[0].Name)">Tout réinitialiser</HelixButton>
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" Size="HelixSize.Sm" OnClick="() => ThemeState.Apply(new HelixTheme(), HelixThemes.All[0].Name)">Reset everything</HelixButton>
         </div>
     </section>
 
     <section class="demo-section">
-        <h2 class="demo-section__title">5. Le code de votre thème</h2>
-        <p class="demo-section__text">Copiez-le dans <code>MainLayout.razor</code> (ou chargez-le depuis votre base par utilisateur : <code>HelixTheme</code> se sérialise en JSON).</p>
+        <h2 class="demo-section__title">5. Your theme's code</h2>
+        <p class="demo-section__text">Copy it into <code>MainLayout.razor</code> (or load it per user from your database: <code>HelixTheme</code> serializes to JSON).</p>
         <CodeBlock Language="c#" Code="@Code" />
     </section>
 </DemoPage>
@@ -81,24 +81,24 @@
 
     private static string ModeText(HelixThemeMode mode) => mode switch
     {
-        HelixThemeMode.Light => "Clair",
-        HelixThemeMode.Dark => "Sombre",
-        _ => "Système",
+        HelixThemeMode.Light => "Light",
+        HelixThemeMode.Dark => "Dark",
+        _ => "System",
     };
 
     private sealed record Token(string Key, string Label, Func<HelixPalette, string?> Get, Action<HelixPalette, string?> Set, string Property);
 
     private static readonly Token[] Tokens =
     [
-        new("primary", "Couleur principale", p => p.Primary, (p, v) => p.Primary = v, nameof(HelixPalette.Primary)),
-        new("onPrimary", "Texte sur couleur principale", p => p.OnPrimary, (p, v) => p.OnPrimary = v, nameof(HelixPalette.OnPrimary)),
-        new("bg", "Fond de page", p => p.Background, (p, v) => p.Background = v, nameof(HelixPalette.Background)),
-        new("surface", "Surfaces (cartes, champs)", p => p.Surface, (p, v) => p.Surface = v, nameof(HelixPalette.Surface)),
-        new("surface2", "Surfaces discrètes", p => p.Surface2, (p, v) => p.Surface2 = v, nameof(HelixPalette.Surface2)),
-        new("border", "Bordures", p => p.Border, (p, v) => p.Border = v, nameof(HelixPalette.Border)),
-        new("text", "Texte", p => p.Text, (p, v) => p.Text = v, nameof(HelixPalette.Text)),
-        new("muted", "Texte secondaire", p => p.TextMuted, (p, v) => p.TextMuted = v, nameof(HelixPalette.TextMuted)),
-        new("success", "Succès", p => p.Success, (p, v) => p.Success = v, nameof(HelixPalette.Success)),
+        new("primary", "Primary color", p => p.Primary, (p, v) => p.Primary = v, nameof(HelixPalette.Primary)),
+        new("onPrimary", "Text on primary color", p => p.OnPrimary, (p, v) => p.OnPrimary = v, nameof(HelixPalette.OnPrimary)),
+        new("bg", "Page background", p => p.Background, (p, v) => p.Background = v, nameof(HelixPalette.Background)),
+        new("surface", "Surfaces (cards, fields)", p => p.Surface, (p, v) => p.Surface = v, nameof(HelixPalette.Surface)),
+        new("surface2", "Subtle surfaces", p => p.Surface2, (p, v) => p.Surface2 = v, nameof(HelixPalette.Surface2)),
+        new("border", "Borders", p => p.Border, (p, v) => p.Border = v, nameof(HelixPalette.Border)),
+        new("text", "Text", p => p.Text, (p, v) => p.Text = v, nameof(HelixPalette.Text)),
+        new("muted", "Secondary text", p => p.TextMuted, (p, v) => p.TextMuted = v, nameof(HelixPalette.TextMuted)),
+        new("success", "Success", p => p.Success, (p, v) => p.Success = v, nameof(HelixPalette.Success)),
         new("danger", "Danger", p => p.Danger, (p, v) => p.Danger = v, nameof(HelixPalette.Danger)),
     ];
 
@@ -118,7 +118,7 @@
     private static readonly Dictionary<string, string> Fonts = new()
     {
         ["Inter"] = "\"Inter\", ui-sans-serif, system-ui, sans-serif",
-        ["Système"] = "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+        ["System"] = "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
         ["Serif"] = "ui-serif, Georgia, \"Times New Roman\", serif",
         ["Mono"] = "\"JetBrains Mono\", ui-monospace, Menlo, monospace",
     };
@@ -163,7 +163,7 @@
             <span class="contrast__value">
                 @(ratio is { } value ? $"{value:0.0}:1" : "—")
                 <HelixIcon Name="@(ok ? "success" : "warning")" Size="14" />
-                <span class="helix-sr-only">@(ok ? "lisible" : "contraste insuffisant")</span>
+                <span class="helix-sr-only">@(ok ? "readable" : "insufficient contrast")</span>
             </span>
         </div>
     };

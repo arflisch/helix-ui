@@ -1,12 +1,12 @@
 @page "/components/select"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Select" Description="Liste déroulante typée : passez n'importe quelle collection d'objets et choisissez comment les afficher. Navigation au clavier (flèches, Entrée, Échap).">
+<DemoPage Title="Select" Description="Typed dropdown list: pass any collection of objects and choose how to display them. Keyboard navigation (arrows, Enter, Escape).">
     <Playground WpfCode="@Wpf1" Code="@Code" StageStyle="align-items:start;padding-top:56px">
         <Preview>
             <div style="width:100%;max-width:320px">
-                <HelixSelect TValue="Country" Items="Countries" @bind-Value="_country" ItemText="c => c.Name" Label="@_label" Placeholder="Choisir un pays"
-                            Color="@_color" Disabled="_disabled" Hint="@(_country is null ? null : $"Code : {_country.Code}")" />
+                <HelixSelect TValue="Country" Items="Countries" @bind-Value="_country" ItemText="c => c.Name" Label="@_label" Placeholder="Choose a country"
+                            Color="@_color" Disabled="_disabled" Hint="@(_country is null ? null : $"Code: {_country.Code}")" />
             </div>
         </Preview>
         <Controls>
@@ -16,10 +16,10 @@
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Avec des chaînes ou des enums" Code="@SimpleCode">
+    <Example WpfCode="@Wpf2" Title="With strings or enums" Code="@SimpleCode">
         <div class="grid-2">
-            <HelixSelect Items="_sizes" @bind-Value="_size" Label="Taille" />
-            <HelixSelect Items="Enum.GetValues<HelixSeverity>()" @bind-Value="_severity" Label="Sévérité" />
+            <HelixSelect Items="_sizes" @bind-Value="_size" Label="Size" />
+            <HelixSelect Items="Enum.GetValues<HelixSeverity>()" @bind-Value="_severity" Label="Severity" />
         </div>
     </Example>
 
@@ -28,9 +28,9 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixSelect Label="Pays" ItemsSource="{Binding Countries}" DisplayMemberPath="Name"
-                         SelectedItem="{Binding Country}" Placeholder="Choisir un pays"
-                         Hint="Pour la facturation" IsRequired="True" />
+        <helix:HelixSelect Label="Country" ItemsSource="{Binding Countries}" DisplayMemberPath="Name"
+                         SelectedItem="{Binding Country}" Placeholder="Choose a country"
+                         Hint="For billing" IsRequired="True" />
         """;
 
     private const string Wpf2 = """
@@ -38,7 +38,7 @@
             <ComboBoxItem Content="Lyon" />
             <ComboBoxItem Content="Grenoble" />
         </helix:HelixSelect>
-        <helix:HelixSelect Label="Priorité" ItemsSource="{Binding Priorities}" SelectedItem="{Binding Priority}" />
+        <helix:HelixSelect Label="Priority" ItemsSource="{Binding Priorities}" SelectedItem="{Binding Priority}" />
 
         // Priorities = Enum.GetValues<Priority>();
         """;
@@ -47,15 +47,15 @@
 
     private static readonly Country[] Countries =
     [
-        new("FR", "France"), new("BE", "Belgique"), new("CH", "Suisse"), new("CA", "Canada"),
-        new("LU", "Luxembourg"), new("DE", "Allemagne"), new("ES", "Espagne"), new("IT", "Italie"),
+        new("FR", "France"), new("BE", "Belgium"), new("CH", "Switzerland"), new("CA", "Canada"),
+        new("LU", "Luxembourg"), new("DE", "Germany"), new("ES", "Spain"), new("IT", "Italy"),
     ];
 
-    private readonly string[] _sizes = ["Petit", "Moyen", "Grand"];
+    private readonly string[] _sizes = ["Small", "Medium", "Large"];
     private Country? _country = Countries[0];
-    private string? _size = "Moyen";
+    private string? _size = "Medium";
     private HelixSeverity _severity = HelixSeverity.Success;
-    private string? _label = "Pays";
+    private string? _label = "Country";
     private string? _color;
     private bool _disabled;
 
@@ -64,25 +64,25 @@
 
         @code {"{"}
             private Country? country;
-            private Country[] countries = [new("FR", "France"), new("BE", "Belgique")];
+            private Country[] countries = [new("FR", "France"), new("BE", "Belgium")];
         {"}"}
         """;
 
     private const string SimpleCode = """
-        <HelixSelect Items="sizes" @bind-Value="size" Label="Taille" />
-        <HelixSelect Items="Enum.GetValues<HelixSeverity>()" @bind-Value="severity" Label="Sévérité" />
+        <HelixSelect Items="sizes" @bind-Value="size" Label="Size" />
+        <HelixSelect Items="Enum.GetValues<HelixSeverity>()" @bind-Value="severity" Label="Severity" />
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Items", "IEnumerable<T>", null, "Les options, de n'importe quel type."),
-        new("Value", "T?", null, "Option sélectionnée (@bind-Value)."),
-        new("ItemText", "Func<T, string>", null, "Texte affiché pour une option (ToString par défaut)."),
-        new("Label / Placeholder / Hint", "string", null, "Textes."),
-        new("—", "", "--helix-select-menu-bg", "Fond du menu déroulant."),
-        new("Prefix / Suffix", "RenderFragment", null, "Contenu au début / à la fin du champ (icône, signe, unité…). Même slots sur tous les champs."),
-        new("Hint / Error", "string", null, "Aide sous le champ, ou erreur qui la remplace ; reliées au champ pour les lecteurs d'écran (aria-describedby)."),
-        new("Required", "bool", null, "Astérisque après le libellé et attribut required."),
-        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Même apparence sur tous les champs ; valeurs par défaut via Defaults.Field."),
+        new("Items", "IEnumerable<T>", null, "The options, of any type."),
+        new("Value", "T?", null, "Selected option (@bind-Value)."),
+        new("ItemText", "Func<T, string>", null, "Text shown for an option (ToString by default)."),
+        new("Label / Placeholder / Hint", "string", null, "Texts."),
+        new("—", "", "--helix-select-menu-bg", "Background of the dropdown menu."),
+        new("Prefix / Suffix", "RenderFragment", null, "Content at the start / end of the field (icon, sign, unit…). Same slots on every field."),
+        new("Hint / Error", "string", null, "Hint under the field, or an error that replaces it; linked to the field for screen readers (aria-describedby)."),
+        new("Required", "bool", null, "Asterisk after the label and required attribute."),
+        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Same look on every field; defaults through Defaults.Field."),
     ];
 }

@@ -1,14 +1,14 @@
 @page "/components/filedrop"
 @using Microsoft.AspNetCore.Components.Forms
 
-<DemoPage Title="FileDrop" Description="Zone de dépôt de fichiers : glisser-déposer ou parcourir, filtre de type, taille maximale, liste des fichiers avec les refus expliqués.">
-    <Example WpfCode="@Wpf1" Title="Import de relevés" Code="@Code">
+<DemoPage Title="FileDrop" Description="File drop zone: drag and drop or browse, type filter, maximum size, file list with rejections explained.">
+    <Example WpfCode="@Wpf1" Title="Statement import" Code="@Code">
         <div class="grid-2">
             <HelixFileDrop Accept=".csv,.xlsx,.json" MaxFileSize="2_000_000" OnFilesChanged="f => _files = f" />
-            <HelixCard Title="Fichiers prêts">
+            <HelixCard Title="Files ready">
                 @if (_files.Count == 0)
                 {
-                    <HelixEmptyState Compact="true" Icon="upload" Title="Aucun fichier" Description="Les fichiers valides apparaissent ici." />
+                    <HelixEmptyState Compact="true" Icon="upload" Title="No files" Description="Valid files show up here." />
                 }
                 else
                 {
@@ -24,7 +24,7 @@
     </Example>
 
     <Example WpfCode="@Wpf2" Title="Compact">
-        <HelixFileDrop Compact="true" Multiple="false" Accept="image/*" Title="Déposez une image" />
+        <HelixFileDrop Compact="true" Multiple="false" Accept="image/*" Title="Drop an image" />
     </Example>
 
     <ApiTable Title="HelixFileDrop" Rows="Api" />
@@ -33,7 +33,7 @@
 @code {
     private const string Wpf1 = """
         <helix:HelixFileDrop x:Name="Statements" Accept=".csv,.xlsx" MaxFileSize="10485760" MaxFiles="5"
-                           Title="Déposez vos relevés" FilesChanged="OnFilesChanged" />
+                           Title="Drop your statements" FilesChanged="OnFilesChanged" />
 
         // Code-behind
         private void OnFilesChanged(object sender, RoutedEventArgs e)
@@ -44,7 +44,7 @@
         """;
 
     private const string Wpf2 = """
-        <helix:HelixFileDrop IsCompact="True" Multiple="False" Accept="image/*" Title="Ajouter un logo" ShowList="True" />
+        <helix:HelixFileDrop IsCompact="True" Multiple="False" Accept="image/*" Title="Add a logo" ShowList="True" />
         """;
 
     private IReadOnlyList<IBrowserFile> _files = [];
@@ -66,10 +66,10 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Accept / Multiple", "string / bool", null, "Types acceptés (« .csv,.xlsx », « image/* ») ; plusieurs fichiers (true)."),
-        new("MaxFileSize / MaxFiles", "long / int", null, "Taille max par fichier (10 Mo) et nombre max ; les refus sont listés avec la raison."),
-        new("OnFilesChanged", "EventCallback<IReadOnlyList<IBrowserFile>>", null, "Les fichiers valides ; lisez-les avec OpenReadStream(MaxFileSize)."),
-        new("Title / Hint / Compact / ShowList", "string / string / bool / bool", null, "Textes, version compacte, liste des fichiers."),
-        new("Color", "string", "--helix-filedrop-color", "Couleur de survol et d'accent."),
+        new("Accept / Multiple", "string / bool", null, "Accepted types (“.csv,.xlsx”, “image/*”); several files (true)."),
+        new("MaxFileSize / MaxFiles", "long / int", null, "Max size per file (10 MB) and max count; rejections are listed with the reason."),
+        new("OnFilesChanged", "EventCallback<IReadOnlyList<IBrowserFile>>", null, "The valid files; read them with OpenReadStream(MaxFileSize)."),
+        new("Title / Hint / Compact / ShowList", "string / string / bool / bool", null, "Texts, compact version, file list."),
+        new("Color", "string", "--helix-filedrop-color", "Hover and accent color."),
     ];
 }

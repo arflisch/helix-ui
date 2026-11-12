@@ -1,7 +1,7 @@
 @page "/components/alert"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Alert" Description="Message contextuel dans la page. La sévérité choisit l'icône et la couleur ; les deux restent modifiables.">
+<DemoPage Title="Alert" Description="Contextual message in the page. The severity picks the icon and the color; both can still be changed.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:520px">
@@ -11,18 +11,18 @@
         <Controls>
             <Choice TEnum="HelixSeverity" Label="Severity" @bind-Value="_severity" />
             <HelixTextField Label="Title" @bind-Value="_title" />
-            <HelixTextField Label="Texte" @bind-Value="_text" />
+            <HelixTextField Label="Text" @bind-Value="_text" />
             <ColorPicker Label="Color" @bind-Value="_color" />
             <HelixSwitch Label="Closable" @bind-Checked="_closable" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Sévérités" Code="@AllCode">
+    <Example WpfCode="@Wpf2" Title="Severities" Code="@AllCode">
         <div class="stack">
-            <HelixAlert Title="Nouvelle version">Helix 0.2 est disponible avec le DataGrid.</HelixAlert>
-            <HelixAlert Severity="HelixSeverity.Success" Title="Paiement reçu">Merci, votre facture est disponible.</HelixAlert>
-            <HelixAlert Severity="HelixSeverity.Warning" Title="Stockage presque plein">Il vous reste 5 % d'espace.</HelixAlert>
-            <HelixAlert Severity="HelixSeverity.Danger" Title="Échec de la synchronisation" Closable="true">Vérifiez votre connexion puis réessayez.</HelixAlert>
+            <HelixAlert Title="New version">Helix 0.2 is available with the DataGrid.</HelixAlert>
+            <HelixAlert Severity="HelixSeverity.Success" Title="Payment received">Thank you, your invoice is available.</HelixAlert>
+            <HelixAlert Severity="HelixSeverity.Warning" Title="Storage almost full">You have 5% of space left.</HelixAlert>
+            <HelixAlert Severity="HelixSeverity.Danger" Title="Sync failed" Closable="true">Check your connection, then try again.</HelixAlert>
         </div>
     </Example>
 
@@ -31,24 +31,24 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixAlert Severity="Warning" Title="Quota presque atteint"
-                        Content="Il reste 8 % de l'espace disponible."
+        <helix:HelixAlert Severity="Warning" Title="Quota almost reached"
+                        Content="8% of the space is left."
                         IsClosable="True" Closed="OnAlertClosed" />
 
-        <!-- Couleur et icône libres -->
-        <helix:HelixAlert Title="Nouveauté" Content="Les exports PDF arrivent." Accent="#8B5CF6" Icon="sparkles" CornerRadius="16" />
+        <!-- Any color and icon -->
+        <helix:HelixAlert Title="What's new" Content="PDF exports are coming." Accent="#8B5CF6" Icon="sparkles" CornerRadius="16" />
         """;
 
     private const string Wpf2 = """
-        <helix:HelixAlert Severity="Info" Title="Information" Content="Une nouvelle version est disponible." />
-        <helix:HelixAlert Severity="Success" Title="Enregistré" Content="Vos réglages ont été appliqués." />
-        <helix:HelixAlert Severity="Warning" Title="Attention" Content="Le certificat expire dans 7 jours." />
-        <helix:HelixAlert Severity="Danger" Title="Erreur" Content="La connexion au serveur a été perdue." />
+        <helix:HelixAlert Severity="Info" Title="Information" Content="A new version is available." />
+        <helix:HelixAlert Severity="Success" Title="Saved" Content="Your settings were applied." />
+        <helix:HelixAlert Severity="Warning" Title="Warning" Content="The certificate expires in 7 days." />
+        <helix:HelixAlert Severity="Danger" Title="Error" Content="The connection to the server was lost." />
         """;
 
     private HelixSeverity _severity = HelixSeverity.Info;
-    private string? _title = "Mise à jour disponible";
-    private string? _text = "Une nouvelle version est prête. Elle sera installée au prochain redémarrage.";
+    private string? _title = "Update available";
+    private string? _text = "A new version is ready. It will be installed at the next restart.";
     private string? _color;
     private bool _closable = true;
     private int _key;
@@ -63,20 +63,20 @@
         $"<HelixAlert{A("Severity", _severity, HelixSeverity.Info)}{A("Title", _title)}{A("Color", _color)}{B("Closable", _closable)}>\n    {_text}\n</HelixAlert>";
 
     private const string AllCode = """
-        <HelixAlert Title="Nouvelle version">Helix 0.2 est disponible.</HelixAlert>
-        <HelixAlert Severity="HelixSeverity.Success" Title="Paiement reçu">…</HelixAlert>
-        <HelixAlert Severity="HelixSeverity.Warning" Title="Stockage presque plein">…</HelixAlert>
-        <HelixAlert Severity="HelixSeverity.Danger" Title="Échec" Closable>…</HelixAlert>
+        <HelixAlert Title="New version">Helix 0.2 is available.</HelixAlert>
+        <HelixAlert Severity="HelixSeverity.Success" Title="Payment received">…</HelixAlert>
+        <HelixAlert Severity="HelixSeverity.Warning" Title="Storage almost full">…</HelixAlert>
+        <HelixAlert Severity="HelixSeverity.Danger" Title="Failed" Closable>…</HelixAlert>
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Severity", "HelixSeverity", null, "Info, Success, Warning ou Danger."),
-        new("Title / ChildContent", "string / RenderFragment", null, "Titre et message."),
-        new("Closable / OnClose", "bool / EventCallback", null, "Bouton de fermeture."),
-        new("Icon / IconContent", "string / RenderFragment", null, "Remplace l'icône de sévérité."),
-        new("ShowIcon", "bool", null, "Masque l'icône (true)."),
-        new("Color", "string", "--helix-alert-color", "Remplace la couleur de sévérité."),
-        new("—", "", "--helix-alert-radius", "Arrondi."),
+        new("Severity", "HelixSeverity", null, "Info, Success, Warning or Danger."),
+        new("Title / ChildContent", "string / RenderFragment", null, "Title and message."),
+        new("Closable / OnClose", "bool / EventCallback", null, "Close button."),
+        new("Icon / IconContent", "string / RenderFragment", null, "Replaces the severity icon."),
+        new("ShowIcon", "bool", null, "Shows the icon (true)."),
+        new("Color", "string", "--helix-alert-color", "Replaces the severity color."),
+        new("—", "", "--helix-alert-radius", "Corner radius."),
     ];
 }

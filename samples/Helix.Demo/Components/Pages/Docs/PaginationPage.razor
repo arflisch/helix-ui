@@ -1,7 +1,7 @@
 @page "/components/pagination"
 
-<DemoPage Title="Pagination" Description="Navigation entre pages, autonome : pour une liste de cartes, des résultats de recherche ou une galerie. Pages longues repliées autour de la page courante.">
-    <Example WpfCode="@Wpf1" Title="Variantes" Code="@Code">
+<DemoPage Title="Pagination" Description="Self-contained page navigation: for a list of cards, search results or a gallery. Long ranges collapse around the current page.">
+    <Example WpfCode="@Wpf1" Title="Variants" Code="@Code">
         <div class="stack" style="gap:22px">
             <HelixPagination @bind-Page="_page" TotalItems="243" PageSize="10" ShowInfo="true" />
             <HelixPagination @bind-Page="_page" Count="25" ShowLabels="true" />
@@ -29,9 +29,9 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Page", "int", null, "Page courante, à partir de 1 (@bind-Page)."),
-        new("Count · TotalItems + PageSize", "int", null, "Nombre de pages, ou calculé depuis le total."),
-        new("ShowInfo / ShowLabels / Compact", "bool", null, "« 31–40 sur 243 » ; textes Précédent/Suivant ; version réduite."),
-        new("Color", "string", "--helix-pagination-color", "Couleur de la page courante."),
+        new("Page", "int", null, "Current page, starting at 1 (@bind-Page)."),
+        new("Count · TotalItems + PageSize", "int", null, "Number of pages, or computed from the total."),
+        new("ShowInfo / ShowLabels / Compact", "bool", null, "“31–40 of 243”; Previous/Next texts; smaller version."),
+        new("Color", "string", "--helix-pagination-color", "Color of the current page."),
     ];
 }

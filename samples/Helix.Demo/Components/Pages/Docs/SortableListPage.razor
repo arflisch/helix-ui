@@ -1,8 +1,8 @@
 @page "/components/sortable"
 
-<DemoPage Title="SortableList" Description="Une liste que l'utilisateur réordonne en glissant les éléments, ou au clavier (Entrée, flèches, Entrée). Pratique pour des priorités, des étapes, l'ordre des colonnes d'un export…">
+<DemoPage Title="SortableList" Description="A list the user reorders by dragging items, or from the keyboard (Enter, arrows, Enter). Handy for priorities, steps, the column order of an export…">
     <section class="demo-section">
-        <h2 class="demo-section__title">Exemple</h2>
+        <h2 class="demo-section__title">Example</h2>
         <div class="grid-2">
             <HelixSortableList @bind-Items="_priorities" ItemKey="p => p.Id" ShowHandle="_handle">
                 <ItemTemplate>
@@ -15,7 +15,7 @@
             </HelixSortableList>
             <div class="stack">
                 <HelixSwitch Label="ShowHandle" @bind-Checked="_handle" />
-                <HelixCard Title="Ordre actuel">
+                <HelixCard Title="Current order">
                     <ol class="muted" style="margin:0;padding-left:18px;line-height:1.8">
                         @foreach (var p in _priorities)
                         {
@@ -41,7 +41,7 @@
             </helix:HelixSortableList.ItemTemplate>
         </helix:HelixSortableList>
 
-        // ItemsSource = ObservableCollection<T> : la liste est réordonnée directement (glisser ou Alt + ↑/↓).
+        // ItemsSource = ObservableCollection<T>: the list is reordered in place (drag or Alt + ↑/↓).
         private void OnReordered(object sender, RoutedEventArgs e)
         {
             var (from, to) = ((HelixEventArgs<(int From, int To)>)e).Value;
@@ -62,9 +62,9 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Items", "IReadOnlyList<T>", null, "Les éléments, @bind-Items pour récupérer le nouvel ordre."),
-        new("OnReorder", "EventCallback<(int From, int To)>", null, "Le déplacement effectué."),
-        new("ItemTemplate / ItemKey", "RenderFragment<T> / Func<T, object>", null, "Contenu et identité d'un élément."),
-        new("ShowHandle / Disabled", "bool", null, "Poignée visible (true) ; désactiver le réordonnancement."),
+        new("Items", "IReadOnlyList<T>", null, "The items, @bind-Items to get the new order back."),
+        new("OnReorder", "EventCallback<(int From, int To)>", null, "The move that was made."),
+        new("ItemTemplate / ItemKey", "RenderFragment<T> / Func<T, object>", null, "Content and identity of an item."),
+        new("ShowHandle / Disabled", "bool", null, "Visible handle (true); turn off reordering."),
     ];
 }

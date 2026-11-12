@@ -15,7 +15,7 @@ namespace Helix.Wpf;
 /// Read-only ratings show fractions (3.7 ★).
 /// </summary>
 [TemplatePart(Name = "PART_Items", Type = typeof(Panel))]
-public class HelixRating : Control, IVeloThemeAware
+public class HelixRating : Control, IHelixThemeAware
 {
     static HelixRating() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixRating), new FrameworkPropertyMetadata(typeof(HelixRating)));
 
@@ -84,7 +84,7 @@ public class HelixRating : Control, IVeloThemeAware
         Build();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Build();
+    void IHelixThemeAware.OnThemeChanged() => Build();
 
     protected override void OnKeyDown(KeyEventArgs e)
     {

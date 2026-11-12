@@ -8,7 +8,7 @@ namespace Helix.Blazor;
 /// Set them once, in Program.cs or on <c>HelixProvider Options</c>; a parameter set on a component always wins.
 /// </summary>
 /// <example>
-/// builder.Services.AddVelo(o =>
+/// builder.Services.AddHelix(o =>
 /// {
 ///     o.Defaults.Switch.Color = "#ff8a00";
 ///     o.Defaults.Button.Radius = "6px";

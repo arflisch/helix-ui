@@ -1,15 +1,15 @@
 @* One editable color of a palette: swatch picker, hex value, reset to the Helix default. *@
 <div class="@(new CssBuilder("token").Add("is-set", IsSet).Build())">
-    <label class="token__swatch" style="background:@Effective" title="Choisir une couleur">
+    <label class="token__swatch" style="background:@Effective" title="Pick a color">
         <input type="color" value="@Effective" aria-label="@Label" @onchange="OnPick" />
     </label>
     <div class="token__text">
         <span class="token__label">@Label</span>
-        <span class="token__value">@Effective@(IsSet ? "" : " · défaut")</span>
+        <span class="token__value">@Effective@(IsSet ? "" : " · default")</span>
     </div>
     @if (IsSet)
     {
-        <button type="button" class="helix-close token__reset" aria-label="Revenir à la valeur par défaut de @Label" @onclick="() => ValueChanged.InvokeAsync(null)">
+        <button type="button" class="helix-close token__reset" aria-label="Reset @Label to its default" @onclick="() => ValueChanged.InvokeAsync(null)">
             <HelixIcon Name="x" Size="13" />
         </button>
     }

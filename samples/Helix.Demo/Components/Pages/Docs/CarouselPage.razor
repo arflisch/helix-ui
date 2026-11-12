@@ -1,8 +1,8 @@
 @page "/components/carousel"
 
-<DemoPage Title="Carousel" Description="Diapositives qui défilent au doigt (défilement natif), aux flèches, aux points ou au clavier. Plusieurs diapositives à la fois, défilement automatique qui s'arrête au survol et au focus, avec un bouton pause.">
-    <Example WpfCode="@Wpf1" Title="Bannières (défilement automatique)" Code="@BannerCode">
-        <HelixCarousel Autoplay="true" Height="220px" @bind-Index="_index" AriaLabel="Actualités">
+<DemoPage Title="Carousel" Description="Slides that move by swipe (native scrolling), arrows, dots or keyboard. Several slides at once, autoplay that stops on hover and focus, with a pause button.">
+    <Example WpfCode="@Wpf1" Title="Banners (autoplay)" Code="@BannerCode">
+        <HelixCarousel Autoplay="true" Height="220px" @bind-Index="_index" AriaLabel="News">
             @foreach (var slide in Banners)
             {
                 <HelixCarouselSlide Label="@slide.Title">
@@ -14,23 +14,23 @@
                 </HelixCarouselSlide>
             }
         </HelixCarousel>
-        <p class="muted" style="margin:10px 0 0;font-size:13px">Diapositive courante : @(_index + 1)</p>
+        <p class="muted" style="margin:10px 0 0;font-size:13px">Current slide: @(_index + 1)</p>
     </Example>
 
-    <Example WpfCode="@Wpf2" Title="Plusieurs à la fois" Code="@CardsCode">
+    <Example WpfCode="@Wpf2" Title="Several at once" Code="@CardsCode">
         <HelixCarousel SlidesPerView="3" Gap="14px" AriaLabel="Sites">
             @foreach (var site in Sites)
             {
                 <HelixCarouselSlide Label="@site.Name">
                     <HelixCard Title="@site.Name" Subtitle="@site.City" Style="height:100%">
-                        <HelixStat Bare="true" Label="Consommation" Value="site.Mwh" Unit="MWh" Trend="DemoData.Trend(site.Seed)" />
+                        <HelixStat Bare="true" Label="Consumption" Value="site.Mwh" Unit="MWh" Trend="DemoData.Trend(site.Seed)" />
                     </HelixCard>
                 </HelixCarouselSlide>
             }
         </HelixCarousel>
     </Example>
 
-    <ApiTable Title="HelixCarousel et HelixCarouselSlide" Rows="Api" />
+    <ApiTable Title="HelixCarousel and HelixCarouselSlide" Rows="Api" />
 </DemoPage>
 
 @code {
@@ -40,7 +40,7 @@
             <Border Height="180" CornerRadius="14" Background="{DynamicResource Helix.Series2}">…</Border>
             <Border Height="180" CornerRadius="14" Background="{DynamicResource Helix.Series3}">…</Border>
         </helix:HelixCarousel>
-        <!-- Pause au survol et au focus ; flèches du clavier ; glisser pour changer. -->
+        <!-- Pauses on hover and focus; keyboard arrows; drag to change. -->
         """;
 
     private const string Wpf2 = """
@@ -54,24 +54,24 @@
 
     private static readonly (string Tag, string Title, string Text, string Color)[] Banners =
     [
-        ("Nouveau", "Thèmes clair et sombre", "Composez votre palette pour chaque mode, ou laissez l'ordinateur choisir.", "#4f46e5"),
-        ("Données", "Chargement côté serveur", "Le DataGrid ne demande qu'une page à la fois à votre base.", "#0369a1"),
-        ("Planning", "Timeline éditable", "Glissez, redimensionnez, changez de ligne : au doigt comme au clavier.", "#15803d"),
-        ("Tableaux de bord", "Disposition personnelle", "Chaque utilisateur arrange ses tuiles ; la disposition se sauvegarde.", "#c2410c"),
+        ("New", "Light and dark themes", "Build your palette for each mode, or let the computer choose.", "#4f46e5"),
+        ("Data", "Server-side loading", "The DataGrid asks your database for one page at a time.", "#0369a1"),
+        ("Scheduling", "Editable timeline", "Drag, resize, change lanes: by touch or keyboard.", "#15803d"),
+        ("Dashboards", "Personal layout", "Each user arranges their tiles; the layout is saved.", "#c2410c"),
     ];
 
     private static readonly (string Name, string City, double Mwh, int Seed)[] Sites =
     [
-        ("Usine", "Lyon", 1840, 1), ("Entrepôt", "Lille", 920, 2), ("Siège", "Paris", 610, 3),
-        ("Data center", "Marseille", 2410, 4), ("Atelier", "Nantes", 455, 5), ("Agence", "Bordeaux", 180, 6),
+        ("Plant", "Lyon", 1840, 1), ("Warehouse", "Lille", 920, 2), ("Head office", "Paris", 610, 3),
+        ("Data center", "Marseille", 2410, 4), ("Workshop", "Nantes", 455, 5), ("Office", "Bordeaux", 180, 6),
     ];
 
     private int _index;
 
     private const string BannerCode = """
         <HelixCarousel Autoplay Height="220px" @bind-Index="index">
-            <HelixCarouselSlide Label="Thèmes clair et sombre">…</HelixCarouselSlide>
-            <HelixCarouselSlide Label="Chargement côté serveur">…</HelixCarouselSlide>
+            <HelixCarouselSlide Label="Light and dark themes">…</HelixCarouselSlide>
+            <HelixCarouselSlide Label="Server-side loading">…</HelixCarouselSlide>
         </HelixCarousel>
         """;
 
@@ -86,10 +86,10 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("ChildContent", "HelixCarouselSlide…", null, "Les diapositives (contenu libre ; Label pour les lecteurs d'écran)."),
-        new("SlidesPerView / Gap / Height", "int / string / string", "--helix-carousel-height", "Diapositives visibles à la fois, espacement, hauteur."),
-        new("Autoplay / Interval", "bool / TimeSpan", null, "Défilement automatique (5 s), en pause au survol, au focus et via le bouton."),
-        new("Loop / ShowArrows / ShowDots", "bool", null, "Boucler ; flèches ; points."),
-        new("Index", "int", null, "Diapositive courante (@bind-Index)."),
+        new("ChildContent", "HelixCarouselSlide…", null, "The slides (free content; Label for screen readers)."),
+        new("SlidesPerView / Gap / Height", "int / string / string", "--helix-carousel-height", "Slides visible at once, spacing, height."),
+        new("Autoplay / Interval", "bool / TimeSpan", null, "Autoplay (5 s), paused on hover, on focus and with the button."),
+        new("Loop / ShowArrows / ShowDots", "bool", null, "Loop; arrows; dots."),
+        new("Index", "int", null, "Current slide (@bind-Index)."),
     ];
 }

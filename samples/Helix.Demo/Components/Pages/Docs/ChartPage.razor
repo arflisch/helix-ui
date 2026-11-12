@@ -2,81 +2,81 @@
 @using System.Globalization
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Chart" Description="Graphiques de séries temporelles ou numériques : lignes, aires, paliers, barres, lignes de référence, ligne « maintenant » en temps réel, zoom par navigateur et vue tableau. Rendu SVG côté serveur, survol sans JavaScript.">
+<DemoPage Title="Chart" Description="Time-series or numeric charts: lines, areas, steps, bars, reference lines, a live “now” line, navigator zoom and a table view. SVG rendered in .NET, hover without JavaScript.">
     <section class="demo-section">
         <h2 class="demo-section__title">Playground</h2>
         <div class="pg pg--wide">
             <div class="pg__stage pg__stage--block">
-                <HelixChart Title="Équilibrage" Subtitle="Déséquilibre du système, aujourd'hui, au quart d'heure" Unit="MW" YFormat="N0"
-                           Height="@($"{N(_height)}px")" ShowNow="_showNow" ShowNavigator="_navigator" NowColor="@_nowColor" Culture="French">
-                    <HelixChartSeries Name="Déséquilibre" Points="_imbalance" Type="_type" Markers="_markers" Color="@_color" />
+                <HelixChart Title="Balancing" Subtitle="System imbalance, today, per quarter hour" Unit="MW" YFormat="N0"
+                           Height="@($"{N(_height)}px")" ShowNow="_showNow" ShowNavigator="_navigator" NowColor="@_nowColor" Culture="English">
+                    <HelixChartSeries Name="Imbalance" Points="_imbalance" Type="_type" Markers="_markers" Color="@_color" />
                     @if (_forecast)
                     {
-                        <HelixChartSeries Name="Prévision" Points="_forecastPoints" Dashed="true" />
+                        <HelixChartSeries Name="Forecast" Points="_forecastPoints" Dashed="true" />
                     }
                     @if (_activated)
                     {
-                        <HelixChartSeries Name="Réserve activée" Points="_activatedPoints" Type="HelixSeriesType.Step" />
+                        <HelixChartSeries Name="Activated reserve" Points="_activatedPoints" Type="HelixSeriesType.Step" />
                     }
                     @if (_threshold)
                     {
-                        <HelixChartLine Y="300" Label="Seuil d'alerte 300 MW" Color="danger" />
+                        <HelixChartLine Y="300" Label="Alert threshold 300 MW" Color="danger" />
                         <HelixChartLine Y="-300" Label="-300 MW" Color="danger" />
                     }
                 </HelixChart>
             </div>
             <aside class="pg__controls">
-                <Choice TEnum="HelixSeriesType" Label="Type (Déséquilibre)" @bind-Value="_type" />
+                <Choice TEnum="HelixSeriesType" Label="Type (Imbalance)" @bind-Value="_type" />
                 <ColorPicker Label="Color" @bind-Value="_color" Colors="@(["#2a78d6", "success", "danger", "#8b5cf6"])" />
                 <ColorPicker Label="NowColor" @bind-Value="_nowColor" Colors="@(["#eb6834", "danger", "#18181b"])" />
-                <HelixSlider Label="Hauteur" @bind-Value="_height" Min="180" Max="440" Step="20" Format="@(v => $"{v} px")" />
+                <HelixSlider Label="Height" @bind-Value="_height" Min="180" Max="440" Step="20" Format="@(v => $"{v} px")" />
                 <HelixSwitch Label="Markers" @bind-Checked="_markers" Size="HelixSize.Sm" />
-                <HelixSwitch Label="Série Prévision (pointillés)" @bind-Checked="_forecast" Size="HelixSize.Sm" />
-                <HelixSwitch Label="Série Réserve (paliers)" @bind-Checked="_activated" Size="HelixSize.Sm" />
-                <HelixSwitch Label="Seuils (HelixChartLine)" @bind-Checked="_threshold" Size="HelixSize.Sm" />
-                <HelixSwitch Label="ShowNow (temps réel)" @bind-Checked="_showNow" Size="HelixSize.Sm" />
+                <HelixSwitch Label="Forecast series (dashed)" @bind-Checked="_forecast" Size="HelixSize.Sm" />
+                <HelixSwitch Label="Reserve series (steps)" @bind-Checked="_activated" Size="HelixSize.Sm" />
+                <HelixSwitch Label="Thresholds (HelixChartLine)" @bind-Checked="_threshold" Size="HelixSize.Sm" />
+                <HelixSwitch Label="ShowNow (real time)" @bind-Checked="_showNow" Size="HelixSize.Sm" />
                 <HelixSwitch Label="ShowNavigator (zoom)" @bind-Checked="_navigator" Size="HelixSize.Sm" />
             </aside>
         </div>
         <CodeBlock Code="@Code" />
     </section>
 
-    <Example WpfCode="@Wpf1" Title="Deux mesures, deux graphiques"
-             Description="Des MW et des €/MWh n'ont pas la même échelle : plutôt qu'un double axe Y (qui fait croire que les courbes se comparent), Helix aligne deux graphiques sur la même période. Les axes temporels tombent exactement l'un sous l'autre."
+    <Example WpfCode="@Wpf1" Title="Two measures, two charts"
+             Description="MW and €/MWh don't share a scale: rather than a dual Y axis (which suggests the curves can be compared), Helix lines up two charts over the same period. The time axes fall exactly under each other."
              Code="@StackedCode">
         <div class="stack" style="gap:28px">
-            <HelixChart Title="Déséquilibre" Unit="MW" YFormat="N0" Height="200px" From="EnergyData.Today" To="EnergyData.Today.AddDays(1)" ShowNow="true" Culture="French">
-                <HelixChartSeries Name="Déséquilibre" Points="_imbalance" Type="HelixSeriesType.Area" />
+            <HelixChart Title="Imbalance" Unit="MW" YFormat="N0" Height="200px" From="EnergyData.Today" To="EnergyData.Today.AddDays(1)" ShowNow="true" Culture="English">
+                <HelixChartSeries Name="Imbalance" Points="_imbalance" Type="HelixSeriesType.Area" />
             </HelixChart>
-            <HelixChart Title="Prix de déséquilibre" Unit="€/MWh" YFormat="N0" Height="160px" From="EnergyData.Today" To="EnergyData.Today.AddDays(1)" ShowNow="true" Culture="French">
-                <HelixChartSeries Name="Prix" Points="_prices" Type="HelixSeriesType.Bar" Color="#eb6834" />
+            <HelixChart Title="Imbalance price" Unit="€/MWh" YFormat="N0" Height="160px" From="EnergyData.Today" To="EnergyData.Today.AddDays(1)" ShowNow="true" Culture="English">
+                <HelixChartSeries Name="Price" Points="_prices" Type="HelixSeriesType.Bar" Color="#eb6834" />
             </HelixChart>
         </div>
     </Example>
 
-    <Example WpfCode="@Wpf2" Title="Axe numérique" Description="Sans dates : un X numérique et un format libre." Code="@NumericCode">
-        <HelixChart Title="Profil de charge d'une batterie" Unit="%" Height="200px" XFormat="@(x => $"{x:0} min")" XLabel="Temps" Culture="French">
+    <Example WpfCode="@Wpf2" Title="Numeric axis" Description="No dates: a numeric X and any format." Code="@NumericCode">
+        <HelixChart Title="Battery charge profile" Unit="%" Height="200px" XFormat="@(x => $"{x:0} min")" XLabel="Time" Culture="English">
             <HelixChartSeries Name="Charge" Points="_battery" Type="HelixSeriesType.Area" Markers="true" Color="success" />
-            <HelixChartLine Y="80" Label="Limite 80 %" />
+            <HelixChartLine Y="80" Label="80% limit" />
         </HelixChart>
     </Example>
 
     <ApiTable Title="HelixChart" Rows="ChartApi" />
-    <ApiTable Title="HelixChartSeries et HelixChartLine" Rows="SeriesApi" ShowIntro="false" />
+    <ApiTable Title="HelixChartSeries and HelixChartLine" Rows="SeriesApi" ShowIntro="false" />
 </DemoPage>
 
 @code {
     private const string Wpf1 = """
-        <!-- Deux mesures d'échelles différentes : deux graphiques, jamais deux axes Y -->
-        <helix:HelixChart Title="Puissance" Unit="MW" ShowNow="True" From="{Binding DayStart}" To="{Binding DayEnd}">
+        <!-- Two measures with different scales: two charts, never two Y axes -->
+        <helix:HelixChart Title="Power" Unit="MW" ShowNow="True" From="{Binding DayStart}" To="{Binding DayEnd}">
             <helix:HelixChartSeries Name="Production" Type="Area" Points="{Binding Production}" />
-            <helix:HelixChartSeries Name="Prévision" IsDashed="True" Points="{Binding Forecast}" />
+            <helix:HelixChartSeries Name="Forecast" IsDashed="True" Points="{Binding Forecast}" />
             <helix:HelixChart.Lines>
-                <helix:HelixChartLine Y="400" Label="Contrat" Color="danger" />
+                <helix:HelixChartLine Y="400" Label="Contract" Color="danger" />
             </helix:HelixChart.Lines>
         </helix:HelixChart>
-        <helix:HelixChart Title="Prix" Unit="€/MWh" PlotHeight="180">
-            <helix:HelixChartSeries Name="Prix spot" Type="Step" Points="{Binding Prices}" />
+        <helix:HelixChart Title="Price" Unit="€/MWh" PlotHeight="180">
+            <helix:HelixChartSeries Name="Spot price" Type="Step" Points="{Binding Prices}" />
         </helix:HelixChart>
 
         // ViewModel
@@ -84,17 +84,17 @@
         """;
 
     private const string Wpf2 = """
-        <helix:HelixChart x:Name="Sales" Title="Ventes par mois" Unit="k€">
+        <helix:HelixChart x:Name="Sales" Title="Sales per month" Unit="k€">
             <helix:HelixChartSeries Name="2025" Type="Bar" Points="{Binding Sales2025}" />
             <helix:HelixChartSeries Name="2026" Type="Bar" Points="{Binding Sales2026}" />
         </helix:HelixChart>
 
-        // Code-behind : X = index du mois, libellé par XFormat
+        // Code-behind: X = month index, label through XFormat
         Sales.XFormat = x => months[(int)x];
         Sales2025 = Enumerable.Range(0, 12).Select(m => new HelixPoint(m, totals[m])).ToList();
         """;
 
-    private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr-FR");
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
 
     private readonly IReadOnlyList<HelixPoint> _imbalance = EnergyData.Imbalance(DateTime.Now);
     private readonly IReadOnlyList<HelixPoint> _forecastPoints = EnergyData.Forecast(DateTime.Now);
@@ -112,58 +112,58 @@
     {
         get
         {
-            var chart = $"<HelixChart Title=\"Équilibrage\" Unit=\"MW\"{A("Height", _height == 280 ? null : $"{N(_height)}px")}{B("ShowNow", _showNow)}{B("ShowNavigator", _navigator)}{A("NowColor", _nowColor)}>";
+            var chart = $"<HelixChart Title=\"Balancing\" Unit=\"MW\"{A("Height", _height == 280 ? null : $"{N(_height)}px")}{B("ShowNow", _showNow)}{B("ShowNavigator", _navigator)}{A("NowColor", _nowColor)}>";
             var lines = new List<string>
             {
-                $"    <HelixChartSeries Name=\"Déséquilibre\" Points=\"imbalance\"{A("Type", _type, HelixSeriesType.Line)}{B("Markers", _markers)}{A("Color", _color)} />",
+                $"    <HelixChartSeries Name=\"Imbalance\" Points=\"imbalance\"{A("Type", _type, HelixSeriesType.Line)}{B("Markers", _markers)}{A("Color", _color)} />",
             };
-            if (_forecast) lines.Add("    <HelixChartSeries Name=\"Prévision\" Points=\"forecast\" Dashed />");
-            if (_activated) lines.Add("    <HelixChartSeries Name=\"Réserve activée\" Points=\"reserve\" Type=\"HelixSeriesType.Step\" />");
-            if (_threshold) lines.Add("    <HelixChartLine Y=\"300\" Label=\"Seuil d'alerte 300 MW\" Color=\"danger\" />");
-            return $"{chart}\n{string.Join("\n", lines)}\n</HelixChart>\n\n@code {{\n    // HelixPoint.At(heure, valeur), ou data.ToPoints(d => d.Time, d => d.Mw)\n    private IReadOnlyList<HelixPoint> imbalance = measures.ToPoints(m => m.Time, m => m.Mw);\n}}";
+            if (_forecast) lines.Add("    <HelixChartSeries Name=\"Forecast\" Points=\"forecast\" Dashed />");
+            if (_activated) lines.Add("    <HelixChartSeries Name=\"Activated reserve\" Points=\"reserve\" Type=\"HelixSeriesType.Step\" />");
+            if (_threshold) lines.Add("    <HelixChartLine Y=\"300\" Label=\"Alert threshold 300 MW\" Color=\"danger\" />");
+            return $"{chart}\n{string.Join("\n", lines)}\n</HelixChart>\n\n@code {{\n    // HelixPoint.At(time, value), or data.ToPoints(d => d.Time, d => d.Mw)\n    private IReadOnlyList<HelixPoint> imbalance = measures.ToPoints(m => m.Time, m => m.Mw);\n}}";
         }
     }
 
     private const string StackedCode = """
-        <HelixChart Title="Déséquilibre" Unit="MW" From="today" To="today.AddDays(1)" ShowNow>
-            <HelixChartSeries Name="Déséquilibre" Points="imbalance" Type="HelixSeriesType.Area" />
+        <HelixChart Title="Imbalance" Unit="MW" From="today" To="today.AddDays(1)" ShowNow>
+            <HelixChartSeries Name="Imbalance" Points="imbalance" Type="HelixSeriesType.Area" />
         </HelixChart>
-        <HelixChart Title="Prix de déséquilibre" Unit="€/MWh" From="today" To="today.AddDays(1)" ShowNow>
-            <HelixChartSeries Name="Prix" Points="prices" Type="HelixSeriesType.Bar" />
+        <HelixChart Title="Imbalance price" Unit="€/MWh" From="today" To="today.AddDays(1)" ShowNow>
+            <HelixChartSeries Name="Price" Points="prices" Type="HelixSeriesType.Bar" />
         </HelixChart>
         """;
 
     private const string NumericCode = """
-        <HelixChart Title="Profil de charge" Unit="%" XFormat="@(x => $"{x:0} min")">
+        <HelixChart Title="Charge profile" Unit="%" XFormat="@(x => $"{x:0} min")">
             <HelixChartSeries Name="Charge" Points="points" Type="HelixSeriesType.Area" Markers Color="success" />
-            <HelixChartLine Y="80" Label="Limite 80 %" />
+            <HelixChartLine Y="80" Label="80% limit" />
         </HelixChart>
         """;
 
     private static readonly ApiRow[] ChartApi =
     [
-        new("Title / Subtitle", "string", null, "En-tête. Avec une seule série, le titre la nomme (pas de légende)."),
-        new("Unit / YFormat", "string", null, "Unité (au-dessus de l'axe et dans l'infobulle) et format .NET des valeurs."),
-        new("Height", "string", null, "Hauteur de la zone de tracé (280px)."),
-        new("From / To · XMin / XMax", "DateTime · double", null, "Période affichée (sinon l'étendue des données). Aligne plusieurs graphiques."),
-        new("YMin / YMax", "double", null, "Bornes Y fixes (sinon calculées sur la partie visible)."),
-        new("ShowNow / NowRefresh", "bool / TimeSpan", "--helix-chart-now", "Ligne « maintenant » qui avance toute seule (30 s)."),
-        new("NowColor", "string", "--helix-chart-now", "Couleur de la ligne et du badge."),
-        new("ShowNavigator", "bool", null, "Bandeau d'aperçu avec deux poignées pour zoomer."),
-        new("ShowTableToggle", "bool", null, "Bouton « Tableau » : les mêmes données en tableau accessible (true)."),
-        new("XFormat / XLabel", "Func<double,string> / string", null, "Libellés d'un axe numérique."),
-        new("Culture / TimeProvider", "CultureInfo / TimeProvider", null, "Formats ; horloge injectable pour les tests."),
-        new("—", "", "--helix-series-1 … --helix-series-8", "Palette des séries, ordre fixe, validée daltonisme (clair et sombre)."),
-        new("—", "", "--helix-chart-grid, --helix-chart-bg, --helix-chart-axis-width", "Grille, fond (anneau des points), largeur de l'axe Y."),
+        new("Title / Subtitle", "string", null, "Header. With a single series, the title names it (no legend)."),
+        new("Unit / YFormat", "string", null, "Unit (above the axis and in the tooltip) and .NET format of the values."),
+        new("Height", "string", null, "Height of the plot area (280px)."),
+        new("From / To · XMin / XMax", "DateTime · double", null, "Displayed period (otherwise the data range). Lines up several charts."),
+        new("YMin / YMax", "double", null, "Fixed Y bounds (otherwise computed from the visible part)."),
+        new("ShowNow / NowRefresh", "bool / TimeSpan", "--helix-chart-now", "“Now” line that moves on its own (30 s)."),
+        new("NowColor", "string", "--helix-chart-now", "Color of the line and badge."),
+        new("ShowNavigator", "bool", null, "Overview strip with two handles to zoom."),
+        new("ShowTableToggle", "bool", null, "“Table” button: the same data as an accessible table (true)."),
+        new("XFormat / XLabel", "Func<double,string> / string", null, "Labels of a numeric axis."),
+        new("Culture / TimeProvider", "CultureInfo / TimeProvider", null, "Formats; injectable clock for tests."),
+        new("—", "", "--helix-series-1 … --helix-series-8", "Series palette, fixed order, color-blind checked (light and dark)."),
+        new("—", "", "--helix-chart-grid, --helix-chart-bg, --helix-chart-axis-width", "Grid, background (ring around points), Y axis width."),
     ];
 
     private static readonly ApiRow[] SeriesApi =
     [
-        new("Name / Points", "string / IEnumerable<HelixPoint>", null, "HelixPoint.At(heure, valeur) ou new HelixPoint(x, y). Y = null coupe la ligne."),
-        new("Type", "HelixSeriesType", null, "Line, Area, Step ou Bar."),
-        new("Color", "string", null, "Par défaut la couleur suivante de la palette ; nom sémantique ou couleur CSS."),
-        new("Markers / Dashed / Hidden", "bool", null, "Points visibles, pointillés (prévision), masquée au départ."),
-        new("HelixChartLine Y / At / X", "double / DateTime / double", null, "Ligne de référence horizontale (seuil) ou verticale (événement)."),
-        new("HelixChartLine Label / Color / Dashed", "string / string / bool", null, "Libellé, couleur, pointillés (true)."),
+        new("Name / Points", "string / IEnumerable<HelixPoint>", null, "HelixPoint.At(time, value) or new HelixPoint(x, y). Y = null breaks the line."),
+        new("Type", "HelixSeriesType", null, "Line, Area, Step or Bar."),
+        new("Color", "string", null, "The next palette color by default; semantic name or CSS color."),
+        new("Markers / Dashed / Hidden", "bool", null, "Visible points, dashed (forecast), hidden at first."),
+        new("HelixChartLine Y / At / X", "double / DateTime / double", null, "Horizontal (threshold) or vertical (event) reference line."),
+        new("HelixChartLine Label / Color / Dashed", "string / string / bool", null, "Label, color, dashed (true)."),
     ];
 }

@@ -22,7 +22,7 @@ public sealed class EmployeeApi(TimeProvider timeProvider)
 
         if (SimulateFailure)
         {
-            throw new HttpRequestException("Le serveur a répondu 503 (service indisponible).");
+            throw new HttpRequestException("The server answered 503 (service unavailable).");
         }
 
         IQueryable<Employee> query;

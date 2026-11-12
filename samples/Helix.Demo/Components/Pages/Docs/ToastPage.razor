@@ -1,27 +1,27 @@
 @page "/components/toast"
 @inject HelixToastService Toasts
 
-<DemoPage Title="Toast" Description="Notifications éphémères. Injectez HelixToastService n'importe où (composant ou service) et appelez une méthode. HelixProvider les affiche.">
+<DemoPage Title="Toast" Description="Short-lived notifications. Inject HelixToastService anywhere (component or service) and call a method. HelixProvider shows them.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div class="row">
-                <HelixButton Color="@Color" OnClick="Show">Afficher le toast</HelixButton>
+                <HelixButton Color="@Color" OnClick="Show">Show the toast</HelixButton>
             </div>
         </Preview>
         <Controls>
             <Choice TEnum="HelixSeverity" Label="Severity" @bind-Value="_severity" />
             <HelixTextField Label="Title" @bind-Value="_title" />
             <HelixTextField Label="Message" @bind-Value="_message" />
-            <HelixSlider Label="Durée" @bind-Value="_seconds" Min="0" Max="10" Format="@(v => v == 0 ? "permanent" : $"{v} s")" />
+            <HelixSlider Label="Duration" @bind-Value="_seconds" Min="0" Max="10" Format="@(v => v == 0 ? "permanent" : $"{v} s")" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Raccourcis" Code="@ShortcutsCode">
+    <Example WpfCode="@Wpf2" Title="Shortcuts" Code="@ShortcutsCode">
         <div class="row">
-            <HelixButton Variant="HelixVariant.Soft" Color="info" OnClick="@(() => Toasts.Info("3 nouveaux messages"))">Info</HelixButton>
-            <HelixButton Variant="HelixVariant.Soft" Color="success" OnClick="@(() => Toasts.Success("Modifications enregistrées", "Enregistré"))">Success</HelixButton>
-            <HelixButton Variant="HelixVariant.Soft" Color="warning" OnClick="@(() => Toasts.Warning("Votre session expire dans 5 minutes"))">Warning</HelixButton>
-            <HelixButton Variant="HelixVariant.Soft" Color="danger" OnClick="@(() => Toasts.Error("Impossible de joindre le serveur", "Erreur"))">Error</HelixButton>
+            <HelixButton Variant="HelixVariant.Soft" Color="info" OnClick="@(() => Toasts.Info("3 new messages"))">Info</HelixButton>
+            <HelixButton Variant="HelixVariant.Soft" Color="success" OnClick="@(() => Toasts.Success("Changes saved", "Saved"))">Success</HelixButton>
+            <HelixButton Variant="HelixVariant.Soft" Color="warning" OnClick="@(() => Toasts.Warning("Your session expires in 5 minutes"))">Warning</HelixButton>
+            <HelixButton Variant="HelixVariant.Soft" Color="danger" OnClick="@(() => Toasts.Error("Can't reach the server", "Error"))">Error</HelixButton>
         </div>
     </Example>
 
@@ -30,24 +30,24 @@
 
 @code {
     private const string Wpf1 = """
-        <!-- MainWindow.xaml : le HelixHost affiche les notifications -->
+        <!-- MainWindow.xaml: the HelixHost shows the notifications -->
         <helix:HelixHost ToastHorizontalAlignment="Right" ToastVerticalAlignment="Bottom"> … </helix:HelixHost>
 
-        // Partout dans l'application
-        HelixToasts.Show("Synchronisation terminée.", HelixSeverity.Success, title: "Terminé", duration: TimeSpan.FromSeconds(6));
-        HelixToasts.DefaultDuration = TimeSpan.FromSeconds(5);   // pour toute l'application
+        // Anywhere in the app
+        HelixToasts.Show("Sync finished.", HelixSeverity.Success, title: "Done", duration: TimeSpan.FromSeconds(6));
+        HelixToasts.DefaultDuration = TimeSpan.FromSeconds(5);   // for the whole app
         """;
 
     private const string Wpf2 = """
-        HelixToasts.Info("Nouvelle version disponible.");
-        HelixToasts.Success("Enregistré.");
-        HelixToasts.Warning("Il reste 8 % d'espace.");
-        HelixToasts.Error("Le serveur ne répond pas.", "Erreur réseau");
+        HelixToasts.Info("New version available.");
+        HelixToasts.Success("Saved.");
+        HelixToasts.Warning("8% of space left.");
+        HelixToasts.Error("The server is not responding.", "Network error");
         """;
 
     private HelixSeverity _severity = HelixSeverity.Success;
-    private string? _title = "Projet publié";
-    private string? _message = "Votre projet est en ligne.";
+    private string? _title = "Project published";
+    private string? _message = "Your project is live.";
     private double _seconds = 4;
 
     private string Color => _severity switch
@@ -72,21 +72,21 @@
     }
 
     private const string ShortcutsCode = """
-        Toasts.Info("3 nouveaux messages");
-        Toasts.Success("Modifications enregistrées", "Enregistré");
-        Toasts.Warning("Votre session expire dans 5 minutes");
-        Toasts.Error("Impossible de joindre le serveur", "Erreur");
+        Toasts.Info("3 new messages");
+        Toasts.Success("Changes saved", "Saved");
+        Toasts.Warning("Your session expires in 5 minutes");
+        Toasts.Error("Can't reach the server", "Error");
 
-        // Position : <HelixProvider ToastPosition="HelixToastPosition.TopCenter">
+        // Position: <HelixProvider ToastPosition="HelixToastPosition.TopCenter">
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Show(message, severity, title, duration)", "Guid", null, "Affiche un toast. TimeSpan.Zero = jusqu'à fermeture."),
-        new("Info / Success / Warning / Error", "Guid", null, "Raccourcis."),
-        new("Dismiss(id)", "void", null, "Ferme un toast."),
-        new("DefaultDuration", "TimeSpan", null, "4 s par défaut, réglable via AddVelo(t => ...)."),
-        new("HelixProvider.ToastPosition", "HelixToastPosition", null, "Coin de l'écran."),
-        new("—", "", "--helix-toast-bg", "Fond du toast."),
+        new("Show(message, severity, title, duration)", "Guid", null, "Shows a toast. TimeSpan.Zero = until closed."),
+        new("Info / Success / Warning / Error", "Guid", null, "Shortcuts."),
+        new("Dismiss(id)", "void", null, "Closes a toast."),
+        new("DefaultDuration", "TimeSpan", null, "4 s by default, set through AddHelix(t => ...)."),
+        new("HelixProvider.ToastPosition", "HelixToastPosition", null, "Screen corner."),
+        new("—", "", "--helix-toast-bg", "Toast background."),
     ];
 }

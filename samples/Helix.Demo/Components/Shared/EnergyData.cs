@@ -51,15 +51,15 @@ public static class EnergyData
 
     public static readonly IReadOnlyList<HelixTimelineStatus> Statuses =
     [
-        new("direct-saved", "Demande directe enregistrée", "var(--helix-series-2)", HelixTimelineAppearance.Dashed),
-        new("direct-sent", "Demande directe envoyée", "var(--helix-series-2)", HelixTimelineAppearance.Outline),
-        new("direct-ack", "Demande directe confirmée", "var(--helix-series-2)", HelixTimelineAppearance.Filled),
-        new("scheduled-saved", "Planifiée enregistrée", "var(--helix-series-1)", HelixTimelineAppearance.Dashed),
-        new("scheduled-sent", "Planifiée envoyée", "var(--helix-series-1)", HelixTimelineAppearance.Outline),
-        new("scheduled-ack", "Planifiée confirmée", "var(--helix-series-1)", HelixTimelineAppearance.Filled),
-        new("rejected", "Rejetée", "danger", HelixTimelineAppearance.Filled),
-        new("overwritten", "Remplacée", "var(--helix-text-subtle)", HelixTimelineAppearance.Filled),
-        new("local", "Demande locale", "var(--helix-series-4)", HelixTimelineAppearance.Filled),
+        new("direct-saved", "Direct request saved", "var(--helix-series-2)", HelixTimelineAppearance.Dashed),
+        new("direct-sent", "Direct request sent", "var(--helix-series-2)", HelixTimelineAppearance.Outline),
+        new("direct-ack", "Direct request confirmed", "var(--helix-series-2)", HelixTimelineAppearance.Filled),
+        new("scheduled-saved", "Scheduled, saved", "var(--helix-series-1)", HelixTimelineAppearance.Dashed),
+        new("scheduled-sent", "Scheduled, sent", "var(--helix-series-1)", HelixTimelineAppearance.Outline),
+        new("scheduled-ack", "Scheduled, confirmed", "var(--helix-series-1)", HelixTimelineAppearance.Filled),
+        new("rejected", "Rejected", "danger", HelixTimelineAppearance.Filled),
+        new("overwritten", "Overwritten", "var(--helix-text-subtle)", HelixTimelineAppearance.Filled),
+        new("local", "Local request", "var(--helix-series-4)", HelixTimelineAppearance.Filled),
     ];
 
     /// <summary>Dispatch requests over [start, start + hours], each one quarter-hour, status driven by time.</summary>
@@ -79,7 +79,7 @@ public static class EnergyData
             var phase = to <= now ? "ack" : from <= now ? "sent" : "saved";
             var status = q % 11 == 7 ? "rejected" : q % 13 == 5 ? "overwritten" : q % 9 == 4 ? "local" : $"{(direct ? "direct" : "scheduled")}-{phase}";
             var mw = Math.Round(Math.Abs(Shape(q + 40)) / 10, 1);
-            items.Add(new HelixTimelineItem($"d{q}", from, to, $"SA : {mw:0.0} MW") { Status = status, Data = mw });
+            items.Add(new HelixTimelineItem($"d{q}", from, to, $"SA: {mw:0.0} MW") { Status = status, Data = mw });
         }
 
         return items;
@@ -89,16 +89,16 @@ public static class EnergyData
     {
         (string Unit, int From, int To, string Status, string Label)[] plan =
         [
-            ("Centrale A", 0, 6, "scheduled-ack", "Base 120 MW"),
-            ("Centrale A", 6, 10, "scheduled-ack", "Montée 180 MW"),
-            ("Centrale A", 17, 22, "scheduled-sent", "Pointe 210 MW"),
-            ("Centrale B", 5, 9, "direct-ack", "Réserve 40 MW"),
-            ("Centrale B", 8, 14, "scheduled-saved", "Maintenance"),
-            ("Centrale B", 18, 21, "direct-sent", "Réserve 60 MW"),
-            ("Batterie", 2, 5, "local", "Charge 20 MW"),
-            ("Batterie", 11, 13, "direct-ack", "Décharge 25 MW"),
-            ("Batterie", 12, 15, "rejected", "Décharge 30 MW"),
-            ("Batterie", 19, 21, "scheduled-saved", "Décharge 25 MW"),
+            ("Plant A", 0, 6, "scheduled-ack", "Base 120 MW"),
+            ("Plant A", 6, 10, "scheduled-ack", "Ramp-up 180 MW"),
+            ("Plant A", 17, 22, "scheduled-sent", "Peak 210 MW"),
+            ("Plant B", 5, 9, "direct-ack", "Reserve 40 MW"),
+            ("Plant B", 8, 14, "scheduled-saved", "Maintenance"),
+            ("Plant B", 18, 21, "direct-sent", "Reserve 60 MW"),
+            ("Battery", 2, 5, "local", "Charge 20 MW"),
+            ("Battery", 11, 13, "direct-ack", "Discharge 25 MW"),
+            ("Battery", 12, 15, "rejected", "Discharge 30 MW"),
+            ("Battery", 19, 21, "scheduled-saved", "Discharge 25 MW"),
         ];
 
         return plan.Select((p, i) => new HelixTimelineItem($"u{i}", day.AddHours(p.From), day.AddHours(p.To), p.Label) { Lane = p.Unit, Status = p.Status }).ToList();

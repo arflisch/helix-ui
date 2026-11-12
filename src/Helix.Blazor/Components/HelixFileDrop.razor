@@ -7,7 +7,7 @@
         <InputFile class="helix-filedrop__input" OnChange="OnChange" multiple="@Multiple" accept="@Accept" disabled="@Disabled" />
         <span class="helix-filedrop__icon" aria-hidden="true"><HelixIcon Name="upload" Size="20" /></span>
         <span class="helix-filedrop__title">@(_over ? Texts.ReleaseToAdd : Title ?? Texts.DropFilesHere)</span>
-        <span class="helix-filedrop__subtitle">ou <span class="helix-filedrop__link">cliquez pour parcourir</span></span>
+        <span class="helix-filedrop__subtitle"><span class="helix-filedrop__link">@Texts.OrClickToBrowse</span></span>
         @if (!string.IsNullOrEmpty(HintText))
         {
             <span class="helix-filedrop__hint">@HintText</span>
@@ -25,7 +25,7 @@
                         <span class="helix-filedrop__file-name">@entry.File.Name</span>
                         <span class="helix-filedrop__file-meta">@(entry.Error ?? HelixPaging.FileSize(entry.File.Size))</span>
                     </span>
-                    <button type="button" class="helix-close" aria-label="Retirer @entry.File.Name" @onclick="() => Remove(entry)">
+                    <button type="button" class="helix-close" aria-label="@HelixTexts.Format(Texts.RemoveFile, entry.File.Name)" @onclick="() => Remove(entry)">
                         <HelixIcon Name="x" Size="14" />
                     </button>
                 </li>

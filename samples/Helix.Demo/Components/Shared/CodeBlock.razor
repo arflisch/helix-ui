@@ -12,14 +12,14 @@
         }
         else
         {
-            <div class="code__tabs" role="tablist" aria-label="Version du code">
+            <div class="code__tabs" role="tablist" aria-label="Code version">
                 <button role="tab" aria-selected="@(!ShowWpf ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", !ShowWpf).Build())" @onclick="() => CodeState.Set(false)">Blazor</button>
                 <button role="tab" aria-selected="@(ShowWpf ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", ShowWpf).Build())" @onclick="() => CodeState.Set(true)">WPF</button>
             </div>
         }
         <button class="code__copy" @onclick="Copy">
             <HelixIcon Name="@(_copied ? "check" : "copy")" Size="13" />
-            @(_copied ? "Copié" : "Copier")
+            @(_copied ? "Copied" : "Copy")
         </button>
     </div>
     <pre class="code__pre"><code>@Highlighted</code></pre>

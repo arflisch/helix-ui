@@ -158,7 +158,7 @@ public class HelixSortableList : ListBox
 /// CardMoved proposes each move; if nobody handles it and ColumnPath is writable, the board moves the card itself.
 /// </summary>
 [TemplatePart(Name = "PART_Columns", Type = typeof(Panel))]
-public class HelixKanban : Control, IVeloThemeAware
+public class HelixKanban : Control, IHelixThemeAware
 {
     static HelixKanban() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixKanban), new FrameworkPropertyMetadata(typeof(HelixKanban)));
 
@@ -217,7 +217,7 @@ public class HelixKanban : Control, IVeloThemeAware
         Build();
     }
 
-    void IVeloThemeAware.OnThemeChanged() => Build();
+    void IHelixThemeAware.OnThemeChanged() => Build();
 
     private void OnItemsSourceChanged(DependencyPropertyChangedEventArgs e)
     {

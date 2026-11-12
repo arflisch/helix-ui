@@ -1,13 +1,13 @@
 @page "/components/badge"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Badge" Description="Petites étiquettes de statut, de catégorie ou de compteur.">
+<DemoPage Title="Badge" Description="Small labels for a status, a category or a count.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <HelixBadge Variant="_variant" Color="@_color" Dot="_dot" Square="_square">@_text</HelixBadge>
         </Preview>
         <Controls>
-            <HelixTextField Label="Texte" @bind-Value="_text" />
+            <HelixTextField Label="Text" @bind-Value="_text" />
             <Choice TEnum="HelixBadgeVariant" Label="Variant" @bind-Value="_variant" />
             <ColorPicker Label="Color" @bind-Value="_color" />
             <HelixSwitch Label="Dot" @bind-Checked="_dot" Size="HelixSize.Sm" />
@@ -15,7 +15,7 @@
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Toutes les combinaisons">
+    <Example WpfCode="@Wpf2" Title="Every combination">
         <div class="stack">
             @foreach (var variant in Enum.GetValues<HelixBadgeVariant>())
             {
@@ -34,8 +34,8 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixBadge Content="En ligne" Tone="Success" ShowDot="True" />
-        <helix:HelixBadge Content="Attention" Tone="Warning" Icon="warning" />
+        <helix:HelixBadge Content="Online" Tone="Success" ShowDot="True" />
+        <helix:HelixBadge Content="Warning" Tone="Warning" Icon="warning" />
         <helix:HelixBadge Content="Solid" Variant="Solid" Tone="Danger" />
         <helix:HelixBadge Content="#FF8A00" Accent="#FF8A00" Variant="Outline" CornerRadius="4" />
         """;
@@ -46,12 +46,12 @@
             <helix:HelixBadge Content="Solid" Variant="Solid" />
             <helix:HelixBadge Content="Outline" Variant="Outline" />
         </WrapPanel>
-        <!-- Tone : Primary, Neutral, Success, Warning, Danger, Info — ou Accent pour n'importe quelle couleur -->
+        <!-- Tone: Primary, Neutral, Success, Warning, Danger, Info — or Accent for any color -->
         """;
 
     private static readonly string[] Colors = ["neutral", "primary", "success", "warning", "danger", "info", "#8b5cf6"];
 
-    private string? _text = "En ligne";
+    private string? _text = "Online";
     private HelixBadgeVariant _variant;
     private string? _color = "success";
     private bool _dot = true, _square;
@@ -61,10 +61,10 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Variant", "HelixBadgeVariant", null, "Soft, Solid ou Outline."),
-        new("Color", "string", "--helix-badge-color", "Neutral par défaut."),
-        new("Dot", "bool", null, "Point coloré avant le texte."),
-        new("Icon", "string", null, "Icône avant le texte."),
-        new("Square", "bool", "--helix-badge-radius", "Coins carrés au lieu d'une pilule."),
+        new("Variant", "HelixBadgeVariant", null, "Soft, Solid or Outline."),
+        new("Color", "string", "--helix-badge-color", "Neutral by default."),
+        new("Dot", "bool", null, "Colored dot before the text."),
+        new("Icon", "string", null, "Icon before the text."),
+        new("Square", "bool", "--helix-badge-radius", "Square corners instead of a pill."),
     ];
 }

@@ -11,34 +11,34 @@ public static class DemoData
 {
     public static readonly IReadOnlyList<HelixKanbanColumn> KanbanColumns =
     [
-        new("todo", "À faire", "neutral"),
-        new("doing", "En cours", "var(--helix-series-1)", Limit: 3),
-        new("review", "En revue", "var(--helix-series-7)", Limit: 2),
-        new("done", "Terminé", "success"),
+        new("todo", "To do", "neutral"),
+        new("doing", "In progress", "var(--helix-series-1)", Limit: 3),
+        new("review", "In review", "var(--helix-series-7)", Limit: 2),
+        new("done", "Done", "success"),
     ];
 
     public static List<Ticket> Tickets() =>
     [
-        new(1, "Brancher l'API de prévision", "todo", "Ada Lovelace", "Haute", 5),
-        new(2, "Alerte au-delà de 300 MW", "todo", "Alan Turing", "Moyenne", 3),
-        new(3, "Export CSV du planning", "todo", "Grace Hopper", "Basse", 2),
-        new(4, "Mode sombre des graphiques", "doing", "Linus Torvalds", "Moyenne", 3),
-        new(5, "Glisser-déposer du planning", "doing", "Ada Lovelace", "Haute", 8),
-        new(6, "Tableau de bord personnalisable", "review", "Margaret Hamilton", "Haute", 5),
-        new(7, "Palette validée daltonisme", "done", "Barbara Liskov", "Moyenne", 2),
-        new(8, "Recherche serveur du DataGrid", "done", "Ken Thompson", "Haute", 5),
+        new(1, "Connect the forecast API", "todo", "Ada Lovelace", "High", 5),
+        new(2, "Alert above 300 MW", "todo", "Alan Turing", "Medium", 3),
+        new(3, "Schedule CSV export", "todo", "Grace Hopper", "Low", 2),
+        new(4, "Dark mode for charts", "doing", "Linus Torvalds", "Medium", 3),
+        new(5, "Schedule drag and drop", "doing", "Ada Lovelace", "High", 8),
+        new(6, "Customizable dashboard", "review", "Margaret Hamilton", "High", 5),
+        new(7, "Color-blind safe palette", "done", "Barbara Liskov", "Medium", 2),
+        new(8, "DataGrid server-side search", "done", "Ken Thompson", "High", 5),
     ];
 
     public static List<Priority> Priorities() =>
     [
-        new("p1", "Stabiliser l'équilibrage du soir", "Exploitation"),
-        new("p2", "Réduire les demandes rejetées", "Dispatching"),
-        new("p3", "Automatiser les prévisions horaires", "Data"),
-        new("p4", "Former l'équipe d'astreinte", "RH"),
-        new("p5", "Renouveler le contrat de réserve", "Achats"),
+        new("p1", "Stabilize evening balancing", "Operations"),
+        new("p2", "Reduce rejected requests", "Dispatching"),
+        new("p3", "Automate hourly forecasts", "Data"),
+        new("p4", "Train the on-call team", "HR"),
+        new("p5", "Renew the reserve contract", "Purchasing"),
     ];
 
-    public static readonly string[] Days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+    public static readonly string[] Days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     /// <summary>Average imbalance (MW) per weekday and hour: a diverging dataset (deficit / surplus).</summary>
     public static IReadOnlyList<HelixHeatCell> WeeklyImbalance()

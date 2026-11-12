@@ -1,26 +1,26 @@
 @page "/components/tooltip"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Tooltip" Description="Infobulle en pur CSS : aucun JavaScript, aucun aller-retour serveur. Apparaît au survol et au focus clavier.">
+<DemoPage Title="Tooltip" Description="Tooltip in pure CSS: no JavaScript, no server round trip. Shows on hover and on keyboard focus.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <HelixTooltip Text="@_text" Placement="_placement" Background="@_bg" Delay="@(_instant ? "0ms" : null)">
-                <HelixButton Variant="HelixVariant.Outline" Color="neutral">Survolez-moi</HelixButton>
+                <HelixButton Variant="HelixVariant.Outline" Color="neutral">Hover me</HelixButton>
             </HelixTooltip>
         </Preview>
         <Controls>
             <HelixTextField Label="Text" @bind-Value="_text" />
             <Choice TEnum="HelixPlacement" Label="Placement" @bind-Value="_placement" />
             <ColorPicker Label="Background" @bind-Value="_bg" Colors="@(["primary", "#18181b", "#0ea5e9", "danger"])" />
-            <HelixSwitch Label="Sans délai" @bind-Checked="_instant" Size="HelixSize.Sm" />
+            <HelixSwitch Label="No delay" @bind-Checked="_instant" Size="HelixSize.Sm" />
         </Controls>
     </Playground>
 
-    <Example WpfCode="@Wpf2" Title="Contenu riche" Code="@RichCode">
+    <Example WpfCode="@Wpf2" Title="Rich content" Code="@RichCode">
         <div class="row">
             <HelixTooltip Placement="HelixPlacement.Right">
                 <ChildContent><HelixAvatar Name="Grace Hopper" Status="HelixAvatarStatus.Online" /></ChildContent>
-                <Content><strong>Grace Hopper</strong><br />En ligne · Paris</Content>
+                <Content><strong>Grace Hopper</strong><br />Online · Paris</Content>
             </HelixTooltip>
         </div>
     </Example>
@@ -30,8 +30,8 @@
 
 @code {
     private const string Wpf1 = """
-        <!-- HelixResources donne le style Helix à toutes les infobulles de l'application -->
-        <helix:HelixButton Icon="settings" Variant="Ghost" Tone="Neutral" ToolTip="Réglages"
+        <!-- HelixResources gives every tooltip in the app the Helix style -->
+        <helix:HelixButton Icon="settings" Variant="Ghost" Tone="Neutral" ToolTip="Settings"
                          ToolTipService.Placement="Bottom" ToolTipService.InitialShowDelay="300" />
         """;
 
@@ -40,35 +40,35 @@
             <helix:HelixButton.ToolTip>
                 <ToolTip>
                     <StackPanel>
-                        <TextBlock Text="Espace utilisé" FontWeight="SemiBold" />
-                        <TextBlock Text="9,2 Go sur 10 Go" />
+                        <TextBlock Text="Space used" FontWeight="SemiBold" />
+                        <TextBlock Text="9.2 GB of 10 GB" />
                     </StackPanel>
                 </ToolTip>
             </helix:HelixButton.ToolTip>
         </helix:HelixButton>
         """;
 
-    private string? _text = "Copier dans le presse-papiers";
+    private string? _text = "Copy to clipboard";
     private HelixPlacement _placement;
     private string? _bg;
     private bool _instant;
 
     private string Code =>
-        $"<HelixTooltip{A("Text", _text)}{A("Placement", _placement, HelixPlacement.Top)}{A("Background", _bg)}{A("Delay", _instant ? "0ms" : null)}>\n    <HelixButton>Survolez-moi</HelixButton>\n</HelixTooltip>";
+        $"<HelixTooltip{A("Text", _text)}{A("Placement", _placement, HelixPlacement.Top)}{A("Background", _bg)}{A("Delay", _instant ? "0ms" : null)}>\n    <HelixButton>Hover me</HelixButton>\n</HelixTooltip>";
 
     private const string RichCode = """
         <HelixTooltip Placement="HelixPlacement.Right">
             <ChildContent><HelixAvatar Name="Grace Hopper" /></ChildContent>
-            <Content><strong>Grace Hopper</strong><br />En ligne · Paris</Content>
+            <Content><strong>Grace Hopper</strong><br />Online · Paris</Content>
         </HelixTooltip>
         """;
 
     private static readonly ApiRow[] Api =
     [
-        new("Text / Content", "string / RenderFragment", null, "Contenu de la bulle."),
-        new("Placement", "HelixPlacement", null, "Top, Bottom, Left ou Right."),
-        new("Background", "string", "--helix-tooltip-bg", "Fond de la bulle."),
-        new("TextColor", "string", "--helix-tooltip-text", "Texte de la bulle."),
-        new("Delay", "string", "--helix-tooltip-delay", "Délai d'apparition (200ms)."),
+        new("Text / Content", "string / RenderFragment", null, "Content of the tooltip."),
+        new("Placement", "HelixPlacement", null, "Top, Bottom, Left or Right."),
+        new("Background", "string", "--helix-tooltip-bg", "Tooltip background."),
+        new("TextColor", "string", "--helix-tooltip-text", "Tooltip text."),
+        new("Delay", "string", "--helix-tooltip-delay", "Delay before showing (200ms)."),
     ];
 }

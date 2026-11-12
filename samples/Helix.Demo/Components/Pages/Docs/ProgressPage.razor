@@ -1,7 +1,7 @@
 @page "/components/progress"
 @using static Helix.Demo.Components.Shared.Snippet
 
-<DemoPage Title="Progress" Description="Barre de progression déterminée ou indéterminée, et spinner.">
+<DemoPage Title="Progress" Description="Determinate or indeterminate progress bar, and spinner.">
     <Playground WpfCode="@Wpf1" Code="@Code">
         <Preview>
             <div style="width:100%;max-width:380px">
@@ -31,20 +31,20 @@
 
 @code {
     private const string Wpf1 = """
-        <helix:HelixProgress Label="Import des données" Value="{Binding Percent}" ShowValue="True"
+        <helix:HelixProgress Label="Importing data" Value="{Binding Percent}" ShowValue="True"
                            BarHeight="8" Accent="#10B981" TrackBrush="#DCFCE7" />
-        <helix:HelixProgress Label="Synchronisation" IsIndeterminate="True" />
+        <helix:HelixProgress Label="Syncing" IsIndeterminate="True" />
         """;
 
     private const string Wpf2 = """
         <helix:HelixSpinner />
         <helix:HelixSpinner Size="28" Tone="Success" />
         <helix:HelixSpinner Size="36" Thickness="3" Accent="#FF8A00" />
-        <!-- Dans un bouton : IsLoading="True" affiche le spinner à la place du texte -->
+        <!-- In a button: IsLoading="True" shows the spinner instead of the text -->
         """;
 
     private double _value = 64, _height = 8;
-    private string? _label = "Téléversement";
+    private string? _label = "Uploading";
     private string? _color;
     private bool _showValue = true, _indeterminate;
 
@@ -59,12 +59,12 @@
 
     private static readonly ApiRow[] Api =
     [
-        new("Value / Max", "double", null, "Progression (Max = 100 par défaut)."),
-        new("Indeterminate", "bool", null, "Animation continue sans valeur."),
-        new("Label / ShowValue", "string / bool", null, "En-tête au-dessus de la barre."),
-        new("Color", "string", "--helix-progress-color", "Couleur de la barre."),
-        new("TrackColor", "string", "--helix-progress-track", "Fond de la piste."),
-        new("Height", "string", "--helix-progress-height", "Épaisseur."),
-        new("Spinner : Color / Size / Thickness", "string", "--helix-spinner-*", "Couleur, taille, épaisseur."),
+        new("Value / Max", "double", null, "Progress (Max = 100 by default)."),
+        new("Indeterminate", "bool", null, "Continuous animation with no value."),
+        new("Label / ShowValue", "string / bool", null, "Header above the bar."),
+        new("Color", "string", "--helix-progress-color", "Bar color."),
+        new("TrackColor", "string", "--helix-progress-track", "Track background."),
+        new("Height", "string", "--helix-progress-height", "Thickness."),
+        new("Spinner: Color / Size / Thickness", "string", "--helix-spinner-*", "Color, size, thickness."),
     ];
 }

@@ -35,28 +35,28 @@
                 <Trigger>
                     <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Size="HelixSize.Sm" IconEnd="chevron-down">
                         <span class="demo-theme-dot"></span>
-                        @(ThemeState.Preset ?? "Personnalisé")
+                        @(ThemeState.Preset ?? "Custom")
                     </HelixButton>
                 </Trigger>
                 <ChildContent>
-                    <HelixMenuLabel>Thème</HelixMenuLabel>
+                    <HelixMenuLabel>Theme</HelixMenuLabel>
                     @foreach (var (name, create) in HelixThemes.All)
                     {
                         <HelixMenuItem Checked="@(ThemeState.Preset == name)" OnClick="() => ThemeState.Apply(create(), name)">@name</HelixMenuItem>
                     }
-                    <HelixMenuItem Icon="settings" Href="themes">Créer un thème…</HelixMenuItem>
+                    <HelixMenuItem Icon="settings" Href="themes">Create a theme…</HelixMenuItem>
                 </ChildContent>
             </HelixMenu>
 
             <HelixMenu Align="HelixAlign.End" MinWidth="180px">
                 <Trigger>
-                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Icon="@ModeIcon" aria-label="Mode clair, sombre ou système" />
+                    <HelixButton Variant="HelixVariant.Ghost" Color="neutral" Icon="@ModeIcon" aria-label="Light, dark or system mode" />
                 </Trigger>
                 <ChildContent>
-                    <HelixMenuLabel>Apparence</HelixMenuLabel>
-                    <HelixMenuItem Icon="sun" Checked="@(Mode == HelixThemeMode.Light)" OnClick="() => SetMode(HelixThemeMode.Light)">Clair</HelixMenuItem>
-                    <HelixMenuItem Icon="moon" Checked="@(Mode == HelixThemeMode.Dark)" OnClick="() => SetMode(HelixThemeMode.Dark)">Sombre</HelixMenuItem>
-                    <HelixMenuItem Icon="settings" Checked="@(Mode == HelixThemeMode.System)" Description="Suit le réglage de l'ordinateur" OnClick="() => SetMode(HelixThemeMode.System)">Système</HelixMenuItem>
+                    <HelixMenuLabel>Appearance</HelixMenuLabel>
+                    <HelixMenuItem Icon="sun" Checked="@(Mode == HelixThemeMode.Light)" OnClick="() => SetMode(HelixThemeMode.Light)">Light</HelixMenuItem>
+                    <HelixMenuItem Icon="moon" Checked="@(Mode == HelixThemeMode.Dark)" OnClick="() => SetMode(HelixThemeMode.Dark)">Dark</HelixMenuItem>
+                    <HelixMenuItem Icon="settings" Checked="@(Mode == HelixThemeMode.System)" Description="Follows the computer setting" OnClick="() => SetMode(HelixThemeMode.System)">System</HelixMenuItem>
                 </ChildContent>
             </HelixMenu>
         </header>
@@ -68,8 +68,8 @@
 </HelixProvider>
 
 <div id="blazor-error-ui" data-nosnippet>
-    Une erreur inattendue est survenue.
-    <a href="." class="reload">Recharger</a>
+    An unexpected error occurred.
+    <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
 

@@ -11,7 +11,7 @@ dotnet add package Helix.Blazor
 
 ```csharp
 // Program.cs
-builder.Services.AddVelo();
+builder.Services.AddHelix();
 ```
 
 ```razor
@@ -40,7 +40,7 @@ data grid (client or server), chart, donut, gauge, heatmap, bar list, timeline, 
 tree view, tabs, accordion, stepper, pagination, carousel, dialog, drawer, toasts, confirmations, and more.
 
 - Light, dark or system theme, with your own palettes (`HelixTheme`).
-- App-wide defaults for every component (`AddVelo(o => o.Defaults…)`).
+- App-wide defaults for every component (`AddHelix(o => o.Defaults…)`).
 - Built-in texts in English and French, replaceable (`HelixTexts`).
 
 MIT license.
