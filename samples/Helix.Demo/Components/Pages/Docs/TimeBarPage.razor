@@ -1,0 +1,123 @@
+@page "/components/timebar"
+@using System.Globalization
+
+<DemoPage Title="TimeBar" Description="A live countdown to the next deadline: the time left, a bar of the elapsed period and the slots around now. It repeats every Step (end of each quarter hour, minus an optional Lead) or counts to one fixed Deadline. Now can be overridden to test a given moment.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div style="width:100%;max-width:520px">
+                <HelixTimeBar Label="Time before submission" Step="TimeSpan.FromMinutes(_step)" Lead="TimeSpan.FromMinutes(_lead)"
+                              Warning="@(_thresholds ? TimeSpan.FromMinutes(_step / 3.0) : null)" Critical="@(_thresholds ? TimeSpan.FromMinutes(1) : null)"
+                              Now="@(_override ? _now : null)" Compact="_compact" Culture="English"
+                              SlotColor="@(_statuses ? StatusColor : null)" SlotText="@(_statuses ? StatusText : null)"
+                              Hint="@($"Activation window: {Window()}")" OnDeadline="Reached" />
+            </div>
+        </Preview>
+        <Controls>
+            <Choice TEnum="Period" Label="Step" @bind-Value="Steps" />
+            <HelixSlider Label="Lead (minutes)" @bind-Value="_lead" Max="10" />
+            <HelixSwitch Label="Warning / critical colors" @bind-Checked="_thresholds" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Slot statuses" @bind-Checked="_statuses" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Compact" @bind-Checked="_compact" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Override current time" @bind-Checked="_override" Size="HelixSize.Sm" />
+            @if (_override)
+            {
+                <HelixDateTimePicker Label="Now" @bind-Value="_nowPicker" MinuteStep="1" Culture="English" />
+            }
+            <span class="muted" style="font-size:12.5px">Deadlines reached: @_reached</span>
+        </Controls>
+    </Playground>
+
+    <Example Title="One fixed deadline" Description="Deadline (and optionally Start) instead of Step: the bar fills up to it, then says the deadline has passed.">
+        <div style="max-width:440px">
+            <HelixTimeBar Label="Offer closes in" Start="_fixedStart" Deadline="_fixedEnd" Warning="TimeSpan.FromSeconds(30)" Critical="TimeSpan.FromSeconds(10)" Culture="English" />
+        </div>
+        <HelixButton Variant="HelixVariant.Soft" Size="HelixSize.Sm" OnClick="Restart" Style="margin-top:12px">Restart (1 minute)</HelixButton>
+    </Example>
+
+    <Example Title="Compact, in a toolbar" Description="One line: label, countdown and bar.">
+        <HelixCard>
+            <HelixTimeBar Label="Next hour" Step="TimeSpan.FromHours(1)" Compact="true" Culture="English" />
+        </HelixCard>
+    </Example>
+
+    <Example Title="The math alone" Description="HelixTimeBarMath gives the same numbers to a view model or a test: HelixTimeBarMath.Repeating(now, step, lead) → Until, Remaining, Progress.">
+        <CodeBlock Code="@MathCode" Language="csharp" />
+    </Example>
+
+    <ApiTable Title="HelixTimeBar" Rows="Api" />
+</DemoPage>
+
+@code {
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
+
+    private enum Period { Min5, Min15, Hour }
+
+    private Period Steps
+    {
+        get => _step switch { 5 => Period.Min5, 60 => Period.Hour, _ => Period.Min15 };
+        set => _step = value switch { Period.Min5 => 5, Period.Hour => 60, _ => 15 };
+    }
+
+    private int _step = 15;
+    private double _lead;
+    private bool _thresholds = true, _statuses = true, _compact, _override;
+    private DateTime? _nowPicker = DateTime.Today.AddHours(13).AddMinutes(58);
+    private DateTime? _now => _nowPicker;
+    private int _reached;
+    private DateTime _fixedStart = DateTime.Now, _fixedEnd = DateTime.Now.AddMinutes(1);
+
+    private void Restart() { _fixedStart = DateTime.Now; _fixedEnd = _fixedStart.AddMinutes(1); }
+    private DateTime? _lastDeadline;
+    private void Reached(DateTime deadline) { _reached++; _lastDeadline = deadline; }
+
+    private string Window()
+    {
+        var now = _lastDeadline is { } d && d > (_override && _now is { } o ? o : DateTime.MinValue) ? d : _override && _now is { } n ? n : DateTime.Now;
+        var state = HelixTimeBarMath.Repeating(now, TimeSpan.FromMinutes(_step), TimeSpan.FromMinutes(_lead));
+        var start = state.Until + TimeSpan.FromMinutes(_lead);
+        return $"{start:HH:mm}–{start.AddMinutes(_step):HH:mm}";
+    }
+
+    private static string? StatusColor(HelixTimeBarSlot slot) => slot.Offset switch { < 0 => "success", 0 => "primary", 2 => "danger", _ => null };
+    private static string? StatusText(HelixTimeBarSlot slot) => slot.Offset switch { < 0 => "Sent", 0 => "Current", 2 => "Unavailable", _ => "To send" };
+
+    private string Code => $$"""
+        <HelixTimeBar Label="Time before submission" Step="TimeSpan.FromMinutes({{_step}})"{{(_lead > 0 ? $" Lead=\"TimeSpan.FromMinutes({_lead})\"" : "")}}{{(_thresholds ? $"\n              Warning=\"TimeSpan.FromMinutes({_step / 3.0:0.#})\" Critical=\"TimeSpan.FromMinutes(1)\"" : "")}}{{(_compact ? " Compact=\"true\"" : "")}}{{(_override ? "\n              Now=\"overrideNow\"" : "")}}{{(_statuses ? "\n              SlotColor=\"StatusColor\" SlotText=\"StatusText\"" : "")}}
+              Hint="Activation window: 14:15–14:30" OnDeadline="Submit" />
+        """ + (_statuses ? """
+
+
+        // slot.Offset: -1 = previous, 0 = current, 1 = next…
+        string? StatusColor(HelixTimeBarSlot slot) => sent.Contains(slot.Start) ? "success" : null;
+        string? StatusText(HelixTimeBarSlot slot) => sent.Contains(slot.Start) ? "Sent" : "To send";
+        """ : "");
+
+    private const string Wpf1 = """
+        <helix:HelixTimeBar Label="Time before submission" Step="0:15:00" Lead="0:00:00"
+                            Warning="0:05:00" Critical="0:01:00" Now="{Binding OverrideNow}"
+                            Hint="{Binding ActivationWindow}" SlotColor="{Binding StatusColor}"
+                            DeadlineCommand="{Binding SubmitCommand}" />
+        """;
+
+    private const string MathCode = """
+        var state = HelixTimeBarMath.Repeating(DateTime.Now, TimeSpan.FromMinutes(15));
+        state.Until;      // 14:15
+        state.Remaining;  // 00:04:32
+        state.Progress;   // 0.70 (share of the quarter already elapsed)
+        HelixTimeBarMath.FormatRemaining(state.Remaining); // "04:32"
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Step / Lead / Offset", "TimeSpan", null, "Repeating deadline: end of each Step-long slot (15 min) minus Lead; Offset shifts the grid from midnight."),
+        new("Deadline / Start", "DateTime?", null, "Fixed mode: a single deadline; the bar runs from Start (first render by default)."),
+        new("Now / Running", "DateTime? / bool", null, "Override the current time (the clock runs on from it); Running=false freezes it."),
+        new("Warning / Critical", "TimeSpan?", null, "Under this time left, the bar turns orange / red."),
+        new("Label / Hint / ChildContent", "string / string / RenderFragment", null, "Title, a line under the bar, extra footer content."),
+        new("ShowSlots / SlotsBefore / SlotsAfter", "bool / int / int", null, "Repeating mode: slot chips around now (1 before, 2 after)."),
+        new("SlotColor / SlotText", "Func<HelixTimeBarSlot, string?>", null, "Status dot color and short text per slot (Offset -1, 0, 1…)."),
+        new("Compact / Color / TimeFormat", "bool / string / string", "--helix-timebar-color, --helix-timebar-height", "One line; bar color (primary); time format (HH:mm)."),
+        new("OnDeadline", "EventCallback<DateTime>", null, "Raised each time a deadline is reached."),
+        new("TimeProvider / Culture", "TimeProvider? / CultureInfo?", null, "Testable clock; formatting culture."),
+    ];
+}

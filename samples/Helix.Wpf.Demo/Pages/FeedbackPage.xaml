@@ -68,6 +68,8 @@
                     <helix:HelixTargetBar Label="Unité B" Value="64" Target="80" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
                     <helix:HelixTargetBar Label="Unité C" Value="152" Target="110" Maximum="200" Unit="MW" Tolerance="10" />
                 </StackPanel>
+                <helix:HelixTimeBar x:Name="SubmissionBar" Label="Temps avant soumission" Step="0:15:00" Warning="0:05:00" Critical="0:01:00"
+                                    Hint="Fenêtre d'activation : quart suivant" MaxWidth="520" HorizontalAlignment="Left" Margin="0,24,0,0" />
             </StackPanel>
         </Border>
 

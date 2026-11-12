@@ -2725,6 +2725,45 @@
 :where(.helix-target__legend span) { display: inline-flex; align-items: center; gap: 6px; }
 :where(.helix-target__legend i) { width: 10px; height: 10px; border-radius: 3px; opacity: .45; }
 
+/* ===================================================================== Time bar */
+:where(.helix-timebar) { --_c: var(--helix-timebar-color, var(--helix-primary)); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+:where(.helix-timebar.is-warn) { --_c: var(--helix-warning); }
+:where(.helix-timebar.is-critical) { --_c: var(--helix-danger); }
+:where(.helix-timebar.is-passed) { --_c: var(--helix-text-subtle); }
+:where(.helix-timebar__head) { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+:where(.helix-timebar__label) { font-size: 13px; font-weight: 550; color: var(--helix-text-muted); min-width: 0; }
+:where(.helix-timebar__count) {
+    margin-left: auto; font-size: 26px; font-weight: 650; line-height: 1.1; letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums; color: color-mix(in oklab, var(--_c) 70%, var(--helix-text));
+    transition: color var(--helix-duration) var(--helix-ease);
+}
+:where(.helix-timebar.is-passed .helix-timebar__count) { font-size: 15px; font-weight: 600; }
+:where(.helix-timebar__track) { position: relative; height: var(--helix-timebar-height, 8px); border-radius: 999px; background: var(--helix-surface-2); overflow: hidden; }
+:where(.helix-timebar__fill) {
+    position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--_c);
+    transition: width 1s linear, background var(--helix-duration) var(--helix-ease);
+}
+:where(.helix-timebar__fill.is-reset) { transition: none; }
+:where(.helix-timebar__foot) { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 14px; font-size: 12.5px; color: var(--helix-text-muted); font-variant-numeric: tabular-nums; }
+:where(.helix-timebar__hint) { color: var(--helix-text-subtle); }
+:where(.helix-timebar__slots) { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; margin: 2px 0 0; padding: 0; list-style: none; }
+:where(.helix-timebar__slot) {
+    display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 7px 10px;
+    border: 1px solid var(--helix-border); border-radius: calc(var(--helix-radius) * .8); background: var(--helix-surface);
+}
+:where(.helix-timebar__slot.is-past) { opacity: .6; }
+:where(.helix-timebar__slot.is-current) {
+    border-color: color-mix(in oklab, var(--_c) 55%, var(--helix-border));
+    background: color-mix(in oklab, var(--_c) 8%, var(--helix-surface));
+}
+:where(.helix-timebar__slot-time) { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--helix-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+:where(.helix-timebar__dot) { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--_dot); }
+:where(.helix-timebar__slot-text) { min-height: 1.3em; font-size: 11.5px; color: var(--helix-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:where(.helix-timebar.is-compact) { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+:where(.helix-timebar.is-compact .helix-timebar__head) { flex: none; }
+:where(.helix-timebar.is-compact .helix-timebar__count) { font-size: 15px; }
+:where(.helix-timebar.is-compact .helix-timebar__track) { flex: 1 1 120px; }
+
 /* ===================================================================== Description list */
 :where(.helix-dl) { display: grid; grid-template-columns: repeat(var(--helix-dl-cols, 1), minmax(0, 1fr)); gap: 16px 28px; margin: 0; }
 :where(.helix-dl__item) { grid-column: span var(--helix-dl-span, 1); display: flex; flex-direction: column; gap: 3px; min-width: 0; }

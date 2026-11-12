@@ -1523,6 +1523,91 @@
         </Setter>
     </Style>
 
+    <!-- ===================================================================== Time bar -->
+
+    <Style TargetType="{x:Type local:HelixTimeBar}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:HelixTimeBar}">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,6">
+                            <TextBlock x:Name="Count" DockPanel.Dock="Right" Text="{TemplateBinding RemainingText}" FontSize="26" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Helix.Primary}" VerticalAlignment="Bottom" />
+                            <TextBlock Text="{TemplateBinding Label}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource Helix.TextMuted}"
+                                       VerticalAlignment="Bottom" Margin="0,0,12,4" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
+                        <Border x:Name="PART_Track" Height="{TemplateBinding TrackHeight}" CornerRadius="4" ClipToBounds="True"
+                                Background="{DynamicResource Helix.Surface2}">
+                            <Border x:Name="PART_Fill" HorizontalAlignment="Left" CornerRadius="4" Background="{DynamicResource Helix.Primary}" />
+                        </Border>
+                        <DockPanel x:Name="Foot" Margin="0,6,0,0">
+                            <TextBlock DockPanel.Dock="Right" Text="{TemplateBinding Hint}" FontSize="12.5" Foreground="{DynamicResource Helix.TextSubtle}" Margin="12,0,0,0" />
+                            <TextBlock Text="{TemplateBinding UntilText}" FontSize="12.5" Foreground="{DynamicResource Helix.TextMuted}" />
+                        </DockPanel>
+                        <ItemsControl x:Name="SlotList" ItemsSource="{TemplateBinding Slots}" Margin="0,8,-6,0" Focusable="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type local:HelixTimeBarSlotView}">
+                                    <Border x:Name="Chip" Margin="0,0,6,0" Padding="10,7" CornerRadius="6" BorderThickness="1"
+                                            BorderBrush="{DynamicResource Helix.Border}" Background="{DynamicResource Helix.Surface}">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse x:Name="Dot" Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center" Fill="{Binding Brush}" />
+                                                <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Text}" FontSize="11.5" MinHeight="15" Foreground="{DynamicResource Helix.TextMuted}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Brush}" Value="{x:Null}">
+                                            <Setter TargetName="Dot" Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsPast}" Value="True">
+                                            <Setter TargetName="Chip" Property="Opacity" Value="0.6" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                            <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource Helix.Primary}" />
+                                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource Helix.PrimarySoft}" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasSlots" Value="False">
+                            <Setter TargetName="SlotList" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Compact" Value="True">
+                            <Setter TargetName="Foot" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="SlotList" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Count" Property="FontSize" Value="15" />
+                        </Trigger>
+                        <Trigger Property="State" Value="warn">
+                            <Setter TargetName="Count" Property="Foreground" Value="{DynamicResource Helix.Warning}" />
+                            <Setter TargetName="PART_Fill" Property="Background" Value="{DynamicResource Helix.Warning}" />
+                        </Trigger>
+                        <Trigger Property="State" Value="critical">
+                            <Setter TargetName="Count" Property="Foreground" Value="{DynamicResource Helix.Danger}" />
+                            <Setter TargetName="PART_Fill" Property="Background" Value="{DynamicResource Helix.Danger}" />
+                        </Trigger>
+                        <Trigger Property="State" Value="passed">
+                            <Setter TargetName="Count" Property="Foreground" Value="{DynamicResource Helix.TextSubtle}" />
+                            <Setter TargetName="Count" Property="FontSize" Value="15" />
+                            <Setter TargetName="PART_Fill" Property="Background" Value="{DynamicResource Helix.TextSubtle}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ===================================================================== Description list -->
 
     <Style TargetType="{x:Type local:HelixDescriptionList}">

@@ -25,6 +25,10 @@ public sealed record HelixTexts
     public string LogWarning { get; init; } = "Warning";
     public string LogError { get; init; } = "Error";
     public string FollowLog { get; init; } = "Follow";
+    /// <summary>{0} = the deadline time, e.g. "until 14:10".</summary>
+    public string TimeBarUntil { get; init; } = "until {0}";
+    public string TimeBarCurrent { get; init; } = "Current";
+    public string TimeBarPassed { get; init; } = "Deadline passed";
     public string ExpressionHint { get; init; } = "You can type a calculation, e.g. 120*0.8";
     public string Save { get; init; } = "Save";
     public string Name { get; init; } = "Name";
@@ -191,7 +195,7 @@ public sealed record HelixTexts
     public static HelixTexts French { get; } = new()
     {
         Close = "Fermer", Clear = "Effacer", Loading = "Chargement", NoData = "Aucune donnée",
-        Confirm = "Confirmer", Cancel = "Annuler", LogLevels = "Niveaux", LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
+        Confirm = "Confirmer", Cancel = "Annuler", LogLevels = "Niveaux", LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
         SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »", Delete = "Supprimer ?", Previous = "Précédent", Next = "Suivant",
         Expand = "Déplier", Collapse = "Replier", Retry = "Réessayer", Reset = "Réinitialiser",
         PositionOf = "{0} sur {1}", Required = "obligatoire",

@@ -1,0 +1,207 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+@using System.Globalization
+
+@* A live countdown to the next deadline: time left, a progress bar of the period, and the slots around now. *@
+<div @attributes="Attributes" class="@(new CssBuilder("helix-timebar").Add(StateClass).Add("is-compact", Compact).Add(Class).Build())" style="@StyleValue">
+    <div class="helix-timebar__head">
+        @if (!string.IsNullOrEmpty(Label))
+        {
+            <span class="helix-timebar__label">@Label</span>
+        }
+        <span class="helix-timebar__count" role="timer" aria-label="@Label">
+            @(_state.Passed ? Texts.TimeBarPassed : HelixTimeBarMath.FormatRemaining(_state.Remaining))
+        </span>
+    </div>
+    <div class="helix-timebar__track" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+         aria-valuenow="@((int)Math.Round(_state.Progress * 100))" aria-label="@Label">
+        <span class="@(new CssBuilder("helix-timebar__fill").Add("is-reset", _reset).Build())"
+              style="width:@((_state.Progress * 100).ToString("0.##", CultureInfo.InvariantCulture))%"></span>
+    </div>
+    @if (!Compact)
+    {
+        <div class="helix-timebar__foot">
+            <span>@HelixTexts.Format(Texts.TimeBarUntil, _state.Until.ToString(TimeFormat, EffectiveCulture))</span>
+            @if (!string.IsNullOrEmpty(Hint))
+            {
+                <span class="helix-timebar__hint">@Hint</span>
+            }
+            @ChildContent
+        </div>
+        @if (ShowSlots && IsRepeating)
+        {
+            <ol class="helix-timebar__slots">
+                @foreach (var slot in Slots())
+                {
+                    var color = SlotColor?.Invoke(slot);
+                    var text = SlotText?.Invoke(slot);
+                    <li class="@(new CssBuilder("helix-timebar__slot").Add("is-past", slot.End <= _state.Now).Add("is-current", slot.Start <= _state.Now && _state.Now < slot.End).Build())"
+                        style="@(color is null ? null : $"--_dot:{HelixColor.Resolve(color).Value}")">
+                        <span class="helix-timebar__slot-time">
+                            @if (color is not null)
+                            {
+                                <i class="helix-timebar__dot"></i>
+                            }
+                            @slot.Start.ToString(TimeFormat, EffectiveCulture)–@slot.End.ToString(TimeFormat, EffectiveCulture)
+                        </span>
+                        <span class="helix-timebar__slot-text">@(text ?? (slot.Start <= _state.Now && _state.Now < slot.End ? Texts.TimeBarCurrent : ""))</span>
+                    </li>
+                }
+            </ol>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Repeating mode: the length of a slot (15 min). The deadline is the end of each slot, minus <see cref="Lead"/>.</summary>
+    [Parameter] public TimeSpan Step { get; set; } = TimeSpan.FromMinutes(15);
+
+    /// <summary>How long before the end of a slot the deadline falls (0: at the end).</summary>
+    [Parameter] public TimeSpan Lead { get; set; }
+
+    /// <summary>Shift of the slot grid from midnight (0).</summary>
+    [Parameter] public TimeSpan Offset { get; set; }
+
+    /// <summary>Fixed mode: a single deadline instead of a repeating one.</summary>
+    [Parameter] public DateTime? Deadline { get; set; }
+
+    /// <summary>Fixed mode: where the bar starts (defaults to the time the component first rendered).</summary>
+    [Parameter] public DateTime? Start { get; set; }
+
+    /// <summary>Overrides the current time (tests, replays): the clock runs on from it.</summary>
+    [Parameter] public DateTime? Now { get; set; }
+
+    /// <summary>False freezes the clock (with <see cref="Now"/>: a still picture).</summary>
+    [Parameter] public bool Running { get; set; } = true;
+
+    /// <summary>Under this time left, the bar turns orange.</summary>
+    [Parameter] public TimeSpan? Warning { get; set; }
+
+    /// <summary>Under this time left, the bar turns red.</summary>
+    [Parameter] public TimeSpan? Critical { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>A line of text under the bar, e.g. "Activation window: 14:15–14:30".</summary>
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Extra content in the footer line.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Repeating mode: the slots around now as chips (previous, current, next).</summary>
+    [Parameter] public bool ShowSlots { get; set; } = true;
+    [Parameter] public int SlotsBefore { get; set; } = 1;
+    [Parameter] public int SlotsAfter { get; set; } = 2;
+
+    /// <summary>A status color per slot (a dot): "success", "danger", a CSS color… or null.</summary>
+    [Parameter] public Func<HelixTimeBarSlot, string?>? SlotColor { get; set; }
+
+    /// <summary>A short text per slot ("Sent", "Unavailable"…); the current slot says "Current" by default.</summary>
+    [Parameter] public Func<HelixTimeBarSlot, string?>? SlotText { get; set; }
+
+    /// <summary>One line: label, countdown and bar only.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    /// <summary>Bar color while no threshold is reached (primary).</summary>
+    [Parameter] public string? Color { get; set; }
+
+    [Parameter] public string TimeFormat { get; set; } = "HH:mm";
+
+    /// <summary>Raised each time a deadline is reached, with that deadline.</summary>
+    [Parameter] public EventCallback<DateTime> OnDeadline { get; set; }
+
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    private readonly HelixTicker _ticker = new();
+    private HelixTimeBarState _state = HelixTimeBarMath.Fixed(DateTime.MinValue, DateTime.MinValue, DateTime.MinValue);
+    private DateTime? _lastNow;
+    private DateTime _realAtOverride, _firstRender;
+    private DateTime? _frozen;
+    private bool _reset;
+
+    private TimeProvider Clock => TimeProvider ?? TimeProvider.System;
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private bool IsRepeating => Deadline is null;
+
+    private string? StateClass =>
+        _state.Passed ? "is-passed"
+        : Critical is { } c && _state.Remaining <= c ? "is-critical"
+        : Warning is { } w && _state.Remaining <= w ? "is-warn" : null;
+
+    private string? StyleValue => new StyleBuilder().Color("timebar", Color).Raw(Style).Build();
+
+    private DateTime RealNow => Clock.GetLocalNow().DateTime;
+
+    private DateTime CurrentTime()
+    {
+        if (Now is { } overridden)
+        {
+            return Running ? overridden + (RealNow - _realAtOverride) : overridden;
+        }
+
+        return Running ? RealNow : _frozen ??= RealNow;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Now != _lastNow)
+        {
+            _lastNow = Now;
+            _realAtOverride = RealNow;
+        }
+
+        if (Running) _frozen = null;
+        if (_firstRender == default) _firstRender = RealNow;
+        Compute();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _ticker.Start(TimeSpan.FromSeconds(1), Clock, () => InvokeAsync(Tick));
+        }
+    }
+
+    private async Task Tick()
+    {
+        if (!Running) return;
+        var previous = _state;
+        Compute();
+        if (previous.Now != DateTime.MinValue && _state.Until != previous.Until && previous.Until <= _state.Now)
+        {
+            await OnDeadline.InvokeAsync(previous.Until);
+        }
+        else if (Deadline is not null && _state.Passed && !previous.Passed)
+        {
+            await OnDeadline.InvokeAsync(_state.Until);
+        }
+
+        StateHasChanged();
+    }
+
+    private void Compute()
+    {
+        var now = CurrentTime();
+        var next = Deadline is { } deadline
+            ? HelixTimeBarMath.Fixed(now, Start ?? (Now ?? _firstRender), deadline)
+            : HelixTimeBarMath.Repeating(now, Step > TimeSpan.Zero ? Step : TimeSpan.FromMinutes(15), Lead, Offset);
+        _reset = next.Progress < _state.Progress;
+        _state = next;
+    }
+
+    private IEnumerable<HelixTimeBarSlot> Slots()
+    {
+        var step = Step > TimeSpan.Zero ? Step : TimeSpan.FromMinutes(15);
+        var current = HelixTimeBarMath.SlotStart(_state.Now, step, Offset);
+        for (var i = -Math.Max(0, SlotsBefore); i <= Math.Max(0, SlotsAfter); i++)
+        {
+            var start = current + step * i;
+            yield return new HelixTimeBarSlot(start, start + step, i);
+        }
+    }
+
+    public void Dispose() => _ticker.Dispose();
+}

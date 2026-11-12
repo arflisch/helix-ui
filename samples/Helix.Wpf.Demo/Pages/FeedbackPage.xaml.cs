@@ -21,6 +21,8 @@ public partial class FeedbackPage : UserControl
     public FeedbackPage()
     {
         InitializeComponent();
+        SubmissionBar.SlotColor = slot => slot.Offset < 0 ? "success" : slot.Offset == 2 ? "danger" : null;
+        SubmissionBar.SlotText = slot => slot.Offset switch { < 0 => "Envoyé", 0 => "En cours", 2 => "Indisponible", _ => "À envoyer" };
         for (var i = 0; i < 200; i++) AddLine(DateTime.Now.AddSeconds(-(200 - i) * 6));
         Log.ItemsSource = _log;
         var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(900) };

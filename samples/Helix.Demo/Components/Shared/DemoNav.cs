@@ -51,6 +51,7 @@ public static class DemoNav
             new("BarList", "components/barlist", "Ranking as horizontal bars (top N).", "trending-up"),
             new("Gauge", "components/gauge", "Gauge with thresholds and a status label.", "zap"),
             new("TargetBar", "components/targetbar", "A value against its target, with tolerance.", "trending-up"),
+            new("TimeBar", "components/timebar", "Countdown to the next deadline, with the slots around now.", "calendar"),
             new("Donut", "components/donut", "Parts of a whole, or a segmented bar.", "chevron-right"),
             new("TreeView", "components/treeview", "Hierarchy as a list or an org chart.", "columns"),
             new("LogViewer", "components/logviewer", "Live log: levels, search, follow.", "columns"),

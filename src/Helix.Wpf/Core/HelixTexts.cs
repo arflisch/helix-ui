@@ -43,6 +43,10 @@ public sealed record HelixTexts
     public string LogWarning { get; init; } = "Warning";
     public string LogError { get; init; } = "Error";
     public string FollowLog { get; init; } = "Follow";
+    /// <summary>{0} = the deadline time, e.g. "until 14:10".</summary>
+    public string TimeBarUntil { get; init; } = "until {0}";
+    public string TimeBarCurrent { get; init; } = "Current";
+    public string TimeBarPassed { get; init; } = "Deadline passed";
     public string Save { get; init; } = "Save";
     public string Name { get; init; } = "Name";
     public string ClearFilters { get; init; } = "Clear filters";
@@ -97,7 +101,7 @@ public sealed record HelixTexts
         Today = "Aujourd'hui", ChooseDateTime = "Choisir une date et une heure", ChooseTime = "Heure", ChoosePeriod = "Choisir une période", Yesterday = "Hier", Last7Days = "7 derniers jours", Last30Days = "30 derniers jours", ThisWeek = "Cette semaine", ThisMonth = "Ce mois-ci", LastMonth = "Le mois dernier", PickEndDate = "Choisissez maintenant le dernier jour",
         SelectAll = "Tout sélectionner",
         Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés", SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »",
-        LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre",
+        LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée",
         Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",
         Close = "Fermer", Clear = "Effacer", Confirm = "Confirmer", Cancel = "Annuler", Loading = "Chargement",
         NoData = "Aucune donnée", SelectPlaceholder = "Sélectionner…", ChooseDate = "Choisir une date",
