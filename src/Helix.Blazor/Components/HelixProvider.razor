@@ -29,6 +29,10 @@
         {
             <HelixConfirmHost />
         }
+        @if (ShowHosts && _hasDialogs)
+        {
+            <HelixDialogHost />
+        }
     </CascadingValue>
 </div>
 
@@ -51,6 +55,7 @@
     private readonly string _id = Guid.NewGuid().ToString("N")[..8];
     private bool _hasToasts;
     private bool _hasConfirm;
+    private bool _hasDialogs;
     private HelixOptions _options = HelixOptions.Fallback;
 
     private string ModeAttribute => Theme.Mode switch
@@ -64,6 +69,7 @@
     {
         _hasToasts = Services.GetService(typeof(HelixToastService)) is not null;
         _hasConfirm = Services.GetService(typeof(HelixConfirmService)) is not null;
+        _hasDialogs = Services.GetService(typeof(HelixDialogService)) is not null;
     }
 
     protected override void OnParametersSet() =>

@@ -1,0 +1,23 @@
+@* Shown with HelixDialogService.ShowAsync: closes itself with the edited site. *@
+<div class="stack">
+    <HelixTextField Label="Name" @bind-Value="_name" Required="true" />
+    <HelixNumberField Label="Capacity" @bind-Value="_capacity" Unit="MW" Min="0" />
+    <div class="row" style="justify-content:flex-end;margin-top:8px">
+        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => Dialog.Cancel()">Cancel</HelixButton>
+        <HelixButton Icon="check" Disabled="@string.IsNullOrWhiteSpace(_name)" OnClick="Save">Save</HelixButton>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public HelixDialogInstance Dialog { get; set; } = default!;
+
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public double Capacity { get; set; }
+
+    private string? _name;
+    private double? _capacity;
+
+    protected override void OnInitialized() => (_name, _capacity) = (Name, Capacity);
+
+    private void Save() => Dialog.Close((_name!.Trim(), _capacity ?? 0));
+}

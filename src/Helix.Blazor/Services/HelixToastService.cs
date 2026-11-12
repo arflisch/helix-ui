@@ -96,6 +96,7 @@ public static class HelixServiceCollectionExtensions
         services.AddSingleton(options);
         services.AddScoped(_ => new HelixToastService { DefaultDuration = options.ToastDuration });
         services.AddScoped<HelixConfirmService>();
+        services.AddScoped<HelixDialogService>();
         services.AddScoped(sp => new HelixSettingsService(
             options.SettingsStore?.Invoke(sp) ?? new HelixLocalStorageSettingsStore(sp.GetRequiredService<Microsoft.JSInterop.IJSRuntime>())));
         return services;

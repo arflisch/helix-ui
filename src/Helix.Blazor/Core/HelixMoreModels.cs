@@ -91,6 +91,34 @@ public sealed class HelixConfirmService : IDisposable
 
     internal event Action? Changed;
 
+    internal HelixPromptOptions? CurrentPrompt { get; private set; }
+    private TaskCompletionSource<string?>? _pendingPrompt;
+
+    /// <summary>
+    /// Asks for a short text: the typed text, or null when cancelled. Validate returns an error message (or null when the text is fine).
+    /// </summary>
+    public Task<string?> PromptAsync(string title, string? message = null, string? value = null, string? placeholder = null,
+        string? confirmText = null, Func<string, string?>? validate = null)
+    {
+        Resolve(false);
+        ResolvePrompt(null);
+        var pending = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _pendingPrompt = pending;
+        CurrentPrompt = new HelixPromptOptions(title, message, value ?? "", placeholder, confirmText, validate);
+        Changed?.Invoke();
+        return pending.Task;
+    }
+
+    internal void ResolvePrompt(string? text)
+    {
+        var pending = _pendingPrompt;
+        if (pending is null) return;
+        _pendingPrompt = null;
+        CurrentPrompt = null;
+        Changed?.Invoke();
+        pending.TrySetResult(text);
+    }
+
     public Task<bool> AskAsync(string title, string? message = null, bool danger = false, string? confirmText = null) =>
         AskAsync(new HelixConfirmOptions(title) { Message = message, Danger = danger, ConfirmText = confirmText });
 
@@ -149,3 +177,5 @@ public enum HelixLogLevel { Debug, Info, Warning, Error }
 
 /// <summary>A line of a <see cref="HelixLogViewer"/>.</summary>
 public sealed record HelixLogEntry(DateTime Time, HelixLogLevel Level, string Message, string? Source = null);
+
+internal sealed record HelixPromptOptions(string Title, string? Message, string Value, string? Placeholder, string? ConfirmText, Func<string, string?>? Validate);

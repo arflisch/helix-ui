@@ -1,0 +1,22 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+@inject HelixDialogService Dialogs
+
+@foreach (var dialog in Dialogs.Open)
+{
+    <HelixDialog @key="dialog" Open="true" OpenChanged="open => { if (!open) dialog.Cancel(); }" Title="@dialog.Title" Description="@dialog.Options.Description"
+                 Width="@dialog.Options.Width" CloseOnBackdrop="dialog.Options.CloseOnBackdrop" ShowClose="dialog.Options.ShowClose">
+        <CascadingValue Value="dialog" IsFixed="true">
+            <DynamicComponent Type="dialog.Component" Parameters="dialog.Parameters" />
+        </CascadingValue>
+    </HelixDialog>
+}
+
+@code {
+    protected override void OnInitialized() => Dialogs.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Dialogs.Changed -= OnChanged;
+}

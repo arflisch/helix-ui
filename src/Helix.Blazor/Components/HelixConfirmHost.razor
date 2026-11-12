@@ -20,7 +20,55 @@
     </Footer>
 </HelixDialog>
 
+@{
+    var prompt = Confirm.CurrentPrompt;
+}
+
+<HelixDialog Open="prompt is not null" OpenChanged="open => { if (!open) Confirm.ResolvePrompt(null); }" Title="@prompt?.Title" Width="420px" Class="helix-confirm helix-prompt">
+    <ChildContent>
+        @if (prompt is not null)
+        {
+            <form class="stack" @onsubmit="SubmitPrompt" @onsubmit:preventDefault="true">
+                @if (!string.IsNullOrEmpty(prompt.Message))
+                {
+                    <p class="helix-prompt__message">@prompt.Message</p>
+                }
+                <HelixTextField @key="prompt" Value="@PromptText(prompt)" ValueChanged="v => { _promptText = v; _promptError = null; }" Placeholder="@prompt.Placeholder"
+                                Error="@_promptError" aria-label="@prompt.Title" autofocus />
+            </form>
+        }
+    </ChildContent>
+    <Footer>
+        <HelixButton Variant="HelixVariant.Ghost" Color="neutral" OnClick="() => Confirm.ResolvePrompt(null)">@Texts.Cancel</HelixButton>
+        <HelixButton OnClick="SubmitPrompt">@(prompt?.ConfirmText ?? Texts.Confirm)</HelixButton>
+    </Footer>
+</HelixDialog>
+
 @code {
+    private string? _promptText;
+    private string? _promptError;
+    private object? _promptFor;
+
+    private string PromptText(HelixPromptOptions prompt)
+    {
+        if (!ReferenceEquals(_promptFor, prompt))
+        {
+            _promptFor = prompt;
+            _promptText = prompt.Value;
+            _promptError = null;
+        }
+
+        return _promptText ?? "";
+    }
+
+    private void SubmitPrompt()
+    {
+        if (Confirm.CurrentPrompt is not { } prompt) return;
+        var text = _promptText ?? "";
+        _promptError = prompt.Validate?.Invoke(text);
+        if (_promptError is null) Confirm.ResolvePrompt(text);
+    }
+
     protected override void OnInitialized() => Confirm.Changed += OnChanged;
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);

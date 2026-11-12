@@ -1,6 +1,7 @@
 @page "/components/confirm"
 @inject HelixConfirmService Confirm
 @inject HelixToastService Toasts
+@inject HelixDialogService Dialogs
 
 <DemoPage Title="Confirm" Description="Ask for confirmation from any code, in one line that awaits the answer: if (await Confirm.AskAsync(…)). No dialog to declare in the page: HelixProvider shows it.">
     <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
@@ -8,6 +9,20 @@
             <HelixButton Color="danger" Variant="HelixVariant.Soft" Icon="trash" OnClick="Delete">Delete the schedule</HelixButton>
             <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="Publish">Publish</HelixButton>
             <span class="muted" style="font-size:13px">Last answer: @_last</span>
+        </div>
+    </Example>
+
+    <Example WpfCode="@Wpf2" Title="Ask for a text" Description="PromptAsync asks for a short text in one line, with validation: the typed text, or null when cancelled." Code="@PromptCode">
+        <div class="row">
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" Icon="plus" OnClick="Prompt">Save the view…</HelixButton>
+            <span class="muted" style="font-size:13px">Saved as: @(_viewName ?? "—")</span>
+        </div>
+    </Example>
+
+    <Example WpfCode="@Wpf3" Title="Your own component in a dialog" Description="HelixDialogService.ShowAsync opens any component in a Helix dialog and waits for its result: no dialog to declare in the page. The component receives a HelixDialogInstance to Close(result) or Cancel()." Code="@ShowCode">
+        <div class="row">
+            <HelixButton Variant="HelixVariant.Outline" Color="neutral" Icon="settings" OnClick="Edit">Edit the site…</HelixButton>
+            <span class="muted" style="font-size:13px">@_site.Name · @_site.Capacity MW</span>
         </div>
     </Example>
 
@@ -29,6 +44,61 @@
         """;
 
     private string _last = "—";
+    private string? _viewName;
+    private (string Name, double Capacity) _site = ("Lyon plant", 240);
+
+    private async Task Prompt()
+    {
+        _viewName = await Confirm.PromptAsync("Save the view", "Give it a name to find it again.", placeholder: "e.g. Pending in Lyon",
+            confirmText: "Save", validate: text => text.Trim().Length < 3 ? "At least 3 characters." : null) ?? _viewName;
+    }
+
+    private async Task Edit()
+    {
+        var result = await Dialogs.ShowAsync<RenameSiteDialog, (string, double)?>("Edit the site",
+            new Dictionary<string, object?> { ["Name"] = _site.Name, ["Capacity"] = _site.Capacity });
+        if (result is { } edited)
+        {
+            _site = edited;
+            Toasts.Success($"{edited.Item1} saved");
+        }
+    }
+
+    private const string PromptCode = """
+        var name = await Confirm.PromptAsync("Save the view", "Give it a name to find it again.",
+            validate: text => text.Trim().Length < 3 ? "At least 3 characters." : null);
+        if (name is not null) { … }
+        """;
+
+    private const string ShowCode = """
+        @inject HelixDialogService Dialogs
+
+        var site = await Dialogs.ShowAsync<EditSite, Site>("Edit the site", new() { ["Site"] = site });
+        if (site is not null) await api.SaveAsync(site);
+
+        @* EditSite.razor *@
+        @code {
+            [CascadingParameter] public HelixDialogInstance Dialog { get; set; } = default!;
+            [Parameter] public Site Site { get; set; } = default!;
+
+            private void Save() => Dialog.Close(Site);   // or Dialog.Cancel()
+        }
+        """;
+
+    private const string Wpf2 = """
+        var name = await HelixConfirm.PromptAsync("Save the view", "Give it a name to find it again.",
+            validate: text => text.Trim().Length < 3 ? "At least 3 characters." : null);
+        """;
+
+    private const string Wpf3 = """
+        // Any view (UserControl) in a Helix dialog; its DataContext stays yours.
+        var site = await HelixDialogs.ShowAsync<Site>(new EditSiteView { DataContext = vm }, "Edit the site");
+
+        // Inside the view (or from the view model with the handle overload):
+        HelixDialogs.Close(this, editedSite);   // or HelixDialogs.Close(this) to cancel
+
+        var site = await HelixDialogs.ShowAsync<Site>(dialog => new EditSiteView { DataContext = new EditSiteViewModel(dialog.Close) }, "Edit the site");
+        """;
 
     private async Task Delete()
     {
@@ -72,6 +142,8 @@
         new("AskAsync(title, message, danger, confirmText)", "Task<bool>", null, "Short version."),
         new("AskAsync(HelixConfirmOptions, CancellationToken)", "Task<bool>", null, "true = confirmed; false = cancelled, closed or token cancelled."),
         new("HelixConfirmOptions", "record", null, "Title, Message, ConfirmText, CancelText, Danger."),
+        new("PromptAsync(title, message, value, placeholder, confirmText, validate)", "Task<string?>", null, "Asks for a short text; validate returns an error message or null. Null when cancelled."),
+        new("HelixDialogService.ShowAsync<TComponent, TResult>(title, parameters, options)", "Task<TResult?>", null, "Opens your component in a dialog; it closes itself with HelixDialogInstance.Close(result)."),
         new("Registration", "AddHelix()", null, "Service registered by AddHelix; shown by HelixProvider."),
     ];
 }
