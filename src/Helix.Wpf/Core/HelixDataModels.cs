@@ -184,7 +184,8 @@ public sealed class HelixKanbanMoveEventArgs(RoutedEvent routedEvent, object ite
 }
 
 /// <summary>Position, width and visibility of a dashboard tile (save it to restore the user's layout).</summary>
-public sealed record HelixTileState(string Id, int Span = 1, bool Hidden = false);
+/// <param name="Column">Columns layout: first column of the tile (-1 = automatic).</param>
+public sealed record HelixTileState(string Id, int Span = 1, bool Hidden = false, int Column = -1);
 
 /// <summary>How a timeline status is drawn: filled (confirmed), outline (sent), dashed (draft).</summary>
 public enum HelixTimelineAppearance { Filled, Outline, Dashed }

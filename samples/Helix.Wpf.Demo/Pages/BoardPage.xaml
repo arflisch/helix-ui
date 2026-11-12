@@ -62,6 +62,49 @@
             </helix:HelixDashboardTile>
         </helix:HelixDashboard>
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Dashboard en colonnes" />
+        <TextBlock Style="{StaticResource SectionText}"
+                   Text="LayoutMode=&quot;Columns&quot; : chaque carte reste dans sa colonne et s'empile sans trou. En mode édition, glissez une carte par son en-tête (ou utilisez les flèches) vers une autre colonne ou une autre place." />
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,32">
+            <helix:HelixDashboard x:Name="Zones" LayoutMode="Columns" ColumnCount="4" ColumnMinWidth="220" StretchColumns="True" Gap="12">
+                <helix:HelixDashboardTile TileId="north" Title="Nord" Column="0" CanHide="False">
+                    <StackPanel>
+                        <helix:HelixCheckBox Content="Centrale A1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Centrale A2" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Centrale A3" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Centrale B1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Centrale B2" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Centrale C1" />
+                    </StackPanel>
+                </helix:HelixDashboardTile>
+                <helix:HelixDashboardTile TileId="coast" Title="Littoral" Column="1" CanHide="False">
+                    <StackPanel>
+                        <helix:HelixCheckBox Content="Parc éolien 1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Parc éolien 2" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Parc éolien 3" />
+                    </StackPanel>
+                </helix:HelixDashboardTile>
+                <helix:HelixDashboardTile TileId="valley" Title="Vallée" Column="1" CanHide="False">
+                    <helix:HelixCheckBox Content="Barrage 1" />
+                </helix:HelixDashboardTile>
+                <helix:HelixDashboardTile TileId="east" Title="Est" Column="2" CanHide="False">
+                    <StackPanel>
+                        <helix:HelixCheckBox Content="Éolienne 4" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Biomasse 2" />
+                    </StackPanel>
+                </helix:HelixDashboardTile>
+                <helix:HelixDashboardTile TileId="port" Title="Port" Column="3" CanHide="False">
+                    <helix:HelixCheckBox Content="Cogénération 1" />
+                </helix:HelixDashboardTile>
+                <helix:HelixDashboardTile TileId="south" Title="Sud" Column="3" CanHide="False">
+                    <StackPanel>
+                        <helix:HelixCheckBox Content="Turbine gaz 1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Solaire 3" />
+                    </StackPanel>
+                </helix:HelixDashboardTile>
+            </helix:HelixDashboard>
+        </ScrollViewer>
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="TreeView" />
         <UniformGrid Columns="2" Margin="0,0,0,32">
             <Border Style="{StaticResource Stage}" Margin="0,0,12,0">

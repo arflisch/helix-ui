@@ -76,7 +76,20 @@
             <helix:HelixDashboardTile TileId="team" Title="Team" />
         </helix:HelixDashboard>
 
-        // Layout (IReadOnlyList<HelixTileState>) is updated on every change: save it.
+        <!-- Columns: each card stays in its column and stacks with no gap, whatever its height.
+             In edit mode, drag a card by its header to another column or another place. -->
+        <helix:HelixDashboard LayoutMode="Columns" ColumnCount="4" ColumnMinWidth="220" StretchColumns="True"
+                              LayoutChanged="OnLayoutChanged">
+            <helix:HelixDashboardTile TileId="north" Title="North" Column="0" />
+            <helix:HelixDashboardTile TileId="east" Title="East" Column="1" />
+            <helix:HelixDashboardTile TileId="south" Title="South" Column="1" />
+            <helix:HelixDashboardTile TileId="central" Title="Central" Column="2" DefaultSpan="2" />
+            <helix:HelixDashboardTile TileId="west" Title="West" Column="2"
+                                      IsHidden="{Binding IsFilteredOut}" CanHide="False" />
+        </helix:HelixDashboard>
+
+        // Layout (IReadOnlyList<HelixTileState>: Id, Span, Hidden, Column) is updated on every
+        // change, and LayoutChanged is raised: save it, load it back at startup.
         """;
 
     private const string StorageKey = "helix-demo-dashboard";

@@ -2,7 +2,7 @@
 
   <!-- Shared package metadata for Helix.Blazor and Helix.Wpf. -->
   <PropertyGroup>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Authors>arflisch</Authors>
     <Copyright>Copyright © 2026 arflisch</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

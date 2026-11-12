@@ -2888,15 +2888,23 @@
                         <Border x:Name="Card" CornerRadius="14" Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}"
                                 BorderThickness="1" Padding="18,16,18,18">
                             <DockPanel>
-                                <DockPanel x:Name="Head" DockPanel.Dock="Top" Margin="0,0,0,12">
+                                <DockPanel x:Name="PART_Handle" DockPanel.Dock="Top" Margin="0,0,0,12" Background="Transparent">
                                     <StackPanel x:Name="Tools" DockPanel.Dock="Right" Orientation="Horizontal" Visibility="Collapsed">
+                                        <Button x:Name="ColumnLeft" Style="{StaticResource Helix.IconButton}" Command="{Binding MoveLeftCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:HelixDashboardTile.MoveLeftText}" Focusable="True" Visibility="Collapsed">
+                                            <local:HelixIcon Icon="chevron-left" Size="14" />
+                                        </Button>
+                                        <Button x:Name="ColumnRight" Style="{StaticResource Helix.IconButton}" Command="{Binding MoveRightCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ToolTip="{x:Static local:HelixDashboardTile.MoveRightText}" Focusable="True" Visibility="Collapsed">
+                                            <local:HelixIcon Icon="chevron-right" Size="14" />
+                                        </Button>
                                         <Button Style="{StaticResource Helix.IconButton}" Command="{Binding MoveBeforeCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                                 ToolTip="{x:Static local:HelixDashboardTile.MoveBeforeText}" Focusable="True">
-                                            <local:HelixIcon Icon="chevron-left" Size="14" />
+                                            <local:HelixIcon x:Name="BeforeIcon" Icon="chevron-left" Size="14" />
                                         </Button>
                                         <Button Style="{StaticResource Helix.IconButton}" Command="{Binding MoveAfterCommand, RelativeSource={RelativeSource TemplatedParent}}"
                                                 ToolTip="{x:Static local:HelixDashboardTile.MoveAfterText}" Focusable="True">
-                                            <local:HelixIcon Icon="chevron-right" Size="14" />
+                                            <local:HelixIcon x:Name="AfterIcon" Icon="chevron-right" Size="14" />
                                         </Button>
                                         <Border Width="1" Margin="6,4" Background="{DynamicResource Helix.Border}" />
                                         <Button Style="{StaticResource Helix.IconButton}" Command="{Binding NarrowerCommand, RelativeSource={RelativeSource TemplatedParent}}"
@@ -2914,6 +2922,9 @@
                                         </Button>
                                     </StackPanel>
                                     <ContentPresenter x:Name="Actions" DockPanel.Dock="Right" Content="{TemplateBinding Actions}" VerticalAlignment="Center" />
+                                    <local:HelixIcon x:Name="Grip" DockPanel.Dock="Left" Icon="grip" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                     Foreground="{DynamicResource Helix.TextSubtle}" Visibility="Collapsed"
+                                                     ToolTip="{x:Static local:HelixDashboardTile.DragText}" />
                                     <TextBlock x:Name="Title" Text="{TemplateBinding Title}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
                                 </DockPanel>
                                 <ContentPresenter />
@@ -2938,14 +2949,26 @@
                                 <Condition Property="Title" Value="{x:Null}" />
                                 <Condition Property="Actions" Value="{x:Null}" />
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="Head" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_Handle" Property="Visibility" Value="Collapsed" />
                         </MultiTrigger>
                         <DataTrigger Binding="{Binding IsEditing, RelativeSource={RelativeSource AncestorType={x:Type local:HelixDashboard}}}" Value="True">
-                            <Setter TargetName="Head" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_Handle" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="PART_Handle" Property="Cursor" Value="SizeAll" />
+                            <Setter TargetName="Grip" Property="Visibility" Value="Visible" />
                             <Setter TargetName="Tools" Property="Visibility" Value="Visible" />
                             <Setter TargetName="Actions" Property="Visibility" Value="Collapsed" />
                             <Setter TargetName="EditRing" Property="Opacity" Value="0.6" />
                         </DataTrigger>
+                        <DataTrigger Binding="{Binding LayoutMode, RelativeSource={RelativeSource AncestorType={x:Type local:HelixDashboard}}}" Value="Columns">
+                            <Setter TargetName="ColumnLeft" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="ColumnRight" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="BeforeIcon" Property="Icon" Value="arrow-up" />
+                            <Setter TargetName="AfterIcon" Property="Icon" Value="arrow-down" />
+                        </DataTrigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Card" Property="Opacity" Value="0.55" />
+                            <Setter TargetName="EditRing" Property="Opacity" Value="1" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

@@ -43,6 +43,9 @@ public sealed record HelixTexts
     public string HiddenTiles { get; init; } = "Hidden tiles";
     public string MoveBefore { get; init; } = "Move before";
     public string MoveAfter { get; init; } = "Move after";
+    public string MoveLeft { get; init; } = "Move to the left column";
+    public string MoveRight { get; init; } = "Move to the right column";
+    public string DragToMove { get; init; } = "Drag to move";
     public string Narrower { get; init; } = "Narrower";
     public string Wider { get; init; } = "Wider";
     public string Hide { get; init; } = "Hide";
@@ -71,7 +74,7 @@ public sealed record HelixTexts
         LoadError = "Impossible de charger les données.", Retry = "Réessayer", Columns = "Colonnes", VisibleColumns = "Colonnes affichées",
         Reset = "Réinitialiser", RangeOf = "{0}–{1} sur {2}", ShowAll = "Voir tout ({0})", ShowLess = "Réduire", StepError = "Erreur à corriger",
         Others = "Autres", Total = "Total", EditLayout = "Modifier la disposition", Done = "Terminé", HiddenTiles = "Tuiles masquées",
-        MoveBefore = "Déplacer avant", MoveAfter = "Déplacer après", Narrower = "Plus étroit", Wider = "Plus large", Hide = "Masquer",
+        MoveBefore = "Déplacer avant", MoveAfter = "Déplacer après", MoveLeft = "Colonne de gauche", MoveRight = "Colonne de droite", DragToMove = "Glisser pour déplacer", Narrower = "Plus étroit", Wider = "Plus large", Hide = "Masquer",
         DropFilesHere = "Glissez vos fichiers ici", ReleaseToAdd = "Relâchez pour ajouter", Browse = "Parcourir",
         FileTooLarge = "{0} dépasse {1}.", Add = "Ajouter", Now = "Maintenant", Expand = "Déplier", Collapse = "Replier",
         NothingPlanned = "Rien de planifié sur cette période", DropCardHere = "Déposez une carte ici", Hex = "Hex", Opacity = "Opacité",

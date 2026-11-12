@@ -431,18 +431,38 @@ public class HelixKanban : Control, IHelixThemeAware
     }
 }
 
+/// <summary>How a <see cref="HelixDashboard"/> places its tiles.</summary>
+public enum HelixDashboardLayout
+{
+    /// <summary>Tiles flow in rows; a row is as tall as its tallest tile.</summary>
+    Rows,
+
+    /// <summary>Each tile sits in a column (Column, Span) and stacks under the tiles above it: no gaps between short and tall tiles.</summary>
+    Columns,
+}
+
 /// <summary>
-/// A dashboard of tiles on a grid of Columns. In edit mode, tiles move, resize (span) and hide;
-/// Layout holds the user's arrangement (bind it two-way to save it).
+/// A dashboard of tiles on a grid of ColumnCount columns. In edit mode, tiles are dragged to another place
+/// (or moved with the arrow buttons), resized (span) and hidden; Layout holds the user's arrangement
+/// (bind it two-way, or handle LayoutChanged, to save it).
 /// </summary>
 public class HelixDashboard : ItemsControl
 {
     static HelixDashboard() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixDashboard), new FrameworkPropertyMetadata(typeof(HelixDashboard)));
 
-    public HelixDashboard() => Loaded += (_, _) => ApplyLayout();
+    public HelixDashboard()
+    {
+        Loaded += (_, _) => ApplyLayout();
+        AllowDrop = true;
+    }
 
-    public static readonly DependencyProperty ColumnCountProperty = HelixProperty.Register<HelixDashboard, int>(nameof(ColumnCount), 3);
-    public static readonly DependencyProperty GapProperty = HelixProperty.Register<HelixDashboard, double>(nameof(Gap), 16d);
+    private static void Relayout(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((HelixDashboard)d).Panel?.InvalidateMeasure();
+
+    public static readonly DependencyProperty ColumnCountProperty = HelixProperty.Register<HelixDashboard, int>(nameof(ColumnCount), 3, Relayout);
+    public static readonly DependencyProperty GapProperty = HelixProperty.Register<HelixDashboard, double>(nameof(Gap), 16d, Relayout);
+    public static readonly DependencyProperty LayoutModeProperty = HelixProperty.Register<HelixDashboard, HelixDashboardLayout>(nameof(LayoutMode), HelixDashboardLayout.Rows, Relayout);
+    public static readonly DependencyProperty ColumnMinWidthProperty = HelixProperty.Register<HelixDashboard, double>(nameof(ColumnMinWidth), 0d, Relayout);
+    public static readonly DependencyProperty StretchColumnsProperty = HelixProperty.Register<HelixDashboard, bool>(nameof(StretchColumns), false, Relayout);
     public static readonly DependencyProperty IsEditingProperty = DependencyProperty.Register(nameof(IsEditing), typeof(bool), typeof(HelixDashboard),
         new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
     public static readonly DependencyProperty LayoutProperty = DependencyProperty.Register(nameof(Layout), typeof(IReadOnlyList<HelixTileState>), typeof(HelixDashboard),
@@ -450,6 +470,7 @@ public class HelixDashboard : ItemsControl
     public static readonly DependencyProperty TitleProperty = HelixProperty.Register<HelixDashboard, string?>(nameof(Title), null);
     public static readonly DependencyProperty ToolbarProperty = HelixProperty.Register<HelixDashboard, object?>(nameof(Toolbar), null);
     public static readonly DependencyProperty ShowToolbarProperty = HelixProperty.Register<HelixDashboard, bool>(nameof(ShowToolbar), true);
+    public static readonly RoutedEvent LayoutChangedEvent = EventManager.RegisterRoutedEvent(nameof(LayoutChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(HelixDashboard));
 
     private static readonly DependencyPropertyKey HiddenTilesKey = DependencyProperty.RegisterReadOnly(nameof(HiddenTiles), typeof(IReadOnlyList<HelixDashboardTile>), typeof(HelixDashboard), new PropertyMetadata(Array.Empty<HelixDashboardTile>()));
     public static readonly DependencyProperty HiddenTilesProperty = HiddenTilesKey.DependencyProperty;
@@ -457,9 +478,18 @@ public class HelixDashboard : ItemsControl
     /// <summary>Grid columns (3 by default); a tile spans 1 to ColumnCount.</summary>
     public int ColumnCount { get => (int)GetValue(ColumnCountProperty); set => SetValue(ColumnCountProperty, value); }
     public double Gap { get => (double)GetValue(GapProperty); set => SetValue(GapProperty, value); }
+
+    /// <summary>Rows (default) or Columns (tiles stack in their column, like cards on a board).</summary>
+    public HelixDashboardLayout LayoutMode { get => (HelixDashboardLayout)GetValue(LayoutModeProperty); set => SetValue(LayoutModeProperty, value); }
+
+    /// <summary>Minimum column width: below it the dashboard gets wider than its container (put it in a horizontal ScrollViewer).</summary>
+    public double ColumnMinWidth { get => (double)GetValue(ColumnMinWidthProperty); set => SetValue(ColumnMinWidthProperty, value); }
+
+    /// <summary>Columns layout: the last tile of each column grows so that all columns end at the same height.</summary>
+    public bool StretchColumns { get => (bool)GetValue(StretchColumnsProperty); set => SetValue(StretchColumnsProperty, value); }
     public bool IsEditing { get => (bool)GetValue(IsEditingProperty); set => SetValue(IsEditingProperty, value); }
 
-    /// <summary>Order, span and visibility of the tiles; updated after each user change.</summary>
+    /// <summary>Order, column, span and visibility of the tiles; updated after each user change.</summary>
     public IReadOnlyList<HelixTileState>? Layout { get => (IReadOnlyList<HelixTileState>?)GetValue(LayoutProperty); set => SetValue(LayoutProperty, value); }
     public string? Title { get => (string?)GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
     public object? Toolbar { get => GetValue(ToolbarProperty); set => SetValue(ToolbarProperty, value); }
@@ -468,6 +498,9 @@ public class HelixDashboard : ItemsControl
     public bool ShowToolbar { get => (bool)GetValue(ShowToolbarProperty); set => SetValue(ShowToolbarProperty, value); }
     public IReadOnlyList<HelixDashboardTile> HiddenTiles => (IReadOnlyList<HelixDashboardTile>)GetValue(HiddenTilesProperty);
 
+    /// <summary>Raised after the user moved, resized, hid or restored a tile; read <see cref="Layout"/> to save it.</summary>
+    public event RoutedEventHandler LayoutChanged { add => AddHandler(LayoutChangedEvent, value); remove => RemoveHandler(LayoutChangedEvent, value); }
+
     public static string EditText => HelixTexts.Current.EditLayout;
     public static string DoneText => HelixTexts.Current.Done;
     public static string HiddenText => HelixTexts.Current.HiddenTiles;
@@ -475,11 +508,14 @@ public class HelixDashboard : ItemsControl
     /// <summary>Toggles edit mode (the toolbar button).</summary>
     public ICommand ToggleEditCommand => new HelixCommand(() => SetCurrentValue(IsEditingProperty, !IsEditing));
 
+    /// <summary>The items panel (set by HelixDashboardPanel when it lays out).</summary>
+    internal HelixDashboardPanel? Panel { get; set; }
+
     protected override bool IsItemItsOwnContainerOverride(object item) => item is HelixDashboardTile;
 
     protected override DependencyObject GetContainerForItemOverride() => new HelixDashboardTile();
 
-    private IEnumerable<HelixDashboardTile> Tiles => Items.Cast<object>().Select(i => i as HelixDashboardTile ?? ItemContainerGenerator.ContainerFromItem(i) as HelixDashboardTile).OfType<HelixDashboardTile>();
+    internal IEnumerable<HelixDashboardTile> Tiles => Items.Cast<object>().Select(i => i as HelixDashboardTile ?? ItemContainerGenerator.ContainerFromItem(i) as HelixDashboardTile).OfType<HelixDashboardTile>();
 
     private bool _applying;
 
@@ -499,11 +535,12 @@ public class HelixDashboard : ItemsControl
                 .Concat(tiles.Where(t => layout.All(s => s.Id != t.TileId))).ToList();
             foreach (var state in layout)
             {
-                if (tiles.FirstOrDefault(t => t.TileId == state.Id) is { } tile)
-                {
-                    tile.Span = state.Span;
-                    tile.IsHidden = state.Hidden;
-                }
+                if (tiles.FirstOrDefault(t => t.TileId == state.Id) is not { } tile) continue;
+                tile.Span = state.Span;
+                tile.Column = state.Column;
+
+                // Only tiles the user can hide take the saved visibility: the others keep their own (often a binding).
+                if (tile.CanHide) tile.IsHidden = state.Hidden;
             }
 
             if (!ordered.SequenceEqual(tiles))
@@ -523,20 +560,48 @@ public class HelixDashboard : ItemsControl
     private void SaveLayout()
     {
         if (_applying) return;
-        SetCurrentValue(LayoutProperty, Tiles.Select(t => new HelixTileState(t.TileId ?? "", t.Span, t.IsHidden)).ToList());
+        SetCurrentValue(LayoutProperty, Tiles.Select(t => new HelixTileState(t.TileId ?? "", t.Span, t.CanHide && t.IsHidden, t.Column)).ToList());
         UpdateHidden();
+        RaiseEvent(new RoutedEventArgs(LayoutChangedEvent, this));
     }
 
-    private void UpdateHidden() => SetValue(HiddenTilesKey, Tiles.Where(t => t.IsHidden).ToList());
+    private void UpdateHidden() => SetValue(HiddenTilesKey, Tiles.Where(t => t.IsHidden && t.CanHide).ToList());
 
+    /// <summary>Moves a tile one place earlier (-1) or later (+1) in the order (in its column for the Columns layout).</summary>
     internal void Shift(HelixDashboardTile tile, int direction)
     {
         if (ItemsSource is not null) return;
         var index = Items.IndexOf(tile);
-        var target = Math.Clamp(index + direction, 0, Items.Count - 1);
-        if (index < 0 || target == index) return;
+        if (index < 0) return;
+
+        var target = index + direction;
+        if (LayoutMode == HelixDashboardLayout.Columns && Panel is { } panel)
+        {
+            // Swap with the previous / next visible tile of the same column.
+            var column = panel.ColumnOf(tile);
+            var sameColumn = Items.OfType<HelixDashboardTile>().Where(t => t != tile && !t.IsHidden && panel.ColumnOf(t) == column).ToList();
+            var neighbour = direction < 0
+                ? sameColumn.LastOrDefault(t => Items.IndexOf(t) < index)
+                : sameColumn.FirstOrDefault(t => Items.IndexOf(t) > index);
+            if (neighbour is null) return;
+            target = Items.IndexOf(neighbour);
+        }
+
+        target = Math.Clamp(target, 0, Items.Count - 1);
+        if (target == index) return;
         Items.RemoveAt(index);
         Items.Insert(target, tile);
+        SaveLayout();
+        tile.Focus();
+    }
+
+    /// <summary>Columns layout: moves a tile to the column on its left (-1) or right (+1).</summary>
+    internal void ShiftColumn(HelixDashboardTile tile, int direction)
+    {
+        var current = Panel?.ColumnOf(tile) ?? Math.Max(0, tile.Column);
+        var target = Math.Clamp(current + direction, 0, Math.Max(0, ColumnCount - Math.Clamp(tile.Span, 1, ColumnCount)));
+        if (target == current && tile.Column >= 0) return;
+        tile.Column = target;
         SaveLayout();
         tile.Focus();
     }
@@ -544,6 +609,7 @@ public class HelixDashboard : ItemsControl
     internal void Resize(HelixDashboardTile tile, int delta)
     {
         tile.Span = Math.Clamp(tile.Span + delta, Math.Max(1, tile.MinSpan), Math.Min(ColumnCount, tile.MaxSpan));
+        if (tile.Column >= 0) tile.Column = Math.Min(tile.Column, ColumnCount - tile.Span);
         SaveLayout();
     }
 
@@ -555,9 +621,96 @@ public class HelixDashboard : ItemsControl
 
     /// <summary>Shows a hidden tile again (the hidden-tiles chips).</summary>
     public ICommand RestoreCommand => new HelixCommand<HelixDashboardTile>(t => SetHidden(t, false));
+
+    // ----- Drag and drop (edit mode) -----------------------------------------------------------
+
+    private HelixDashboardTile? _dragging;
+    private HelixDashboardTile? _dropBefore;
+    private bool _dropToEnd;
+
+    internal void BeginDrag(HelixDashboardTile tile)
+    {
+        if (!IsEditing || ItemsSource is not null) return;
+        _dragging = tile;
+        _dropBefore = null;
+        _dropToEnd = false;
+        var startColumn = tile.Column;
+        tile.IsDragging = true;
+        DragDropEffects result;
+        try
+        {
+            result = DragDrop.DoDragDrop(tile, new DataObject(typeof(HelixDashboardTile), tile), DragDropEffects.Move);
+        }
+        finally
+        {
+            tile.IsDragging = false;
+            _dragging = null;
+        }
+
+        if (result != DragDropEffects.Move)
+        {
+            tile.Column = startColumn; // cancelled (Escape or dropped outside)
+            return;
+        }
+
+        // The order changes once the drag is over, so the dragged element is never re-parented during the drag.
+        var from = Items.IndexOf(tile);
+        if (from >= 0 && (_dropBefore is not null || _dropToEnd) && _dropBefore != tile)
+        {
+            Items.RemoveAt(from);
+            var to = _dropBefore is null ? Items.Count : Items.IndexOf(_dropBefore);
+            Items.Insert(Math.Clamp(to, 0, Items.Count), tile);
+        }
+
+        SaveLayout();
+        tile.Focus();
+    }
+
+    protected override void OnDragOver(DragEventArgs e)
+    {
+        base.OnDragOver(e);
+        if (_dragging is not { } tile || Panel is not { } panel || e.Data.GetData(typeof(HelixDashboardTile)) != tile)
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+
+        var (column, before) = panel.DropTarget(tile, e.GetPosition(panel));
+
+        // The column follows the pointer live; the place in the column is applied on drop.
+        if (LayoutMode == HelixDashboardLayout.Columns && column != tile.Column)
+        {
+            tile.Column = column;
+        }
+
+        _dropBefore = before;
+        _dropToEnd = before is null;
+        panel.ShowDropMarker(before, column, tile);
+        e.Effects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    protected override void OnDragLeave(DragEventArgs e)
+    {
+        base.OnDragLeave(e);
+        Panel?.ShowDropMarker(null, -1, null);
+    }
+
+    protected override void OnDrop(DragEventArgs e)
+    {
+        base.OnDrop(e);
+        Panel?.ShowDropMarker(null, -1, null);
+        e.Effects = _dragging is not null ? DragDropEffects.Move : DragDropEffects.None;
+        e.Handled = true;
+    }
 }
 
-/// <summary>A dashboard tile: TileId (for the saved layout), Title, Actions, DefaultSpan / MinSpan / MaxSpan, CanHide, IsPlain.</summary>
+/// <summary>
+/// A dashboard tile: TileId (for the saved layout), Title, Actions, DefaultSpan / MinSpan / MaxSpan, Column (Columns layout),
+/// CanHide, IsPlain. In edit mode, drag it by its header to move it.
+/// </summary>
+[TemplatePart(Name = "PART_Handle", Type = typeof(FrameworkElement))]
 public class HelixDashboardTile : ContentControl
 {
     static HelixDashboardTile() => DefaultStyleKeyProperty.OverrideMetadata(typeof(HelixDashboardTile), new FrameworkPropertyMetadata(typeof(HelixDashboardTile)));
@@ -565,6 +718,7 @@ public class HelixDashboardTile : ContentControl
     public HelixDashboardTile() => Loaded += (_, _) =>
     {
         if (ReadLocalValue(SpanProperty) == DependencyProperty.UnsetValue) SetCurrentValue(SpanProperty, DefaultSpan);
+        UpdateSpanText();
     };
 
     public static readonly DependencyProperty TileIdProperty = HelixProperty.Register<HelixDashboardTile, string?>(nameof(TileId), null);
@@ -577,11 +731,15 @@ public class HelixDashboardTile : ContentControl
     public static readonly DependencyProperty IsPlainProperty = HelixProperty.Register<HelixDashboardTile, bool>(nameof(IsPlain), false);
     public static readonly DependencyProperty SpanProperty = DependencyProperty.Register(nameof(Span), typeof(int), typeof(HelixDashboardTile),
         new FrameworkPropertyMetadata(1, FrameworkPropertyMetadataOptions.AffectsParentMeasure | FrameworkPropertyMetadataOptions.AffectsParentArrange, (d, _) => ((HelixDashboardTile)d).UpdateSpanText()));
+    public static readonly DependencyProperty ColumnProperty = DependencyProperty.Register(nameof(Column), typeof(int), typeof(HelixDashboardTile),
+        new FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.AffectsParentMeasure | FrameworkPropertyMetadataOptions.AffectsParentArrange));
     public static readonly DependencyProperty IsHiddenProperty = DependencyProperty.Register(nameof(IsHidden), typeof(bool), typeof(HelixDashboardTile),
         new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsParentMeasure, (d, e) => ((HelixDashboardTile)d).Visibility = (bool)e.NewValue ? Visibility.Collapsed : Visibility.Visible));
 
     private static readonly DependencyPropertyKey SpanTextKey = DependencyProperty.RegisterReadOnly(nameof(SpanText), typeof(string), typeof(HelixDashboardTile), new PropertyMetadata("1"));
+    private static readonly DependencyPropertyKey IsDraggingKey = DependencyProperty.RegisterReadOnly(nameof(IsDragging), typeof(bool), typeof(HelixDashboardTile), new PropertyMetadata(false));
     public static readonly DependencyProperty SpanTextProperty = SpanTextKey.DependencyProperty;
+    public static readonly DependencyProperty IsDraggingProperty = IsDraggingKey.DependencyProperty;
 
     public string? TileId { get => (string?)GetValue(TileIdProperty); set => SetValue(TileIdProperty, value); }
     public string? Title { get => (string?)GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
@@ -589,6 +747,8 @@ public class HelixDashboardTile : ContentControl
     public int DefaultSpan { get => (int)GetValue(DefaultSpanProperty); set => SetValue(DefaultSpanProperty, value); }
     public int MinSpan { get => (int)GetValue(MinSpanProperty); set => SetValue(MinSpanProperty, value); }
     public int MaxSpan { get => (int)GetValue(MaxSpanProperty); set => SetValue(MaxSpanProperty, value); }
+
+    /// <summary>The user can hide it in edit mode. False for tiles whose visibility you drive (e.g. by a filter binding).</summary>
     public bool CanHide { get => (bool)GetValue(CanHideProperty); set => SetValue(CanHideProperty, value); }
 
     /// <summary>No card around the content (for a KPI row, a banner…).</summary>
@@ -596,8 +756,14 @@ public class HelixDashboardTile : ContentControl
 
     /// <summary>Columns taken (1 … ColumnCount).</summary>
     public int Span { get => (int)GetValue(SpanProperty); set => SetValue(SpanProperty, value); }
+
+    /// <summary>Columns layout: first column of the tile (0-based); -1 places it in the shortest column.</summary>
+    public int Column { get => (int)GetValue(ColumnProperty); set => SetValue(ColumnProperty, value); }
     public bool IsHidden { get => (bool)GetValue(IsHiddenProperty); set => SetValue(IsHiddenProperty, value); }
     public string SpanText => (string)GetValue(SpanTextProperty);
+
+    /// <summary>True while the user drags this tile.</summary>
+    public bool IsDragging { get => (bool)GetValue(IsDraggingProperty); internal set => SetValue(IsDraggingKey, value); }
 
     private HelixDashboard? Dashboard => ItemsControl.ItemsControlFromItemContainer(this) as HelixDashboard;
 
@@ -605,24 +771,179 @@ public class HelixDashboardTile : ContentControl
 
     public ICommand MoveBeforeCommand => new HelixCommand(() => Dashboard?.Shift(this, -1));
     public ICommand MoveAfterCommand => new HelixCommand(() => Dashboard?.Shift(this, 1));
+    public ICommand MoveLeftCommand => new HelixCommand(() => Dashboard?.ShiftColumn(this, -1));
+    public ICommand MoveRightCommand => new HelixCommand(() => Dashboard?.ShiftColumn(this, 1));
     public ICommand NarrowerCommand => new HelixCommand(() => Dashboard?.Resize(this, -1));
     public ICommand WiderCommand => new HelixCommand(() => Dashboard?.Resize(this, 1));
     public ICommand HideCommand => new HelixCommand(() => Dashboard?.SetHidden(this, true));
 
     public static string MoveBeforeText => HelixTexts.Current.MoveBefore;
     public static string MoveAfterText => HelixTexts.Current.MoveAfter;
+    public static string MoveLeftText => HelixTexts.Current.MoveLeft;
+    public static string MoveRightText => HelixTexts.Current.MoveRight;
     public static string NarrowerText => HelixTexts.Current.Narrower;
     public static string WiderText => HelixTexts.Current.Wider;
     public static string HideText => HelixTexts.Current.Hide;
+    public static string DragText => HelixTexts.Current.DragToMove;
+
+    private FrameworkElement? _handle;
+    private Point? _down;
+
+    public override void OnApplyTemplate()
+    {
+        if (_handle is not null)
+        {
+            _handle.PreviewMouseLeftButtonDown -= OnHandleDown;
+            _handle.PreviewMouseMove -= OnHandleMove;
+        }
+
+        base.OnApplyTemplate();
+        _handle = GetTemplateChild("PART_Handle") as FrameworkElement;
+        if (_handle is not null)
+        {
+            _handle.PreviewMouseLeftButtonDown += OnHandleDown;
+            _handle.PreviewMouseMove += OnHandleMove;
+        }
+    }
+
+    private void OnHandleDown(object sender, MouseButtonEventArgs e) =>
+        _down = Dashboard?.IsEditing == true && e.OriginalSource is not System.Windows.Controls.Primitives.ButtonBase ? e.GetPosition(this) : null;
+
+    private void OnHandleMove(object sender, MouseEventArgs e)
+    {
+        if (_down is not { } down || e.LeftButton != MouseButtonState.Pressed) return;
+        var delta = e.GetPosition(this) - down;
+        if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        _down = null;
+        Dashboard?.BeginDrag(this);
+    }
 }
 
-/// <summary>Lays tiles out in rows of ColumnCount columns; each tile takes its Span.</summary>
+/// <summary>
+/// Lays the dashboard tiles out: in rows (each tile takes Span columns), or in columns where tiles stack
+/// in their column (Column, Span) without gaps.
+/// </summary>
 public class HelixDashboardPanel : Panel
 {
     private HelixDashboard? Owner => ItemsControl.GetItemsOwner(this) as HelixDashboard;
 
     private int Columns => Math.Max(1, Owner?.ColumnCount ?? 3);
     private double Gap => Owner?.Gap ?? 16;
+    private bool IsColumns => Owner?.LayoutMode == HelixDashboardLayout.Columns;
+
+    // Where each visible tile ended up during the last layout pass (for drag targets and column moves).
+    private readonly Dictionary<UIElement, (Rect Rect, int Column)> _placed = [];
+
+    private ScrollViewer? _scroller;
+
+    public HelixDashboardPanel()
+    {
+        Background = Brushes.Transparent; // the whole area accepts drops
+        Loaded += (_, _) =>
+        {
+            // In a horizontal ScrollViewer the width is unbounded: fill its viewport instead, and follow its size.
+            _scroller = FindScroller();
+            if (_scroller is not null) _scroller.SizeChanged += OnScrollerSizeChanged;
+            InvalidateMeasure();
+        };
+        Unloaded += (_, _) =>
+        {
+            if (_scroller is not null) _scroller.SizeChanged -= OnScrollerSizeChanged;
+            _scroller = null;
+        };
+    }
+
+    private void OnScrollerSizeChanged(object sender, SizeChangedEventArgs e) => InvalidateMeasure();
+
+    private ScrollViewer? FindScroller()
+    {
+        for (DependencyObject? parent = VisualTreeHelper.GetParent(this); parent is not null; parent = VisualTreeHelper.GetParent(parent))
+        {
+            if (parent is ScrollViewer scroller) return scroller;
+        }
+
+        return null;
+    }
+
+    internal int ColumnOf(HelixDashboardTile tile) => _placed.TryGetValue(tile, out var p) ? p.Column : Math.Max(0, tile.Column);
+
+    private Rect? _marker;
+
+    /// <summary>Shows where the dragged tile will land: above <paramref name="before"/>, or at the bottom of its column.</summary>
+    internal void ShowDropMarker(HelixDashboardTile? before, int column, HelixDashboardTile? dragged)
+    {
+        Rect? marker = null;
+        if (dragged is not null)
+        {
+            var cell = CellWidth(ActualWidth);
+            var span = Math.Clamp(dragged.Span, 1, Columns);
+            var x = (IsColumns ? column : 0) * (cell + Gap);
+            var width = IsColumns ? SpanWidth(cell, span) : ActualWidth;
+            if (before is not null && _placed.TryGetValue(before, out var b))
+            {
+                marker = IsColumns
+                    ? new Rect(x, b.Rect.Top - Gap / 2 - 1.5, width, 3)
+                    : new Rect(b.Rect.Left - Gap / 2 - 1.5, b.Rect.Top, 3, b.Rect.Height);
+            }
+            else if (IsColumns)
+            {
+                var bottom = _placed.Where(p => p.Key != dragged && p.Value.Column < column + span && column < p.Value.Column + Math.Clamp((p.Key as HelixDashboardTile)?.Span ?? 1, 1, Columns))
+                    .Select(p => p.Value.Rect.Bottom).DefaultIfEmpty(0).Max();
+                marker = new Rect(x, bottom + Gap / 2 - 1.5, width, 3);
+            }
+        }
+
+        if (marker != _marker)
+        {
+            _marker = marker;
+            InvalidateVisual();
+        }
+    }
+
+    protected override void OnRender(DrawingContext dc)
+    {
+        base.OnRender(dc);
+        if (_marker is { } marker)
+        {
+            var brush = TryFindResource(HelixKeys.Primary) as Brush ?? Brushes.SteelBlue;
+            dc.DrawRoundedRectangle(brush, null, marker, 1.5, 1.5);
+        }
+    }
+
+    private double PanelWidth(double available)
+    {
+        var min = (Owner?.ColumnMinWidth ?? 0) * Columns + Gap * (Columns - 1);
+        double width;
+        if (!double.IsInfinity(available))
+        {
+            width = available;
+        }
+        else if (_scroller is { ViewportWidth: > 0 } scroller)
+        {
+            // Viewport minus the space around the dashboard (its left offset, mirrored on the right).
+            var left = 0.0;
+            try
+            {
+                left = TransformToAncestor(scroller).Transform(new Point(0, 0)).X + scroller.HorizontalOffset;
+            }
+            catch (InvalidOperationException)
+            {
+                // Not connected yet: no offset.
+            }
+
+            width = scroller.ViewportWidth - 2 * Math.Max(0, left);
+        }
+        else
+        {
+            width = 1000;
+        }
+
+        return Math.Max(width, min);
+    }
+
+    private double CellWidth(double width) => Math.Max(0, (width - Gap * (Columns - 1)) / Columns);
+
+    private double SpanWidth(double cell, int span) => cell * span + Gap * (span - 1);
 
     private IEnumerable<List<(UIElement Child, int Span)>> Rows()
     {
@@ -646,25 +967,76 @@ public class HelixDashboardPanel : Panel
         if (row.Count > 0) yield return row;
     }
 
-    private double CellWidth(double width) => Math.Max(0, (width - Gap * (Columns - 1)) / Columns);
+    /// <summary>Columns layout: places every visible tile; returns the rectangles and the total height.</summary>
+    private (List<(UIElement Child, Rect Rect, int Column)> Items, double Height) PlaceColumns(double width, bool measure)
+    {
+        var cell = CellWidth(width);
+        var bottoms = new double[Columns];
+        var result = new List<(UIElement, Rect, int)>();
+        foreach (UIElement child in InternalChildren)
+        {
+            if (child.Visibility == Visibility.Collapsed) continue;
+            var tile = child as HelixDashboardTile;
+            var span = Math.Clamp(tile?.Span ?? 1, 1, Columns);
+            var column = tile?.Column ?? -1;
+            if (column < 0)
+            {
+                // Auto: the place where the tile can start highest.
+                column = Enumerable.Range(0, Columns - span + 1).OrderBy(c => Enumerable.Range(c, span).Max(i => bottoms[i])).First();
+            }
+
+            column = Math.Clamp(column, 0, Columns - span);
+            var w = SpanWidth(cell, span);
+            if (measure) child.Measure(new Size(w, double.PositiveInfinity));
+            var top = Enumerable.Range(column, span).Max(i => bottoms[i]);
+            var h = child.DesiredSize.Height;
+            result.Add((child, new Rect(column * (cell + Gap), top, w, h), column));
+            for (var i = column; i < column + span; i++) bottoms[i] = top + h + Gap;
+        }
+
+        var height = Math.Max(0, bottoms.DefaultIfEmpty(0).Max() - Gap);
+        if (Owner?.StretchColumns == true && result.Count > 0)
+        {
+            // The last tile of each column grows down to the common bottom.
+            for (var c = 0; c < Columns; c++)
+            {
+                var last = result.Select((r, i) => (r, i)).Where(x => x.r.Item3 <= c && c < x.r.Item3 + Math.Clamp((x.r.Item1 as HelixDashboardTile)?.Span ?? 1, 1, Columns))
+                    .OrderByDescending(x => x.r.Item2.Bottom).FirstOrDefault();
+                if (last.r.Item1 is null) continue;
+                var rect = last.r.Item2;
+                if (rect.Bottom < height)
+                {
+                    result[last.i] = (last.r.Item1, new Rect(rect.X, rect.Y, rect.Width, height - rect.Y), last.r.Item3);
+                }
+            }
+        }
+
+        return (result, height);
+    }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var width = double.IsInfinity(availableSize.Width) ? 1000 : availableSize.Width;
-        var cell = CellWidth(width);
-        var height = 0.0;
-        var first = true;
+        if (Owner is { } owner) owner.Panel = this;
+        var width = PanelWidth(availableSize.Width);
         foreach (UIElement child in InternalChildren)
         {
             if (child.Visibility == Visibility.Collapsed) child.Measure(new Size(0, 0));
         }
 
+        if (IsColumns)
+        {
+            return new Size(width, PlaceColumns(width, measure: true).Height);
+        }
+
+        var cell = CellWidth(width);
+        var height = 0.0;
+        var first = true;
         foreach (var row in Rows())
         {
             var rowHeight = 0.0;
             foreach (var (child, span) in row)
             {
-                child.Measure(new Size(cell * span + Gap * (span - 1), double.PositiveInfinity));
+                child.Measure(new Size(SpanWidth(cell, span), double.PositiveInfinity));
                 rowHeight = Math.Max(rowHeight, child.DesiredSize.Height);
             }
 
@@ -677,20 +1049,34 @@ public class HelixDashboardPanel : Panel
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        var cell = CellWidth(finalSize.Width);
-        var y = 0.0;
-        foreach (var row in Rows())
+        _placed.Clear();
+        var width = PanelWidth(finalSize.Width);
+        if (IsColumns)
         {
-            var rowHeight = row.Max(r => r.Child.DesiredSize.Height);
-            var x = 0.0;
-            foreach (var (child, span) in row)
+            foreach (var (child, rect, column) in PlaceColumns(width, measure: false).Items)
             {
-                var w = cell * span + Gap * (span - 1);
-                child.Arrange(new Rect(x, y, w, rowHeight));
-                x += w + Gap;
+                child.Arrange(rect);
+                _placed[child] = (rect, column);
             }
+        }
+        else
+        {
+            var cell = CellWidth(width);
+            var y = 0.0;
+            foreach (var row in Rows())
+            {
+                var rowHeight = row.Max(r => r.Child.DesiredSize.Height);
+                var x = 0.0;
+                foreach (var (child, span) in row)
+                {
+                    var rect = new Rect(x, y, SpanWidth(cell, span), rowHeight);
+                    child.Arrange(rect);
+                    _placed[child] = (rect, (int)Math.Round(x / Math.Max(1, cell + Gap)));
+                    x += rect.Width + Gap;
+                }
 
-            y += rowHeight + Gap;
+                y += rowHeight + Gap;
+            }
         }
 
         foreach (UIElement child in InternalChildren)
@@ -698,7 +1084,43 @@ public class HelixDashboardPanel : Panel
             if (child.Visibility == Visibility.Collapsed) child.Arrange(new Rect());
         }
 
-        return finalSize;
+        return new Size(width, finalSize.Height);
+    }
+
+    /// <summary>
+    /// Where a dragged tile goes for a pointer position: its column (Columns layout) and the tile it is placed before
+    /// (null = at the end of the order).
+    /// </summary>
+    internal (int Column, HelixDashboardTile? Before) DropTarget(HelixDashboardTile dragged, Point point)
+    {
+        var cell = CellWidth(ActualWidth);
+        var span = Math.Clamp(dragged.Span, 1, Columns);
+        var others = _placed.Where(p => p.Key != dragged && p.Key is HelixDashboardTile)
+            .Select(p => (Tile: (HelixDashboardTile)p.Key, p.Value.Rect, p.Value.Column))
+            .OrderBy(p => InternalChildren.IndexOf(p.Tile))
+            .ToList();
+
+        if (IsColumns)
+        {
+            // Column under the pointer (centered on the tile's width), then the first tile of that column below the pointer.
+            var column = (int)Math.Floor((point.X - (SpanWidth(cell, span) - cell) / 2) / Math.Max(1, cell + Gap));
+            column = Math.Clamp(column, 0, Columns - span);
+            var inColumn = others.Where(o => o.Column < column + span && column < o.Column + Math.Clamp(o.Tile.Span, 1, Columns)).ToList();
+            var before = inColumn.FirstOrDefault(o => point.Y < o.Rect.Top + o.Rect.Height / 2).Tile;
+            if (before is null && inColumn.Count > 0)
+            {
+                // Below the last tile of the column: just after it in the order.
+                var lastIndex = InternalChildren.IndexOf(inColumn[^1].Tile);
+                before = others.Select(o => o.Tile).FirstOrDefault(t => InternalChildren.IndexOf(t) > lastIndex);
+            }
+
+            return (column, before);
+        }
+
+        // Rows: the tile under the pointer, or the first tile further in the reading order.
+        var hit = others.FirstOrDefault(o => o.Rect.Contains(point)).Tile
+                  ?? others.FirstOrDefault(o => point.Y < o.Rect.Top || (point.Y < o.Rect.Bottom && point.X < o.Rect.Left)).Tile;
+        return (dragged.Column, hit);
     }
 }
 
