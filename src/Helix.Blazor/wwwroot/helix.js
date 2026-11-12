@@ -381,3 +381,9 @@ export function downloadText(name, text, type) {
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/** Scrolls an element marked data-helix-key into the middle of its scroll container, without moving the focus. */
+export function scrollToKey(root, key) {
+    const el = root?.querySelector(`[data-helix-key="${CSS.escape(key)}"]`);
+    el?.scrollIntoView({ block: "center", inline: "nearest" });
+}

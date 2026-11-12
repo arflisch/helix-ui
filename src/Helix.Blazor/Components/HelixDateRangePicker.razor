@@ -1,0 +1,220 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@using System.Globalization
+@inject IJSRuntime JS
+
+<HelixFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
+    <div class="@(new CssBuilder("helix-select helix-date").Add("is-open", _open).Build())" @ref="_root">
+        <button @attributes="Attributes" id="@_id" type="button" class="helix-input helix-select__trigger" disabled="@Disabled"
+                aria-haspopup="dialog" aria-expanded="@(_open ? "true" : "false")" @onclick="Toggle"
+                aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")" aria-describedby="@HelixFieldFrame.DescribedBy(_id, Hint, Error)">
+            @if (Prefix is null)
+            {
+                <HelixIcon Name="calendar" Class="helix-date__icon" />
+            }
+            else
+            {
+                @Prefix
+            }
+            <span class="@(new CssBuilder("helix-select__value").Add("is-placeholder", Value is null).Build())">
+                @(Value is { } value ? Display(value) : Placeholder ?? Texts.ChoosePeriod)
+            </span>
+            @if ((Clearable ?? Defaults.Field.Clearable ?? true) && Value is not null && !Disabled)
+            {
+                <span class="helix-close helix-input__clear" role="button" aria-label="@Texts.ClearDate" @onclick="Clear" @onclick:stopPropagation="true">
+                    <HelixIcon Name="x" Size="14" />
+                </span>
+            }
+            @Suffix
+        </button>
+
+        @if (_open)
+        {
+            <div class="helix-select__backdrop" @onclick="() => Close(false)"></div>
+            <div class="@(new CssBuilder("helix-date__panel helix-range__panel").Add("has-presets", EffectivePresets.Count > 0).Build())" role="dialog" aria-label="@Texts.ChoosePeriod">
+                @if (EffectivePresets.Count > 0)
+                {
+                    <div class="helix-range__presets" role="group" aria-label="@Texts.ChoosePeriod">
+                        @foreach (var preset in EffectivePresets)
+                        {
+                            var range = preset.Range(Today);
+                            <button type="button" class="@(new CssBuilder("helix-range__preset").Add("is-selected", range == Value).Build())"
+                                    @onclick="() => Apply(range)">@preset.Label</button>
+                        }
+                    </div>
+                }
+                <div class="helix-range__calendar">
+                    <HelixCalendar RangeStart="_start ?? Value?.Start" RangeEnd="@(_start is null ? Value?.End : null)" Min="Min" Max="Max"
+                                   IsDateDisabled="DayDisabled" Culture="EffectiveCulture" TimeProvider="TimeProvider" ShowFooter="false" AutoFocus="true"
+                                   OnPick="Pick" OnClose="() => Close(true)" />
+                    <p class="helix-range__status" aria-live="polite">@(_start is null ? Texts.DateKeyboardHelp : Texts.PickEndDate)</p>
+                </div>
+            </div>
+        }
+    </div>
+</HelixFieldFrame>
+
+@code {
+    [Parameter] public HelixDateRange? Value { get; set; }
+    [Parameter] public EventCallback<HelixDateRange?> ValueChanged { get; set; }
+
+    [Parameter] public DateOnly? Min { get; set; }
+    [Parameter] public DateOnly? Max { get; set; }
+
+    /// <summary>Longest period allowed, in days (both ends included). Later days are disabled once the start is chosen.</summary>
+    [Parameter] public int? MaxDays { get; set; }
+
+    /// <summary>Extra rule on days.</summary>
+    [Parameter] public Func<DateOnly, bool>? IsDateDisabled { get; set; }
+
+    /// <summary>Shortcuts on the left. Null: today, yesterday, last 7 / 30 days, this week, this month, last month. Empty list: none.</summary>
+    [Parameter] public IReadOnlyList<HelixDateRangePreset>? Presets { get; set; }
+
+    /// <summary>Format of each day in the field.</summary>
+    [Parameter] public string Format { get; set; } = "d MMM yyyy";
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>The × button. Null: HelixOptions.Defaults.Field.Clearable, else true.</summary>
+    [Parameter] public bool? Clearable { get; set; }
+
+    [Parameter] public RenderFragment? Prefix { get; set; }
+    [Parameter] public RenderFragment? Suffix { get; set; }
+
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    /// <summary>Focus and selection color. Null: HelixOptions.Defaults.Field.Color, else primary.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private readonly string _id = HelixId.Next("range");
+    private bool _open;
+    private bool _focusTrigger;
+    private DateOnly? _start;
+    private ElementReference _root;
+    private IJSObjectReference? _module;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private DateOnly Today => DateOnly.FromDateTime((TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime);
+
+    private string? FieldStyle => new StyleBuilder()
+        .Color("input", Color)
+        .Var("--helix-input-radius", Radius)
+        .Var("--helix-input-bg", Background)
+        .Var("--helix-input-border", BorderColor)
+        .Raw(Style)
+        .Build();
+
+    private IReadOnlyList<HelixDateRangePreset> EffectivePresets => Presets ?? DefaultPresets();
+
+    private List<HelixDateRangePreset> DefaultPresets()
+    {
+        var firstDay = EffectiveCulture.DateTimeFormat.FirstDayOfWeek;
+        return
+        [
+            new(Texts.Today, t => new(t, t)),
+            new(Texts.Yesterday, t => new(t.AddDays(-1), t.AddDays(-1))),
+            new(Texts.Last7Days, t => new(t.AddDays(-6), t)),
+            new(Texts.Last30Days, t => new(t.AddDays(-29), t)),
+            new(Texts.ThisWeek, t => new(t.AddDays(-(((int)t.DayOfWeek - (int)firstDay + 7) % 7)), t)),
+            new(Texts.ThisMonth, t => new(new DateOnly(t.Year, t.Month, 1), t)),
+            new(Texts.LastMonth, t =>
+            {
+                var first = new DateOnly(t.Year, t.Month, 1).AddMonths(-1);
+                return new(first, first.AddMonths(1).AddDays(-1));
+            }),
+        ];
+    }
+
+    private string Display(HelixDateRange range)
+    {
+        if (range.Start == range.End)
+        {
+            return range.Start.ToString(Format, EffectiveCulture);
+        }
+
+        return $"{range.Start.ToString(Format, EffectiveCulture)} – {range.End.ToString(Format, EffectiveCulture)}";
+    }
+
+    private bool DayDisabled(DateOnly date) => (IsDateDisabled?.Invoke(date) ?? false) || OutOfMaxDays(date);
+
+    /// <summary>While the end is being chosen, days beyond MaxDays from the start are disabled.</summary>
+    private bool OutOfMaxDays(DateOnly date) =>
+        _start is { } start && MaxDays is { } max && Math.Abs(date.DayNumber - start.DayNumber) + 1 > max;
+
+    private void Toggle()
+    {
+        if (_open)
+        {
+            Close(false);
+            return;
+        }
+
+        _start = null;
+        _open = true;
+    }
+
+    private void Close(bool returnFocus)
+    {
+        _open = false;
+        _start = null;
+        _focusTrigger = returnFocus;
+    }
+
+    private async Task Pick(DateOnly date)
+    {
+        if (OutOfMaxDays(date))
+        {
+            return;
+        }
+
+        if (_start is not { } start)
+        {
+            _start = date;
+            return;
+        }
+
+        await Apply(date < start ? new HelixDateRange(date, start) : new HelixDateRange(start, date));
+    }
+
+    private async Task Apply(HelixDateRange range)
+    {
+        Value = range;
+        Close(true);
+        await ValueChanged.InvokeAsync(range);
+    }
+
+    private async Task Clear()
+    {
+        Value = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusTrigger)
+        {
+            _focusTrigger = false;
+            try
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+                await _module.InvokeVoidAsync("focusFirst", _root);
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit closed.
+            }
+        }
+    }
+
+    public ValueTask DisposeAsync() => HelixJs.DisposeQuietlyAsync(_module);
+}

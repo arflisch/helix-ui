@@ -1,0 +1,71 @@
+@page "/components/daterangepicker"
+@using System.Globalization
+
+<DemoPage Title="DateRangePicker" Description="A period of whole days in one field: click the first day, then the last (the band follows the pointer), or use a shortcut such as “Last 7 days”. The value is a HelixDateRange (Start, End, both included), with ToDateTimes() for “from ≤ t < to” queries.">
+    <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
+        <div class="grid-2">
+            <HelixDateRangePicker Label="Report period" @bind-Value="_period" Culture="English"
+                                  Hint="@(_period is { } p ? $"{p.Days} day(s)" : "No period")" />
+            <HelixDateRangePicker Label="At most 14 days, past only" @bind-Value="_short" MaxDays="14" Max="Today" Culture="English"
+                                  Presets="ShortPresets" />
+        </div>
+    </Example>
+
+    <Example Title="Calendar on its own" Description="HelixCalendar is the calendar of every picker, usable directly: single day with Value, or a band with RangeStart and RangeEnd." Code="@CalendarCode">
+        <HelixCard Style="width:300px">
+            <HelixCalendar Value="_day" OnPick="d => _day = d" Culture="English" />
+        </HelixCard>
+    </Example>
+
+    <ApiTable Title="HelixDateRangePicker" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixDateRangePicker Label="Report period" SelectedRange="{Binding Period}" />
+        <helix:HelixDateRangePicker Label="At most 14 days" SelectedRange="{Binding Short}" MaxDays="14" ShowPresets="False" />
+
+        // ViewModel
+        public HelixDateRange? Period { get; set; }   // Start, End (days, both included), Days
+        """;
+
+    private const string Code = """
+        <HelixDateRangePicker Label="Report period" @bind-Value="period" />
+        <HelixDateRangePicker Label="At most 14 days" @bind-Value="period" MaxDays="14" Max="today"
+                              Presets="@([new("Last 7 days", t => new(t.AddDays(-6), t))])" />
+
+        @code {
+            private HelixDateRange? period;   // period.Start, period.End, period.Days, period.ToDateTimes()
+        }
+        """;
+
+    private const string CalendarCode = """
+        <HelixCalendar Value="day" OnPick="d => day = d" />
+        <HelixCalendar RangeStart="from" RangeEnd="to" />
+        """;
+
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
+
+    private static readonly HelixDateRangePreset[] ShortPresets =
+    [
+        new("Last 7 days", t => new(t.AddDays(-6), t)),
+        new("Last 14 days", t => new(t.AddDays(-13), t)),
+    ];
+
+    private HelixDateRange? _period = new(Today.AddDays(-6), Today);
+    private HelixDateRange? _short;
+    private DateOnly? _day = Today;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Value", "HelixDateRange?", null, "Chosen period (@bind-Value): Start, End, Days, Contains(d), ToDateTimes()."),
+        new("Presets", "IReadOnlyList<HelixDateRangePreset>?", null, "Shortcuts (Label, today => range). Null: today, yesterday, last 7 / 30 days, this week, this month, last month. Empty: none."),
+        new("Min / Max / MaxDays", "DateOnly? / DateOnly? / int?", null, "Allowed days; longest period once the start is chosen."),
+        new("IsDateDisabled", "Func<DateOnly, bool>", null, "Extra rule on days."),
+        new("Format", "string", null, "Format of each day (“d MMM yyyy”)."),
+        new("HelixCalendar", "Value / RangeStart / RangeEnd / OnPick", null, "The calendar on its own."),
+        new("Label / Hint / Error / Placeholder / Clearable / Required / Disabled", "", null, "Same as every field."),
+        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Same look as every field; defaults through Defaults.Field."),
+    ];
+}

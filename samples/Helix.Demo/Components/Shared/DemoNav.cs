@@ -31,6 +31,8 @@ public static class DemoNav
             new("RadioGroup", "components/radiogroup", "One choice among several: classic, cards or segmented.", "check"),
             new("NumberField", "components/numberfield", "Number with − / +, bounds, step and unit.", "plus"),
             new("DatePicker", "components/datepicker", "Keyboard calendar, disabled dates, culture.", "calendar"),
+            new("DateTimePicker", "components/datetimepicker", "Date and time, by quarter hour or any step.", "calendar"),
+            new("DateRangePicker", "components/daterangepicker", "A period of days, with shortcuts.", "calendar"),
             new("ColorPicker", "components/colorpicker", "Color: area, hue, opacity, eyedropper.", "sparkles"),
             new("Rating", "components/rating", "Rating with stars or hearts.", "star"),
         ]),

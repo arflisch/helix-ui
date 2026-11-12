@@ -1,0 +1,249 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IAsyncDisposable
+@using System.Globalization
+@inject IJSRuntime JS
+
+<HelixFieldFrame Id="@_id" Label="@Label" Hint="@Hint" Error="@Error" Required="Required" Disabled="Disabled" Class="@Class" Style="@FieldStyle">
+    <div class="@(new CssBuilder("helix-select helix-date").Add("is-open", _open).Build())" @ref="_root">
+        <button @attributes="Attributes" id="@_id" type="button" class="helix-input helix-select__trigger" disabled="@Disabled"
+                aria-haspopup="dialog" aria-expanded="@(_open ? "true" : "false")" @onclick="Toggle"
+                aria-invalid="@(string.IsNullOrEmpty(Error) ? null : "true")" aria-describedby="@HelixFieldFrame.DescribedBy(_id, Hint, Error)">
+            @if (Prefix is null)
+            {
+                <HelixIcon Name="calendar" Class="helix-date__icon" />
+            }
+            else
+            {
+                @Prefix
+            }
+            <span class="@(new CssBuilder("helix-select__value").Add("is-placeholder", Value is null).Build())">
+                @(Value is { } value ? Display(value) : Placeholder ?? Texts.ChooseDateTime)
+            </span>
+            @if ((Clearable ?? Defaults.Field.Clearable ?? true) && Value is not null && !Disabled)
+            {
+                <span class="helix-close helix-input__clear" role="button" aria-label="@Texts.ClearDate" @onclick="Clear" @onclick:stopPropagation="true">
+                    <HelixIcon Name="x" Size="14" />
+                </span>
+            }
+            @Suffix
+        </button>
+
+        @if (_open)
+        {
+            <div class="helix-select__backdrop" @onclick="() => Close(false)"></div>
+            <div class="helix-date__panel helix-datetime__panel" role="dialog" aria-label="@Texts.ChooseDateTime">
+                <div class="helix-datetime__body">
+                    <HelixCalendar Value="SelectedDate" Min="MinDate" Max="MaxDate" IsDateDisabled="IsDateDisabled" Culture="EffectiveCulture"
+                                   TimeProvider="TimeProvider" ShowFooter="false" AutoFocus="true" OnPick="PickDate" OnClose="() => Close(true)" />
+                    <div class="helix-datetime__times" role="listbox" aria-label="@Texts.ChooseTime" @ref="_times">
+                        <p class="helix-datetime__times-title">@Texts.ChooseTime</p>
+                        @foreach (var slot in Slots)
+                        {
+                            var time = slot;
+                            var selected = Value is { } v && TimeOnly.FromDateTime(v) == time;
+                            var disabled = IsTimeDisabled(time);
+                            <button type="button" role="option" data-helix-key="@time.ToString("HHmm")" aria-selected="@(selected ? "true" : "false")"
+                                    class="@(new CssBuilder("helix-datetime__time").Add("is-selected", selected).Build())"
+                                    disabled="@disabled" @onclick="() => PickTime(time)" @onkeydown="e => OnTimeKey(e)">@time.ToString("t", EffectiveCulture)</button>
+                        }
+                    </div>
+                </div>
+                <div class="helix-date__foot">
+                    <button type="button" class="helix-date__today" @onclick="PickNow">@Texts.Now</button>
+                    <span class="helix-date__help">@Texts.DateKeyboardHelp</span>
+                </div>
+            </div>
+        }
+    </div>
+</HelixFieldFrame>
+
+@code {
+    [Parameter] public DateTime? Value { get; set; }
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    /// <summary>Earliest allowed moment (days and times before are disabled).</summary>
+    [Parameter] public DateTime? Min { get; set; }
+
+    /// <summary>Latest allowed moment.</summary>
+    [Parameter] public DateTime? Max { get; set; }
+
+    /// <summary>Minutes between two times in the list: 15 for quarter hours, 60 for hours, 1 for any minute.</summary>
+    [Parameter] public int MinuteStep { get; set; } = 15;
+
+    /// <summary>Extra rule on days, e.g. d => d.DayOfWeek is DayOfWeek.Sunday.</summary>
+    [Parameter] public Func<DateOnly, bool>? IsDateDisabled { get; set; }
+
+    /// <summary>Display format. Null: the culture's short time after "d MMM yyyy".</summary>
+    [Parameter] public string? Format { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>The × button. Null: HelixOptions.Defaults.Field.Clearable, else true.</summary>
+    [Parameter] public bool? Clearable { get; set; }
+
+    [Parameter] public RenderFragment? Prefix { get; set; }
+    [Parameter] public RenderFragment? Suffix { get; set; }
+
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    /// <summary>Focus color. Null: HelixOptions.Defaults.Field.Color, else primary.</summary>
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Radius { get; set; }
+    [Parameter] public string? Background { get; set; }
+    [Parameter] public string? BorderColor { get; set; }
+
+    private readonly string _id = HelixId.Next("datetime");
+    private bool _open;
+    private bool _focusTrigger;
+    private bool _scrollTimes;
+    private bool _focusTimes;
+    private DateOnly? _pendingDate;
+    private ElementReference _root;
+    private ElementReference _times;
+    private IJSObjectReference? _module;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private DateTime Now => (TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime;
+    private int Step => Math.Clamp(MinuteStep, 1, 720);
+
+    private DateOnly? SelectedDate => _pendingDate ?? (Value is { } v ? DateOnly.FromDateTime(v) : null);
+    private DateOnly? MinDate => Min is { } min ? DateOnly.FromDateTime(min) : null;
+    private DateOnly? MaxDate => Max is { } max ? DateOnly.FromDateTime(max) : null;
+
+    private string? FieldStyle => new StyleBuilder()
+        .Color("input", Color)
+        .Var("--helix-input-radius", Radius)
+        .Var("--helix-input-bg", Background)
+        .Var("--helix-input-border", BorderColor)
+        .Raw(Style)
+        .Build();
+
+    private IEnumerable<TimeOnly> Slots => Enumerable.Range(0, 24 * 60 / Step).Select(i => new TimeOnly(0, 0).AddMinutes(i * Step));
+
+    private string Display(DateTime value) => Format is { Length: > 0 } format
+        ? value.ToString(format, EffectiveCulture)
+        : $"{value.ToString("d MMM yyyy", EffectiveCulture)}  {value.ToString("t", EffectiveCulture)}";
+
+    private bool IsTimeDisabled(TimeOnly time)
+    {
+        if (SelectedDate is not { } date)
+        {
+            return false;
+        }
+
+        var moment = date.ToDateTime(time);
+        return (Min is { } min && moment < min) || (Max is { } max && moment > max);
+    }
+
+    /// <summary>Rounds down to the step, so the value matches a slot of the list.</summary>
+    private TimeOnly Snap(TimeOnly time) => new TimeOnly(0, 0).AddMinutes(time.Hour * 60 + time.Minute - (time.Hour * 60 + time.Minute) % Step);
+
+    private void Toggle()
+    {
+        if (_open)
+        {
+            Close(false);
+            return;
+        }
+
+        _pendingDate = null;
+        _open = true;
+        _scrollTimes = true;
+    }
+
+    private void Close(bool returnFocus)
+    {
+        _open = false;
+        _pendingDate = null;
+        _focusTrigger = returnFocus;
+    }
+
+    private async Task PickDate(DateOnly date)
+    {
+        // Keeps the time already chosen; the panel stays open for the time.
+        var time = Value is { } v ? TimeOnly.FromDateTime(v) : new TimeOnly(0, 0);
+        var moment = date.ToDateTime(time);
+        if (Min is { } min && moment < min) moment = min;
+        if (Max is { } max && moment > max) moment = max;
+        _pendingDate = date;
+        Value = moment;
+        _scrollTimes = true;
+        _focusTimes = true;
+        await ValueChanged.InvokeAsync(moment);
+    }
+
+    private async Task PickTime(TimeOnly time)
+    {
+        var date = SelectedDate ?? DateOnly.FromDateTime(Now);
+        Value = date.ToDateTime(time);
+        Close(true);
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task PickNow()
+    {
+        var now = Now;
+        var snapped = DateOnly.FromDateTime(now).ToDateTime(Snap(TimeOnly.FromDateTime(now)));
+        Value = snapped;
+        Close(true);
+        await ValueChanged.InvokeAsync(snapped);
+    }
+
+    private async Task Clear()
+    {
+        Value = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+
+    private void OnTimeKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            Close(true);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_open && !_focusTrigger)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_open && (_scrollTimes || _focusTimes))
+            {
+                var key = (Value is { } v ? Snap(TimeOnly.FromDateTime(v)) : new TimeOnly(8, 0)).ToString("HHmm");
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+                await _module.InvokeVoidAsync("scrollToKey", _times, key);
+                if (_focusTimes)
+                {
+                    await _module.InvokeVoidAsync("focusKey", _times, key);
+                }
+
+                _scrollTimes = _focusTimes = false;
+            }
+
+            if (_focusTrigger)
+            {
+                _focusTrigger = false;
+                _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+                await _module.InvokeVoidAsync("focusFirst", _root);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // Circuit closed.
+        }
+    }
+
+    public ValueTask DisposeAsync() => HelixJs.DisposeQuietlyAsync(_module);
+}

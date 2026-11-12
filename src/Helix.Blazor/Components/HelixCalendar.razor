@@ -1,0 +1,199 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+
+@* A month calendar: the shared core of HelixDatePicker, HelixDateTimePicker and HelixDateRangePicker; usable on its own. *@
+<div @attributes="Attributes" class="@(new CssBuilder("helix-calendar").Add(Class).Build())" style="@StyleValue">
+    <div class="helix-date__head">
+        <button type="button" class="helix-close" aria-label="@Texts.PreviousMonth" @onclick="() => ShiftMonth(-1)"><HelixIcon Name="chevron-left" /></button>
+        <span class="helix-date__month" aria-live="polite">@Capitalize(_view.ToString("MMMM yyyy", EffectiveCulture))</span>
+        <button type="button" class="helix-close" aria-label="@Texts.NextMonth" @onclick="() => ShiftMonth(1)"><HelixIcon Name="chevron-right" /></button>
+    </div>
+    <div class="helix-date__grid" role="grid" tabindex="0" @ref="_grid"
+         aria-activedescendant="@CellId(_active)"
+         aria-label="@_view.ToString("MMMM yyyy", EffectiveCulture)"
+         aria-multiselectable="@(IsRange ? "true" : null)"
+         @onkeydown="OnKey" @onkeydown:preventDefault="true"
+         @onmouseleave="() => _hover = null">
+        @foreach (var day in WeekDays)
+        {
+            <span class="helix-date__weekday" role="columnheader" title="@EffectiveCulture.DateTimeFormat.GetDayName(day)">@EffectiveCulture.DateTimeFormat.GetShortestDayName(day)</span>
+        }
+        @foreach (var date in Days)
+        {
+            var disabled = IsDisabled(date);
+            var (inRange, isStart, isEnd) = RangeState(date);
+            var selected = date == Value || isStart || isEnd;
+            <span id="@CellId(date)"
+                  role="gridcell"
+                  aria-selected="@(selected || inRange ? "true" : "false")"
+                  aria-disabled="@(disabled ? "true" : null)"
+                  class="@(new CssBuilder("helix-date__day").Add("is-outside", date.Month != _view.Month).Add("is-today", date == Today).Add("is-selected", selected).Add("in-range", inRange).Add("is-range-start", isStart).Add("is-range-end", isEnd).Add("is-active", date == _active).Add("is-disabled", disabled).Build())"
+                  @onmouseenter="() => _hover = date"
+                  @onclick="() => Pick(date)">@date.Day</span>
+        }
+    </div>
+    @if (ShowFooter)
+    {
+        <div class="helix-date__foot">
+            <button type="button" class="helix-date__today" disabled="@IsDisabled(Today)" @onclick="() => Pick(Today)">@Texts.Today</button>
+            <span class="helix-date__help">@Texts.DateKeyboardHelp</span>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The selected day (single selection).</summary>
+    [Parameter] public DateOnly? Value { get; set; }
+
+    /// <summary>Range selection: the first day. With RangeEnd null, the hovered day previews the end.</summary>
+    [Parameter] public DateOnly? RangeStart { get; set; }
+
+    /// <summary>Range selection: the last day.</summary>
+    [Parameter] public DateOnly? RangeEnd { get; set; }
+
+    /// <summary>Called when a day is chosen (click, Enter or Space).</summary>
+    [Parameter] public EventCallback<DateOnly> OnPick { get; set; }
+
+    /// <summary>Called on Escape or Tab (a picker closes its panel).</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public DateOnly? Min { get; set; }
+    [Parameter] public DateOnly? Max { get; set; }
+
+    /// <summary>Extra rule, e.g. d => d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday.</summary>
+    [Parameter] public Func<DateOnly, bool>? IsDateDisabled { get; set; }
+
+    /// <summary>"Today" button and keyboard help.</summary>
+    [Parameter] public bool ShowFooter { get; set; } = true;
+
+    /// <summary>Puts the keyboard focus in the grid when it first renders.</summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>Month and day names, first day of the week.</summary>
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    /// <summary>Accent of the selection. Null: primary.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    private readonly string _id = HelixId.Next("cal");
+    private DateOnly _view;
+    private DateOnly _active;
+    private DateOnly? _hover;
+    private bool _initialized;
+    private bool _focus;
+    private ElementReference _grid;
+
+    private bool IsRange => RangeStart is not null || RangeEnd is not null;
+
+    private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
+    private DateOnly Today => DateOnly.FromDateTime((TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime);
+
+    private string? StyleValue => new StyleBuilder().Color("input", Color).Raw(Style).Build();
+
+    private IEnumerable<DayOfWeek> WeekDays =>
+        Enumerable.Range(0, 7).Select(i => (DayOfWeek)(((int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek + i) % 7));
+
+    /// <summary>Six full weeks starting on the culture's first day of the week.</summary>
+    private IEnumerable<DateOnly> Days
+    {
+        get
+        {
+            var first = new DateOnly(_view.Year, _view.Month, 1);
+            var offset = ((int)first.DayOfWeek - (int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek + 7) % 7;
+            var start = first.AddDays(-offset);
+            return Enumerable.Range(0, 42).Select(start.AddDays);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!_initialized)
+        {
+            _initialized = true;
+            _active = Value ?? RangeStart ?? Today;
+            _view = new DateOnly(_active.Year, _active.Month, 1);
+            _focus = AutoFocus;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focus)
+        {
+            _focus = false;
+            await _grid.FocusAsync();
+        }
+    }
+
+    /// <summary>Moves the keyboard focus into the day grid.</summary>
+    public ValueTask FocusAsync() => _grid.FocusAsync();
+
+    private (bool InRange, bool IsStart, bool IsEnd) RangeState(DateOnly date)
+    {
+        if (RangeStart is not { } start)
+        {
+            return (false, false, false);
+        }
+
+        var end = RangeEnd ?? _hover ?? start;
+        var (from, to) = end < start ? (end, start) : (start, end);
+        return (date > from && date < to, date == from, date == to);
+    }
+
+    private string CellId(DateOnly date) => $"{_id}-{date:yyyyMMdd}";
+
+    private static string Capitalize(string text) => text.Length == 0 ? text : char.ToUpper(text[0]) + text[1..];
+
+    private bool IsDisabled(DateOnly date) =>
+        (Min is { } min && date < min) || (Max is { } max && date > max) || (IsDateDisabled?.Invoke(date) ?? false);
+
+    private void ShiftMonth(int months)
+    {
+        _view = _view.AddMonths(months);
+        var day = Math.Min(_active.Day, DateTime.DaysInMonth(_view.Year, _view.Month));
+        _active = new DateOnly(_view.Year, _view.Month, day);
+        _focus = true;
+    }
+
+    private void MoveActive(DateOnly date)
+    {
+        _active = date;
+        _hover = IsRange && RangeEnd is null ? date : _hover;
+        if (date.Month != _view.Month || date.Year != _view.Year)
+        {
+            _view = new DateOnly(date.Year, date.Month, 1);
+        }
+    }
+
+    private async Task Pick(DateOnly date)
+    {
+        if (IsDisabled(date))
+        {
+            return;
+        }
+
+        _active = date;
+        await OnPick.InvokeAsync(date);
+    }
+
+    private async Task OnKey(KeyboardEventArgs e)
+    {
+        var firstDay = (int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek;
+        var dayIndex = ((int)_active.DayOfWeek - firstDay + 7) % 7;
+        switch (e.Key)
+        {
+            case "ArrowLeft": MoveActive(_active.AddDays(-1)); break;
+            case "ArrowRight": MoveActive(_active.AddDays(1)); break;
+            case "ArrowUp": MoveActive(_active.AddDays(-7)); break;
+            case "ArrowDown": MoveActive(_active.AddDays(7)); break;
+            case "Home": MoveActive(_active.AddDays(-dayIndex)); break;
+            case "End": MoveActive(_active.AddDays(6 - dayIndex)); break;
+            case "PageUp": MoveActive(_active.AddMonths(e.ShiftKey ? -12 : -1)); break;
+            case "PageDown": MoveActive(_active.AddMonths(e.ShiftKey ? 12 : 1)); break;
+            case "Enter" or " ": await Pick(_active); break;
+            case "Escape" or "Tab": await OnClose.InvokeAsync(); break;
+        }
+    }
+}

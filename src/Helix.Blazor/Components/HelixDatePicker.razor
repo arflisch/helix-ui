@@ -33,34 +33,8 @@
         {
             <div class="helix-select__backdrop" @onclick="() => Close(false)"></div>
             <div class="helix-date__panel" role="dialog" aria-label="@Texts.ChooseDate">
-                <div class="helix-date__head">
-                    <button type="button" class="helix-close" aria-label="@Texts.PreviousMonth" @onclick="() => ShiftMonth(-1)"><HelixIcon Name="chevron-left" /></button>
-                    <span class="helix-date__month" aria-live="polite">@Capitalize(_view.ToString("MMMM yyyy", EffectiveCulture))</span>
-                    <button type="button" class="helix-close" aria-label="@Texts.NextMonth" @onclick="() => ShiftMonth(1)"><HelixIcon Name="chevron-right" /></button>
-                </div>
-                <div class="helix-date__grid" role="grid" tabindex="0" @ref="_grid"
-                     aria-activedescendant="@CellId(_active)"
-                     aria-label="@_view.ToString("MMMM yyyy", EffectiveCulture)"
-                     @onkeydown="OnKey" @onkeydown:preventDefault="true">
-                    @foreach (var day in WeekDays)
-                    {
-                        <span class="helix-date__weekday" role="columnheader" title="@EffectiveCulture.DateTimeFormat.GetDayName(day)">@EffectiveCulture.DateTimeFormat.GetShortestDayName(day)</span>
-                    }
-                    @foreach (var date in Days)
-                    {
-                        var disabled = IsDisabled(date);
-                        <span id="@CellId(date)"
-                              role="gridcell"
-                              aria-selected="@(date == Value ? "true" : "false")"
-                              aria-disabled="@(disabled ? "true" : null)"
-                              class="@(new CssBuilder("helix-date__day").Add("is-outside", date.Month != _view.Month).Add("is-today", date == Today).Add("is-selected", date == Value).Add("is-active", date == _active).Add("is-disabled", disabled).Build())"
-                              @onclick="() => Pick(date)">@date.Day</span>
-                    }
-                </div>
-                <div class="helix-date__foot">
-                    <button type="button" class="helix-date__today" disabled="@IsDisabled(Today)" @onclick="() => Pick(Today)">@Texts.Today</button>
-                    <span class="helix-date__help">@Texts.DateKeyboardHelp</span>
-                </div>
+                <HelixCalendar Value="Value" Min="Min" Max="Max" IsDateDisabled="IsDateDisabled" Culture="EffectiveCulture" TimeProvider="TimeProvider"
+                               AutoFocus="true" OnPick="Pick" OnClose="() => Close(true)" />
             </div>
         }
     </div>
@@ -117,38 +91,11 @@
 
     private readonly string _id = HelixId.Next("date");
     private bool _open;
-    private bool _focusGrid;
     private bool _focusTrigger;
-    private DateOnly _view;
-    private DateOnly _active;
-    private ElementReference _grid;
     private ElementReference _root;
     private IJSObjectReference? _module;
 
     private CultureInfo EffectiveCulture => Culture ?? CultureInfo.CurrentCulture;
-    private DateOnly Today => DateOnly.FromDateTime((TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime);
-
-    private IEnumerable<DayOfWeek> WeekDays =>
-        Enumerable.Range(0, 7).Select(i => (DayOfWeek)(((int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek + i) % 7));
-
-    /// <summary>Six full weeks starting on the culture's first day of the week.</summary>
-    private IEnumerable<DateOnly> Days
-    {
-        get
-        {
-            var first = new DateOnly(_view.Year, _view.Month, 1);
-            var offset = ((int)first.DayOfWeek - (int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek + 7) % 7;
-            var start = first.AddDays(-offset);
-            return Enumerable.Range(0, 42).Select(start.AddDays);
-        }
-    }
-
-    private string CellId(DateOnly date) => $"{_id}-{date:yyyyMMdd}";
-
-    private static string Capitalize(string text) => text.Length == 0 ? text : char.ToUpper(text[0]) + text[1..];
-
-    private bool IsDisabled(DateOnly date) =>
-        (Min is { } min && date < min) || (Max is { } max && date > max) || (IsDateDisabled?.Invoke(date) ?? false);
 
     private void Toggle()
     {
@@ -158,10 +105,7 @@
             return;
         }
 
-        _active = Value ?? Today;
-        _view = new DateOnly(_active.Year, _active.Month, 1);
         _open = true;
-        _focusGrid = true;
     }
 
     private void Close(bool returnFocus)
@@ -170,30 +114,8 @@
         _focusTrigger = returnFocus;
     }
 
-    private void ShiftMonth(int months)
-    {
-        _view = _view.AddMonths(months);
-        var day = Math.Min(_active.Day, DateTime.DaysInMonth(_view.Year, _view.Month));
-        _active = new DateOnly(_view.Year, _view.Month, day);
-        _focusGrid = true;
-    }
-
-    private void MoveActive(DateOnly date)
-    {
-        _active = date;
-        if (date.Month != _view.Month || date.Year != _view.Year)
-        {
-            _view = new DateOnly(date.Year, date.Month, 1);
-        }
-    }
-
     private async Task Pick(DateOnly date)
     {
-        if (IsDisabled(date))
-        {
-            return;
-        }
-
         Value = date;
         Close(true);
         await ValueChanged.InvokeAsync(date);
@@ -205,34 +127,8 @@
         await ValueChanged.InvokeAsync(null);
     }
 
-    private async Task OnKey(KeyboardEventArgs e)
-    {
-        var firstDay = (int)EffectiveCulture.DateTimeFormat.FirstDayOfWeek;
-        var dayIndex = ((int)_active.DayOfWeek - firstDay + 7) % 7;
-        switch (e.Key)
-        {
-            case "ArrowLeft": MoveActive(_active.AddDays(-1)); break;
-            case "ArrowRight": MoveActive(_active.AddDays(1)); break;
-            case "ArrowUp": MoveActive(_active.AddDays(-7)); break;
-            case "ArrowDown": MoveActive(_active.AddDays(7)); break;
-            case "Home": MoveActive(_active.AddDays(-dayIndex)); break;
-            case "End": MoveActive(_active.AddDays(6 - dayIndex)); break;
-            case "PageUp": MoveActive(_active.AddMonths(e.ShiftKey ? -12 : -1)); break;
-            case "PageDown": MoveActive(_active.AddMonths(e.ShiftKey ? 12 : 1)); break;
-            case "Enter" or " ": await Pick(_active); break;
-            case "Escape": Close(true); break;
-            case "Tab": Close(true); break;
-        }
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusGrid && _open)
-        {
-            _focusGrid = false;
-            await _grid.FocusAsync();
-        }
-
         if (_focusTrigger)
         {
             _focusTrigger = false;

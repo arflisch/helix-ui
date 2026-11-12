@@ -37,6 +37,17 @@ public sealed record HelixTexts
     public string ClearDate { get; init; } = "Clear the date";
     public string ChooseDate { get; init; } = "Choose a date";
     public string Today { get; init; } = "Today";
+    public string Now { get; init; } = "Now";
+    public string ChooseDateTime { get; init; } = "Choose a date and time";
+    public string ChooseTime { get; init; } = "Time";
+    public string ChoosePeriod { get; init; } = "Choose a period";
+    public string Yesterday { get; init; } = "Yesterday";
+    public string Last7Days { get; init; } = "Last 7 days";
+    public string Last30Days { get; init; } = "Last 30 days";
+    public string ThisWeek { get; init; } = "This week";
+    public string ThisMonth { get; init; } = "This month";
+    public string LastMonth { get; init; } = "Last month";
+    public string PickEndDate { get; init; } = "Now pick the last day";
     public string PreviousMonth { get; init; } = "Previous month";
     public string NextMonth { get; init; } = "Next month";
     public string DateKeyboardHelp { get; init; } = "Arrows · Enter · Page ↑↓";
@@ -168,7 +179,9 @@ public sealed record HelixTexts
         PositionOf = "{0} sur {1}", Required = "obligatoire",
 
         SelectPlaceholder = "Sélectionner…", Decrease = "Diminuer", Increase = "Augmenter",
-        ClearDate = "Effacer la date", ChooseDate = "Choisir une date", Today = "Aujourd'hui", PreviousMonth = "Mois précédent", NextMonth = "Mois suivant",
+        ClearDate = "Effacer la date", ChooseDate = "Choisir une date", Today = "Aujourd'hui", Now = "Maintenant", ChooseDateTime = "Choisir une date et une heure", ChooseTime = "Heure",
+        ChoosePeriod = "Choisir une période", Yesterday = "Hier", Last7Days = "7 derniers jours", Last30Days = "30 derniers jours",
+        ThisWeek = "Cette semaine", ThisMonth = "Ce mois-ci", LastMonth = "Le mois dernier", PickEndDate = "Choisissez maintenant le dernier jour", PreviousMonth = "Mois précédent", NextMonth = "Mois suivant",
         DateKeyboardHelp = "Flèches · Entrée · Page ↑↓",
         ChooseColor = "Choisir une couleur", SaturationBrightness = "Saturation et luminosité",
         SaturationBrightnessValue = "Saturation {0} %, luminosité {1} %", Opacity = "Opacité", HexCode = "Code hexadécimal",

@@ -1933,6 +1933,56 @@
 :where(.helix-date__today:hover) { background: color-mix(in oklab, var(--_c) 9%, transparent); }
 :where(.helix-date__help) { font-size: 11px; color: var(--helix-text-subtle); }
 
+/* Calendar on its own (also inside the pickers). */
+:where(.helix-calendar) { --_c: var(--helix-input-color, var(--helix-primary)); min-width: 0; }
+
+/* Range selection: a band between the two ends. */
+:where(.helix-date__day.in-range) { border-radius: 0; background: color-mix(in oklab, var(--_c) 12%, transparent); color: var(--helix-text); }
+:where(.helix-date__day.in-range.is-outside) { color: var(--helix-text-muted); }
+:where(.helix-date__day.is-range-start:not(.is-range-end)) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+:where(.helix-date__day.is-range-end:not(.is-range-start)) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+
+/* Date and time picker: calendar + time list. */
+:where(.helix-datetime__panel) { width: auto; }
+:where(.helix-datetime__body) { display: flex; gap: 12px; }
+:where(.helix-datetime__body .helix-calendar) { width: 272px; }
+:where(.helix-datetime__times) {
+    display: flex; flex-direction: column; gap: 2px; width: 84px; max-height: 290px; overflow-y: auto;
+    padding-left: 12px; border-left: 1px solid var(--helix-border); scrollbar-width: thin;
+}
+:where(.helix-datetime__times-title) {
+    position: sticky; top: 0; margin: 0 0 4px; padding: 6px 0; background: var(--helix-surface);
+    font-size: 11.5px; font-weight: 600; text-align: center; color: var(--helix-text-subtle);
+}
+:where(.helix-datetime__time) {
+    flex: none; height: 32px; padding: 0 8px; border: 0; border-radius: calc(var(--helix-radius) * .7);
+    background: transparent; font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--helix-text); cursor: pointer;
+}
+:where(.helix-datetime__time:hover:not(:disabled)) { background: var(--helix-surface-2); }
+:where(.helix-datetime__time:focus-visible) { outline: 2px solid color-mix(in oklab, var(--_c) 50%, transparent); outline-offset: -2px; }
+:where(.helix-datetime__time.is-selected) { background: var(--_c); color: var(--helix-input-on-color, var(--helix-on-primary)); font-weight: 600; }
+:where(.helix-datetime__time:disabled) { opacity: .4; text-decoration: line-through; cursor: not-allowed; }
+
+/* Date range picker: shortcuts + calendar. */
+:where(.helix-range__panel) { width: auto; }
+:where(.helix-range__panel.has-presets) { display: flex; gap: 12px; }
+:where(.helix-range__calendar) { width: 272px; }
+:where(.helix-range__presets) { display: flex; flex-direction: column; gap: 2px; min-width: 132px; padding-right: 12px; border-right: 1px solid var(--helix-border); }
+:where(.helix-range__preset) {
+    padding: 7px 10px; border: 0; border-radius: calc(var(--helix-radius) * .7); background: transparent;
+    font: inherit; font-size: 13px; text-align: left; white-space: nowrap; color: var(--helix-text); cursor: pointer;
+}
+:where(.helix-range__preset:hover) { background: var(--helix-surface-2); }
+:where(.helix-range__preset:focus-visible) { outline: 2px solid color-mix(in oklab, var(--_c) 50%, transparent); outline-offset: -2px; }
+:where(.helix-range__preset.is-selected) { background: color-mix(in oklab, var(--_c) 12%, transparent); color: color-mix(in oklab, var(--_c) 88%, var(--helix-text)); font-weight: 600; }
+:where(.helix-range__status) { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--helix-border); font-size: 11.5px; color: var(--helix-text-subtle); }
+@media (max-width: 560px) {
+    :where(.helix-datetime__body, .helix-range__panel.has-presets) { flex-direction: column; }
+    :where(.helix-datetime__times) { flex-direction: row; width: auto; max-height: none; overflow-x: auto; padding: 10px 0 0; border-left: 0; border-top: 1px solid var(--helix-border); }
+    :where(.helix-datetime__times-title) { display: none; }
+    :where(.helix-range__presets) { flex-direction: row; flex-wrap: wrap; padding: 0 0 10px; border-right: 0; border-bottom: 1px solid var(--helix-border); }
+}
+
 /* ---------- Bar list ----------------------------------------------------- */
 
 :where(.helix-barlist) { --_c: var(--helix-barlist-color, var(--helix-series-1)); display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }

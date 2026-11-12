@@ -1,0 +1,48 @@
+@page "/components/datetimepicker"
+@using System.Globalization
+
+<DemoPage Title="DateTimePicker" Description="A date and a time in one field: the calendar on the left, the times on the right at the step you choose (every 15 minutes by default, every hour, or any minute). Choosing a day keeps the time already set; choosing a time closes the panel. Min and Max also limit the times of their day.">
+    <Example WpfCode="@Wpf1" Title="Examples" Code="@Code">
+        <div class="grid-3">
+            <HelixDateTimePicker Label="Delivery start" @bind-Value="_start" Culture="English"
+                                 Hint="@($"Chosen: {_start?.ToString("dddd d MMMM, HH:mm", English) ?? "none"}")" />
+            <HelixDateTimePicker Label="Next 48 hours, hourly" @bind-Value="_hourly" MinuteStep="60" Culture="English"
+                                 Min="Now" Max="Now.AddHours(48)" />
+            <HelixDateTimePicker Label="Any minute" @bind-Value="_exact" MinuteStep="5" Format="dd/MM/yyyy HH:mm" Culture="English" />
+        </div>
+    </Example>
+
+    <ApiTable Title="HelixDateTimePicker" Rows="Api" />
+</DemoPage>
+
+@code {
+    private const string Wpf1 = """
+        <helix:HelixDateTimePicker Label="Delivery start" SelectedDateTime="{Binding Start}" MinuteStep="15"
+                                 Minimum="{Binding Now}" Hint="Quarter hours" />
+        <helix:HelixDateTimePicker Label="Hourly" SelectedDateTime="{Binding Hour}" MinuteStep="60" />
+        """;
+
+    private const string Code = """
+        <HelixDateTimePicker Label="Delivery start" @bind-Value="start" />
+        <HelixDateTimePicker Label="Next 48 hours, hourly" @bind-Value="hour" MinuteStep="60" Min="now" Max="now.AddHours(48)" />
+        """;
+
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
+    private static DateTime Now => DateTime.Now;
+
+    private DateTime? _start = DateTime.Today.AddDays(1).AddHours(8);
+    private DateTime? _hourly;
+    private DateTime? _exact = DateTime.Today.AddHours(13).AddMinutes(25);
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Value", "DateTime?", null, "Chosen moment (@bind-Value)."),
+        new("MinuteStep", "int", null, "Minutes between two times of the list (15). 60 for hours, 1 for any minute."),
+        new("Min / Max", "DateTime?", null, "Earliest and latest moment: days and times outside are disabled."),
+        new("IsDateDisabled", "Func<DateOnly, bool>", null, "Extra rule on days."),
+        new("Format", "string?", null, "Display format (“d MMM yyyy” and the culture's short time by default)."),
+        new("Culture / TimeProvider", "CultureInfo / TimeProvider", null, "Names, first day of the week, time format; clock for “Now” (tests)."),
+        new("Label / Hint / Error / Placeholder / Clearable / Required / Disabled", "", null, "Same as every field."),
+        new("Color / Radius / Background / BorderColor", "string", "--helix-input-*", "Same look as every field; defaults through Defaults.Field."),
+    ];
+}

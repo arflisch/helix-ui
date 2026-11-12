@@ -123,3 +123,18 @@ public sealed class HelixConfirmService : IDisposable
 
     public void Dispose() => Resolve(false);
 }
+
+/// <summary>A period of whole days, both ends included.</summary>
+public sealed record HelixDateRange(DateOnly Start, DateOnly End)
+{
+    /// <summary>Number of days, both ends included.</summary>
+    public int Days => End.DayNumber - Start.DayNumber + 1;
+
+    public bool Contains(DateOnly date) => date >= Start && date <= End;
+
+    /// <summary>Start at 00:00 and the day after End at 00:00: handy for "from &lt;= t &lt; to" queries.</summary>
+    public (DateTime From, DateTime To) ToDateTimes() => (Start.ToDateTime(TimeOnly.MinValue), End.AddDays(1).ToDateTime(TimeOnly.MinValue));
+}
+
+/// <summary>A shortcut of HelixDateRangePicker, e.g. "Last 7 days". Range receives today.</summary>
+public sealed record HelixDateRangePreset(string Label, Func<DateOnly, HelixDateRange> Range);
