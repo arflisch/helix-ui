@@ -2,8 +2,10 @@
   <Folder Name="/samples/">
     <Project Path="samples/Helix.Demo/Helix.Demo.csproj" />
     <Project Path="samples/Helix.Wpf.Demo/Helix.Wpf.Demo.csproj" />
+    <Project Path="samples/Helix.Avalonia.Demo/Helix.Avalonia.Demo.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Helix.Avalonia/Helix.Avalonia.csproj" />
     <Project Path="src/Helix.Blazor/Helix.Blazor.csproj" />
     <Project Path="src/Helix.Export/Helix.Export.csproj" />
     <Project Path="src/Helix.Wpf/Helix.Wpf.csproj" />

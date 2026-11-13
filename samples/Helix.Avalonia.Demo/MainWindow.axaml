@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helix="using:Helix.Avalonia"
+        x:Class="Helix.Avalonia.Demo.MainWindow"
+        Title="Helix UI · Avalonia" Width="1180" Height="860" MinWidth="720"
+        Background="{DynamicResource Helix.Background}" FontFamily="{DynamicResource Helix.FontFamily}">
+    <Panel>
+        <DockPanel>
+            <Border DockPanel.Dock="Left" Width="230" Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,1,0">
+                <DockPanel Margin="14,18">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="8,0,0,22">
+                        <Border Width="26" Height="26" CornerRadius="7" Background="{DynamicResource Helix.Primary}">
+                            <helix:HelixIcon Icon="zap" Foreground="{DynamicResource Helix.OnPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock VerticalAlignment="Center" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}">Helix</TextBlock>
+                        <TextBlock VerticalAlignment="Center" FontSize="17" Foreground="{DynamicResource Helix.TextSubtle}" Margin="-6,0,0,0">Avalonia</TextBlock>
+                    </StackPanel>
+                    <helix:HelixButton DockPanel.Dock="Bottom" Name="ThemeButton" Variant="Outline" Tone="Neutral" Icon="moon" Content="Dark mode"
+                                       HorizontalAlignment="Stretch" Click="OnToggleTheme" />
+                    <ListBox Name="Nav" Background="Transparent" SelectionChanged="OnNavigate">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="12,8" />
+                                <Setter Property="Margin" Value="0,1" />
+                                <Setter Property="CornerRadius" Value="8" />
+                                <Setter Property="FontSize" Value="14" />
+                                <Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" />
+                            </Style>
+                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+                                <Setter Property="Background" Value="{DynamicResource Helix.PrimarySoft}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Helix.Primary}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Style>
+                        </ListBox.Styles>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+            <ScrollViewer>
+                <ContentControl Name="Page" Margin="40,32" MaxWidth="920" />
+            </ScrollViewer>
+        </DockPanel>
+        <helix:HelixToastHost />
+    </Panel>
+</Window>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Helix.Avalonia</RootNamespace>
+    <IsPackable>true</IsPackable>
+    <PackageId>Helix.Avalonia</PackageId>
+    <Title>Helix UI for Avalonia</Title>
+    <Description>Clean, modern Avalonia controls where every visual part is a property: buttons, fields, badges, alerts, time bar, notifications and more. Light, dark or system theme, same tokens as Helix for Blazor and WPF. Windows, macOS, Linux.</Description>
+    <PackageTags>avalonia;controls;ui;xaml;cross-platform;theme;dark-mode</PackageTags>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Helix.Export\Helix.Export.csproj" />
+  </ItemGroup>
+
+</Project>

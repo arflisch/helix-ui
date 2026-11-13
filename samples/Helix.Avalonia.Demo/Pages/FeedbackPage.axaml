@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.FeedbackPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Feedback</TextBlock>
+        <TextBlock Classes="lead">Alerts in every severity, toasts from anywhere and spinners.</TextBlock>
+        <TextBlock Classes="h2">Alerts</TextBlock>
+        <StackPanel Spacing="12">
+            <helix:HelixAlert Title="New version available">Helix 0.4 adds the Avalonia controls.</helix:HelixAlert>
+            <helix:HelixAlert Severity="Success" Title="Saved">Your changes were saved.</helix:HelixAlert>
+            <helix:HelixAlert Severity="Warning" Title="Deadline in 5 minutes" IsClosable="True">Submit the next quarter hour before 14:10.</helix:HelixAlert>
+            <helix:HelixAlert Severity="Danger" Title="Submission rejected">Slot 14:15–14:30: the value is above the limit.</helix:HelixAlert>
+        </StackPanel>
+        <TextBlock Classes="h2">Toasts</TextBlock>
+        <Border Classes="stage">
+            <WrapPanel ItemSpacing="10" LineSpacing="10">
+                <helix:HelixButton Content="Success" Tone="Success" Variant="Soft" Click="OnSuccess" />
+                <helix:HelixButton Content="Warning" Tone="Warning" Variant="Soft" Click="OnWarning" />
+                <helix:HelixButton Content="Error" Tone="Danger" Variant="Soft" Click="OnError" />
+            </WrapPanel>
+        </Border>
+        <TextBlock Classes="h2">Spinners</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Orientation="Horizontal" Spacing="24">
+                <helix:HelixSpinner />
+                <helix:HelixSpinner Size="28" Tone="Success" />
+                <helix:HelixSpinner Size="36" Thickness="3" Accent="#FF8A00" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.DisplayPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Display</TextBlock>
+        <TextBlock Classes="lead">Badges, cards, key figures, progress bars and empty states.</TextBlock>
+        <TextBlock Classes="h2">Badges</TextBlock>
+        <Border Classes="stage">
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+                <helix:HelixBadge Content="Primary" />
+                <helix:HelixBadge Content="Delivered" Tone="Success" ShowDot="True" />
+                <helix:HelixBadge Content="Pending" Tone="Warning" ShowDot="True" />
+                <helix:HelixBadge Content="Rejected" Tone="Danger" ShowDot="True" />
+                <helix:HelixBadge Content="Solid" Variant="Solid" />
+                <helix:HelixBadge Content="Danger" Variant="Solid" Tone="Danger" />
+                <helix:HelixBadge Content="Outline" Variant="Outline" Tone="Neutral" />
+                <helix:HelixBadge Content="Live" Icon="zap" Tone="Info" />
+                <helix:HelixBadge Content="Custom" Accent="#FF8A00" Variant="Solid" />
+            </WrapPanel>
+        </Border>
+        <TextBlock Classes="h2">Cards and figures</TextBlock>
+        <Grid ColumnDefinitions="*,16,*,16,*">
+            <helix:HelixCard>
+                <helix:HelixStat Label="Revenue" Value="48,2" Unit="k€" Icon="trending-up" Delta="12.5" />
+            </helix:HelixCard>
+            <helix:HelixCard Grid.Column="2">
+                <helix:HelixStat Label="Costs" Value="12,9" Unit="k€" Delta="4.1" HigherIsBetter="False" />
+            </helix:HelixCard>
+            <helix:HelixCard Grid.Column="4" IsElevated="True">
+                <helix:HelixStat Label="Active units" Value="37" Icon="zap" Delta="-2" />
+            </helix:HelixCard>
+        </Grid>
+        <helix:HelixCard Title="Weekly report" Subtitle="Generated every Monday at 8:00" Margin="0,16,0,0">
+            <helix:HelixCard.Actions>
+                <helix:HelixButton Content="Download" Icon="download" Size="Sm" Variant="Outline" Tone="Neutral" />
+            </helix:HelixCard.Actions>
+            <StackPanel Spacing="16">
+                <helix:HelixProgress Label="Import" Value="72" ShowValue="True" />
+                <helix:HelixProgress Label="Validation" Value="38" ShowValue="True" Tone="Warning" />
+                <helix:HelixProgress Label="Upload" Value="100" ShowValue="True" Tone="Success" />
+            </StackPanel>
+            <helix:HelixCard.Footer>
+                <TextBlock Text="Last run: today, 08:00" FontSize="12.5" Foreground="{DynamicResource Helix.TextMuted}" />
+            </helix:HelixCard.Footer>
+        </helix:HelixCard>
+        <TextBlock Classes="h2">Empty state</TextBlock>
+        <Border Classes="stage">
+            <helix:HelixEmptyState Title="No results" Description="Try another search or clear the filters.">
+                <helix:HelixEmptyState.Actions>
+                    <helix:HelixButton Content="Clear filters" Variant="Soft" />
+                </helix:HelixEmptyState.Actions>
+            </helix:HelixEmptyState>
+        </Border>
+    </StackPanel>
+</UserControl>

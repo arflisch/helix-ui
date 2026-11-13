@@ -1,0 +1,21 @@
+namespace Helix.Avalonia;
+
+/// <summary>Semantic color of a control. A custom <c>Accent</c> brush replaces it.</summary>
+public enum HelixTone { Primary, Neutral, Success, Warning, Danger, Info }
+
+public enum HelixVariant { Solid, Soft, Outline, Ghost }
+
+public enum HelixBadgeVariant { Soft, Solid, Outline }
+
+public enum HelixSize { Sm, Md, Lg }
+
+public enum HelixSeverity { Info, Success, Warning, Danger }
+
+/// <summary>Side of a control where its label goes.</summary>
+public enum HelixLabelPosition { End, Start }
+
+/// <summary>Light, dark, or following the operating system (System).</summary>
+public enum HelixThemeMode { Light, Dark, System }
+
+/// <summary>Total of a grid column: in the total row and in each group header.</summary>
+public enum HelixAggregate { None, Sum, Average, Min, Max, Count }
