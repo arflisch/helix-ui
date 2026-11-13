@@ -19,8 +19,8 @@ public static class HelixExport
     public const string WordContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     public const string CsvContentType = "text/csv;charset=utf-8";
 
-    public static byte[] ToExcel<T>(IEnumerable<T> rows, Action<HelixColumns<T>>? columns = null, string sheet = "Data", string? title = null) =>
-        new HelixExcel().Sheet(sheet, rows, columns, title).ToBytes();
+    public static byte[] ToExcel<T>(IEnumerable<T> rows, Action<HelixColumns<T>>? columns = null, string sheet = "Data", string? title = null, HelixExcelStyle? style = null) =>
+        new HelixExcel { Style = style ?? HelixExcelStyle.Default }.Sheet(sheet, rows, columns, title).ToBytes();
 
     public static byte[] ToWord<T>(IEnumerable<T> rows, Action<HelixColumns<T>>? columns = null, string? title = null, bool landscape = false)
     {
@@ -36,9 +36,10 @@ public static class HelixExport
     /// A table to the bytes of a file in one format. The table title becomes the Excel sheet name and title row,
     /// or the Word document title.
     /// </summary>
-    public static byte[] Write(HelixExportTable table, HelixExportFormat format) => format switch
+    /// <param name="excelStyle">The look of the Excel file (<see cref="HelixExcelStyle.Default"/> when null).</param>
+    public static byte[] Write(HelixExportTable table, HelixExportFormat format, HelixExcelStyle? excelStyle = null) => format switch
     {
-        HelixExportFormat.Excel => new HelixExcel().Sheet(table.Title ?? "Data", table).ToBytes(),
+        HelixExportFormat.Excel => new HelixExcel { Style = excelStyle ?? HelixExcelStyle.Default }.Sheet(table.Title ?? "Data", table).ToBytes(),
         HelixExportFormat.Word => WordOf(table).ToBytes(),
         HelixExportFormat.Csv => HelixCsv.ToBytes(table),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Pick one format: Csv, Excel or Word."),

@@ -331,6 +331,9 @@
     /// <summary>Title written above the table in Word exports (and the Excel sheet name).</summary>
     [Parameter] public string? ExportTitle { get; set; }
 
+    /// <summary>The look of the Excel export: a preset (HelixExcelStyle.Bold, Minimal, Grid) or your own, e.g. HelixExcelStyle.Bold with { Accent = "#0F766E" }.</summary>
+    [Parameter] public Helix.Export.HelixExcelStyle? ExcelStyle { get; set; }
+
     /// <summary>Extra CSS class per row, e.g. item => item.IsLate ? "late" : null.</summary>
     [Parameter] public Func<TItem, string?>? RowClass { get; set; }
 
@@ -531,7 +534,7 @@
     public byte[] ToFile(Helix.Export.HelixExportFormat format) =>
         format == Helix.Export.HelixExportFormat.Csv
             ? [.. System.Text.Encoding.UTF8.GetPreamble(), .. System.Text.Encoding.UTF8.GetBytes(ToCsv())]
-            : Helix.Export.HelixExport.Write(ToExportTable(), format);
+            : Helix.Export.HelixExport.Write(ToExportTable(), format, ExcelStyle);
 
     /// <summary>Downloads the rows as a file; without a format, the first of <see cref="ExportFormats"/> (Excel, then Word, then CSV).</summary>
     public async Task ExportAsync(Helix.Export.HelixExportFormat format = Helix.Export.HelixExportFormat.None)

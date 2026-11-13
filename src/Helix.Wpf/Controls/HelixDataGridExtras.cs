@@ -20,6 +20,7 @@ public partial class HelixDataGrid
     public static readonly DependencyProperty ExportFileNameProperty = HelixProperty.Register<HelixDataGrid, string>(nameof(ExportFileName), "export");
     public static readonly DependencyProperty ExportFormatsProperty = HelixProperty.Register<HelixDataGrid, HelixExportFormat>(nameof(ExportFormats), HelixExportFormat.Csv);
     public static readonly DependencyProperty ExportTitleProperty = HelixProperty.Register<HelixDataGrid, string?>(nameof(ExportTitle), null);
+    public static readonly DependencyProperty ExcelStyleProperty = HelixProperty.Register<HelixDataGrid, HelixExcelStyle?>(nameof(ExcelStyle), null);
 
     private static readonly DependencyPropertyKey HasTotalsKey = DependencyProperty.RegisterReadOnly(nameof(HasTotals), typeof(bool), typeof(HelixDataGrid), new PropertyMetadata(false));
     public static readonly DependencyProperty HasTotalsProperty = HasTotalsKey.DependencyProperty;
@@ -68,6 +69,9 @@ public partial class HelixDataGrid
 
     /// <summary>Title written above the table in Word exports (and the Excel sheet name).</summary>
     public string? ExportTitle { get => (string?)GetValue(ExportTitleProperty); set => SetValue(ExportTitleProperty, value); }
+
+    /// <summary>The look of the Excel export: a preset (HelixExcelStyle.Bold, Minimal, Grid) or your own (set it in code or bind it).</summary>
+    public HelixExcelStyle? ExcelStyle { get => (HelixExcelStyle?)GetValue(ExcelStyleProperty); set => SetValue(ExcelStyleProperty, value); }
 
     /// <summary>True when a column has an Aggregate: the total row is shown.</summary>
     public bool HasTotals => (bool)GetValue(HasTotalsProperty);
@@ -315,7 +319,7 @@ public partial class HelixDataGrid
 
     /// <summary>The rows as an Excel, Word or CSV file (bytes), in one format.</summary>
     public byte[] ToFile(HelixExportFormat format) =>
-        format == HelixExportFormat.Csv ? [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(ToCsv())] : HelixExport.Write(ToExportTable(), format);
+        format == HelixExportFormat.Csv ? [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(ToCsv())] : HelixExport.Write(ToExportTable(), format, ExcelStyle);
 
     /// <summary>Asks where to save, then writes the rows; without a format, the first of <see cref="ExportFormats"/>.</summary>
     public void ExportFile(HelixExportFormat format = HelixExportFormat.None)

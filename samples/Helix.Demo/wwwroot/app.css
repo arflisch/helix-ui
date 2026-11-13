@@ -645,3 +645,21 @@ body { background: #fafafa; }
     box-shadow: 0 -1px 2px rgb(0 0 0 / .1);
 }
 #blazor-error-ui .dismiss { position: absolute; right: .75rem; top: .6rem; cursor: pointer; }
+
+/* Export page: Excel designer preview */
+.xl-demo { display: flex; flex-direction: column; gap: 10px; width: 100%; min-width: 0; }
+.xl-demo__label { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; font-weight: 600; color: var(--helix-text-muted); }
+.xl { border: 1px solid #c8c8c8; border-radius: 6px; overflow: hidden; background: #fff; color: #111; color-scheme: light; }
+.xl__scroll { overflow-x: auto; }
+.xl__sheet { border-collapse: collapse; width: max-content; min-width: 100%; }
+.xl__sheet td, .xl__sheet th { padding: 3px 8px; white-space: nowrap; border: 1px solid #e3e3e3; height: 1.6em; }
+.xl__sheet.no-grid td:not(.xl__row) { border-color: transparent; }
+.xl__corner, .xl__col, .xl__row { background: #f3f3f3; color: #666; font: 11px system-ui, sans-serif; text-align: center; border-color: #d4d4d4 !important; }
+.xl__col { min-width: 72px; }
+.xl__row { width: 28px; }
+.xl__title { font-weight: 700; border-color: transparent !important; }
+.xl__frozen td { box-shadow: inset 0 -2px 0 #b8b8b8; }
+.xl__filter { display: inline-grid; place-items: center; width: 13px; height: 13px; margin-left: 6px; font-size: 9px; border: 1px solid #aaa; border-radius: 2px; background: #fff; color: #444; vertical-align: 1px; }
+.xl__tabs { display: flex; gap: 2px; padding: 0 8px; background: #f3f3f3; border-top: 1px solid #d4d4d4; font: 11.5px system-ui, sans-serif; }
+.xl__tabs span { padding: 4px 12px; color: #555; }
+.xl__tabs .is-active { background: #fff; color: #1d6f42; font-weight: 600; box-shadow: inset 0 -2px 0 #1d6f42; }

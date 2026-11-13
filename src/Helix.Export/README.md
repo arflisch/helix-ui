@@ -39,6 +39,25 @@ new HelixExcel()
 - .NET formats are translated (`N2` → `#,##0.00`, `P0` → `0%`, `dd/MM/yyyy HH:mm` → `dd/mm/yyyy hh:mm`), or pass `excelFormat`.
 - Header frozen and filterable, column widths from the content, totals as formulas (`SUM`, `AVERAGE`…).
 
+### Design
+
+```csharp
+new HelixExcel
+{
+    Style = HelixExcelStyle.Bold with           // presets: Default, Bold, Minimal, Grid
+    {
+        Accent = "#0F766E",
+        FontName = "Arial", FontSize = 10,
+        Borders = HelixExcelBorders.Rows,
+        NegativeColor = "danger",
+        CellStyle = c => c.Value is "Late" ? new(Color: "danger", Bold: true) : null,
+    },
+}
+```
+
+Header fill, text and line, title, stripes, borders, totals fill, row height and gridlines are all in `HelixExcelStyle`.
+On a Helix grid: `ExcelStyle="myStyle"`.
+
 ## Word
 
 ```csharp

@@ -1,0 +1,278 @@
+@using System.Globalization
+@inject IJSRuntime JS
+
+@* Docs: design the Excel file of a grid export, see it, copy the code. *@
+<Playground Code="@Code" WpfCode="@WpfCode" StageStyle="padding:20px;align-items:stretch">
+    <Preview>
+        <div class="xl-demo">
+            <HelixDataGrid @ref="_grid" Items="Units" PageSize="0" Exportable="true" ExportFormats="HelixExportFormat.Excel"
+                           ExportFileName="units" ExportTitle="@(_title ? "Units — November" : null)" ExcelStyle="Style" Culture="English" Density="HelixSize.Sm">
+                <HelixColumn Field="u => u.Unit" />
+                <HelixColumn Field="u => u.Region" />
+                <HelixColumn Field="u => u.Volume" Format="N1" Unit="MWh" Align="HelixAlign.End" Aggregate="HelixAggregate.Sum" />
+                <HelixColumn Field="u => u.Change" Format="0.0'%'" Signed="true" Align="HelixAlign.End" />
+                <HelixColumn Field="u => u.Status" BadgeColor="@(u => u.Status == "Late" ? "danger" : "success")" />
+                <HelixColumn Field="u => u.Day" Format="dd/MM/yyyy" />
+            </HelixDataGrid>
+
+            <div class="xl-demo__label"><HelixIcon Name="download" Size="13" /> The Excel file it produces</div>
+            <div class="xl" style="@($"font-family:{FontCss};font-size:{(_fontSize * 1.2).ToString("0.#", CultureInfo.InvariantCulture)}px")">
+                <div class="xl__scroll">
+                    <table class="@(new CssBuilder("xl__sheet").Add("no-grid", !_gridLines).Build())">
+                        <thead>
+                            <tr><th class="xl__corner"></th>@foreach (var letter in "ABCDEF") { <th class="xl__col">@letter</th> }</tr>
+                        </thead>
+                        <tbody>
+                            @{ var r = 1; }
+                            @if (_title)
+                            {
+                                <tr><td class="xl__row">@(r++)</td><td colspan="6" class="xl__title" style="@($"color:{Css(Style.TitleColor ?? "primary")};font-size:{(Style.TitleSize * 1.2).ToString("0.#", CultureInfo.InvariantCulture)}px")">Units — November</td></tr>
+                                <tr><td class="xl__row">@(r++)</td><td colspan="6"></td></tr>
+                            }
+                            <tr class="@(_freeze ? "xl__frozen" : null)">
+                                <td class="xl__row">@(r++)</td>
+                                @foreach (var (header, right) in Headers)
+                                {
+                                    <td style="@HeaderCss(right)">@header@if (_filter) { <span class="xl__filter">▾</span> }</td>
+                                }
+                            </tr>
+                            @for (var i = 0; i < Units.Length; i++)
+                            {
+                                var u = Units[i];
+                                var index = i;
+                                <tr>
+                                    <td class="xl__row">@(r++)</td>
+                                    <td style="@BodyCss(index, false)">@u.Unit</td>
+                                    <td style="@BodyCss(index, false)">@u.Region</td>
+                                    <td style="@BodyCss(index, true)">@u.Volume.ToString("N1", English)</td>
+                                    <td style="@BodyCss(index, true, negative: u.Change < 0)">@u.Change.ToString("0.0'%'", English)</td>
+                                    <td style="@BodyCss(index, false, late: u.Status == "Late")">@u.Status</td>
+                                    <td style="@BodyCss(index, true)">@u.Day.ToString("dd/MM/yyyy", English)</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td class="xl__row">@(r++)</td>
+                                <td style="@TotalCss(false)">Total</td>
+                                <td style="@TotalCss(false)"></td>
+                                <td style="@TotalCss(true)">@Units.Sum(u => u.Volume).ToString("N1", English)</td>
+                                <td style="@TotalCss(false)"></td><td style="@TotalCss(false)"></td><td style="@TotalCss(false)"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="xl__tabs"><span class="is-active">@(_title ? "Units — November" : "Data")</span></div>
+            </div>
+            <div class="row" style="gap:10px;margin-top:12px">
+                <HelixButton Icon="download" Size="HelixSize.Sm" OnClick="() => _grid!.ExportAsync(HelixExportFormat.Excel)">Download this Excel</HelixButton>
+                <span class="muted" style="font-size:12.5px">Same file as the grid's Export button.</span>
+            </div>
+        </div>
+    </Preview>
+    <Controls>
+        <Choice TEnum="Preset" Label="Start from" Value="_preset" ValueChanged="ApplyPreset" />
+        <ColorPicker Label="Accent" Value="@_accent" ValueChanged="v => _accent = v ?? DefaultAccent" Colors="@Swatches" />
+        <ColorPicker Label="Header fill (default: accent tint)" Value="@_headerFill" ValueChanged="v => _headerFill = v" Colors="@HeaderSwatches" />
+        <ColorPicker Label="Header text" Value="@_headerText" ValueChanged="v => _headerText = v ?? DefaultHeaderText" Colors="@TextSwatches" />
+        <HelixSwitch Label="Line under the header" @bind-Checked="_headerLine" Size="HelixSize.Sm" />
+        <Choice TEnum="Font" Label="Font" @bind-Value="_font" />
+        <HelixSlider Label="Font size" @bind-Value="_fontSize" Min="9" Max="14" Step="1" Format="@(v => $"{v:0} pt")" />
+        <Choice TEnum="HelixExcelBorders" Label="Borders" @bind-Value="_borders" />
+        <HelixSwitch Label="Striped rows" @bind-Checked="_striped" Size="HelixSize.Sm" />
+        <HelixSwitch Label="Negative numbers in red" @bind-Checked="_negative" Size="HelixSize.Sm" />
+        <HelixSwitch Label="Rule: “Late” in bold red" @bind-Checked="_late" Size="HelixSize.Sm" />
+        <HelixSwitch Label="Totals row filled" @bind-Checked="_totalsFill" Size="HelixSize.Sm" />
+        <HelixSwitch Label="Title above the table" @bind-Checked="_title" Size="HelixSize.Sm" />
+        <HelixSwitch Label="Excel gridlines" @bind-Checked="_gridLines" Size="HelixSize.Sm" />
+    </Controls>
+</Playground>
+
+@code {
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-GB");
+    private const string DefaultAccent = "#4F46E5", DefaultHeaderText = "#1F2937";
+    private static readonly string[] Swatches = ["#4F46E5", "#0F766E", "#2563EB", "#B45309", "#BE123C", "#111827"];
+    private static readonly string[] HeaderSwatches = ["primary", "#E5E7EB", "#FFFFFF", "#111827", "#FEF3C7"];
+    private static readonly string[] TextSwatches = ["#1F2937", "#FFFFFF", "primary"];
+
+    public enum Preset { Default, Bold, Minimal, Grid }
+    public enum Font { Calibri, Arial, SegoeUI, Consolas }
+
+    public sealed record ExportUnit(string Unit, string Region, double Volume, double Change, string Status, DateTime Day);
+
+    private static readonly ExportUnit[] Units =
+    [
+        new("Unit A", "North", 412.5, 3.2, "OK", new DateTime(2026, 11, 2)),
+        new("Unit B", "North", 298.0, -1.8, "Late", new DateTime(2026, 11, 3)),
+        new("Unit C", "South", 655.2, 6.4, "OK", new DateTime(2026, 11, 4)),
+        new("Unit D", "South", 120.7, -4.1, "OK", new DateTime(2026, 11, 5)),
+        new("Unit E", "East", 388.9, 0.6, "Late", new DateTime(2026, 11, 6)),
+    ];
+
+    private static readonly (string, bool)[] Headers =
+        [("Unit", false), ("Region", false), ("Volume (MWh)", true), ("Change", true), ("Status", false), ("Day", true)];
+
+    private HelixDataGrid<ExportUnit>? _grid;
+    private Preset _preset;
+    private string _accent = DefaultAccent, _headerText = DefaultHeaderText;
+    private string? _headerFill;
+    private bool _headerLine = true, _striped, _negative = true, _late = true, _totalsFill, _title = true, _gridLines = true, _freeze = true, _filter = true;
+    private Font _font;
+    private double _fontSize = 11;
+    private HelixExcelBorders _borders;
+
+    private void ApplyPreset(Preset preset)
+    {
+        _preset = preset;
+        var s = Base(preset);
+        _headerFill = s.HeaderBackground;
+        _headerText = s.HeaderColor;
+        _headerLine = s.HeaderLine != "none";
+        _striped = s.Striped;
+        _borders = s.Borders;
+        _totalsFill = s.TotalsBackground is not null;
+        _gridLines = s.ShowGridLines;
+    }
+
+    private static HelixExcelStyle Base(Preset preset) => preset switch
+    {
+        Preset.Bold => HelixExcelStyle.Bold,
+        Preset.Minimal => HelixExcelStyle.Minimal,
+        Preset.Grid => HelixExcelStyle.Grid,
+        _ => HelixExcelStyle.Default,
+    };
+
+    private string FontName => _font == Font.SegoeUI ? "Segoe UI" : _font.ToString();
+
+    private string FontCss => _font switch
+    {
+        Font.Arial => "Arial, Helvetica, sans-serif",
+        Font.SegoeUI => "'Segoe UI', system-ui, sans-serif",
+        Font.Consolas => "Consolas, 'Courier New', monospace",
+        _ => "Calibri, Carlito, 'Segoe UI', sans-serif",
+    };
+
+    /// <summary>The style the controls describe (what the grid exports).</summary>
+    private HelixExcelStyle Style => Base(_preset) with
+    {
+        Accent = _accent,
+        HeaderBackground = _headerFill,
+        HeaderColor = _headerText,
+        HeaderLine = _headerLine ? Base(_preset).HeaderLine is { } line && line != "none" ? line : null : "none",
+        FontName = FontName,
+        FontSize = _fontSize,
+        Borders = _borders,
+        Striped = _striped,
+        NegativeColor = _negative ? "danger" : null,
+        TotalsBackground = _totalsFill ? Base(_preset).TotalsBackground ?? "#F3F4F6" : null,
+        ShowGridLines = _gridLines,
+        CellStyle = _late ? c => c.Value is "Late" ? new(Color: "danger", Bold: true) : null : null,
+    };
+
+    // ----- preview -----------------------------------------------------------------------
+
+    private string Css(string? color) => color?.ToLowerInvariant() switch
+    {
+        null or "none" => "transparent",
+        "primary" or "accent" => _accent,
+        "success" => "#16A34A",
+        "warning" => "#D97706",
+        "danger" => "#DC2626",
+        "info" => "#0284C7",
+        "neutral" => "#6B7280",
+        _ => color,
+    };
+
+    private string Tint(string hex)
+    {
+        var value = Convert.ToInt32(hex.TrimStart('#')[..6], 16);
+        int Mix(int c) => (int)Math.Round(c + (255 - c) * 0.88);
+        return $"#{Mix(value >> 16 & 255):X2}{Mix(value >> 8 & 255):X2}{Mix(value & 255):X2}";
+    }
+
+    private string BorderCss(string side) => Style.Borders switch
+    {
+        HelixExcelBorders.All => $"border-{side}:1px solid {Css(Style.BorderColor)};",
+        HelixExcelBorders.Rows when side == "bottom" => $"border-bottom:1px solid {Css(Style.BorderColor)};",
+        _ => "",
+    };
+
+    private string Borders => BorderCss("top") + BorderCss("bottom") + BorderCss("left") + BorderCss("right");
+
+    private string HeaderCss(bool right)
+    {
+        var s = Style;
+        var fill = s.HeaderBackground is null ? Tint(Css(s.Accent)) : Css(s.HeaderBackground);
+        var line = s.HeaderLine is "none" ? "" : $"border-bottom:2px solid {Css(s.HeaderLine ?? "primary")};";
+        return $"background:{fill};color:{Css(s.HeaderColor)};font-weight:{(s.HeaderBold ? 700 : 400)};{Borders}{line}{(right ? "text-align:right;" : "")}";
+    }
+
+    private string BodyCss(int index, bool right, bool negative = false, bool late = false)
+    {
+        var s = Style;
+        var fill = s.Striped && index % 2 == 1 ? $"background:{Css(s.StripeColor)};" : "";
+        var color = late && _late ? "color:#DC2626;font-weight:700;" : negative && s.NegativeColor is not null ? $"color:{Css(s.NegativeColor)};" : "";
+        return $"{fill}{color}{Borders}{(right ? "text-align:right;" : "")}";
+    }
+
+    private string TotalCss(bool right)
+    {
+        var s = Style;
+        return $"font-weight:700;border-top:1px solid #9CA3AF;{BorderCss("bottom")}{BorderCss("left")}{BorderCss("right")}" +
+               (s.TotalsBackground is null ? "" : $"background:{Css(s.TotalsBackground)};") + (right ? "text-align:right;" : "");
+    }
+
+    // ----- code --------------------------------------------------------------------------
+
+    private string StyleCode
+    {
+        get
+        {
+            var b = Base(_preset);
+            var s = Style;
+            var lines = new List<string>();
+            void Diff<T>(string name, T value, T baseline, string literal)
+            {
+                if (!EqualityComparer<T>.Default.Equals(value, baseline)) lines.Add($"{name} = {literal},");
+            }
+
+            static string Q(string? v) => v is null ? "null" : $"\"{v}\"";
+            Diff("Accent", s.Accent, b.Accent, Q(s.Accent));
+            Diff("HeaderBackground", s.HeaderBackground, b.HeaderBackground, Q(s.HeaderBackground));
+            Diff("HeaderColor", s.HeaderColor, b.HeaderColor, Q(s.HeaderColor));
+            Diff("HeaderLine", s.HeaderLine, b.HeaderLine, Q(s.HeaderLine));
+            Diff("FontName", s.FontName, b.FontName, Q(s.FontName));
+            Diff("FontSize", s.FontSize, b.FontSize, s.FontSize.ToString(CultureInfo.InvariantCulture));
+            Diff("Borders", s.Borders, b.Borders, $"HelixExcelBorders.{s.Borders}");
+            Diff("Striped", s.Striped, b.Striped, s.Striped ? "true" : "false");
+            Diff("NegativeColor", s.NegativeColor, b.NegativeColor, Q(s.NegativeColor));
+            Diff("TotalsBackground", s.TotalsBackground, b.TotalsBackground, Q(s.TotalsBackground));
+            Diff("ShowGridLines", s.ShowGridLines, b.ShowGridLines, s.ShowGridLines ? "true" : "false");
+            if (_late) lines.Add("CellStyle = c => c.Value is \"Late\" ? new(Color: \"danger\", Bold: true) : null,");
+            var head = $"HelixExcelStyle.{_preset}";
+            return lines.Count == 0 ? head + ";" : head + " with\n{\n" + string.Concat(lines.Select(l => "    " + l + "\n")) + "};";
+        }
+    }
+
+    private string Code => $$"""
+        <HelixDataGrid Items="units" Exportable ExportFormats="HelixExportFormat.Excel"
+                       ExportFileName="units"{{(_title ? " ExportTitle=\"Units — November\"" : "")}} ExcelStyle="excelStyle">
+            <HelixColumn Field="u => u.Unit" />
+            <HelixColumn Field="u => u.Region" />
+            <HelixColumn Field="u => u.Volume" Format="N1" Unit="MWh" Aggregate="HelixAggregate.Sum" />
+            <HelixColumn Field="u => u.Change" Format="0.0'%'" Signed />
+            <HelixColumn Field="u => u.Status" BadgeColor="@(u => u.Status == "Late" ? "danger" : "success")" />
+            <HelixColumn Field="u => u.Day" Format="dd/MM/yyyy" />
+        </HelixDataGrid>
+
+        @code {
+            private readonly HelixExcelStyle excelStyle = {{StyleCode.Replace("\n", "\n    ")}}
+        }
+        """;
+
+    private string WpfCode => $$"""
+        <helix:HelixDataGrid x:Name="UnitsGrid" Source="{Binding Units}" IsExportable="True" ExportFormats="Excel"
+                             ExportFileName="units"{{(_title ? " ExportTitle=\"Units — November\"" : "")}} />
+
+        // code-behind (or bind ExcelStyle to a view-model property)
+        UnitsGrid.ExcelStyle = {{StyleCode.Replace("\n", "\n    ")}}
+        """;
+}

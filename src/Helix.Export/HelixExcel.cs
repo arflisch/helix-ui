@@ -18,8 +18,11 @@ public sealed class HelixExcel
 {
     private readonly List<(string Name, HelixExportTable Table)> _sheets = [];
 
-    /// <summary>Header fill and title color, as hex (Helix indigo by default).</summary>
-    public string Accent { get; set; } = "#4F46E5";
+    /// <summary>What the file looks like: header, font, stripes, borders, colors (see <see cref="HelixExcelStyle"/> and its presets).</summary>
+    public HelixExcelStyle Style { get; set; } = HelixExcelStyle.Default;
+
+    /// <summary>Shortcut for <c>Style.Accent</c>: header tint, header line and title color.</summary>
+    public string Accent { get => Style.Accent; set => Style = Style with { Accent = value }; }
 
     /// <summary>Freeze the header row (true).</summary>
     public bool FreezeHeader { get; set; } = true;
@@ -55,7 +58,7 @@ public sealed class HelixExcel
     public void WriteTo(Stream stream)
     {
         if (_sheets.Count == 0) Sheet("Sheet1", new HelixExportTable([], []));
-        var styles = new StyleSheet(Hex(Accent));
+        var styles = new StyleSheet(Style);
         var names = UniqueNames(_sheets.Select(s => s.Name));
         var sheetXml = _sheets.Select(s => SheetXml(s.Table, styles)).ToList();
 
@@ -88,44 +91,68 @@ public sealed class HelixExcel
 
     private string SheetXml(HelixExportTable table, StyleSheet styles)
     {
+        var style = Style;
         var columns = table.Columns;
         var values = table.Read();
+        var rows = table.Rows as IList<object> ?? table.Rows.ToList();
         var headerRow = table.Title is null ? 1 : 3;
         var firstData = headerRow + 1;
         var lastData = headerRow + values.Count;
         var sb = new StringBuilder();
         sb.Append(Declaration).Append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">");
 
+        var grid = style.ShowGridLines ? "" : " showGridLines=\"0\"";
         if (FreezeHeader && columns.Count > 0)
         {
-            sb.Append($"<sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"{headerRow}\" topLeftCell=\"A{firstData}\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>");
+            sb.Append($"<sheetViews><sheetView{grid} workbookViewId=\"0\"><pane ySplit=\"{headerRow}\" topLeftCell=\"A{firstData}\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews>");
         }
+        else if (grid.Length > 0)
+        {
+            sb.Append($"<sheetViews><sheetView{grid} workbookViewId=\"0\"/></sheetViews>");
+        }
+
+        var rowHeight = style.RowHeight is { } h ? h.ToString("0.##", CultureInfo.InvariantCulture) : null;
+        sb.Append($"<sheetFormatPr defaultRowHeight=\"{rowHeight ?? (style.FontSize * 1.36).ToString("0.##", CultureInfo.InvariantCulture)}\"{(rowHeight is null ? "" : " customHeight=\"1\"")}/>");
 
         if (columns.Count > 0)
         {
             sb.Append("<cols>");
             for (var c = 0; c < columns.Count; c++)
             {
-                var width = columns[c].Width ?? EstimateWidth(columns[c], values.Take(300).Select(r => r[c]));
+                var width = columns[c].Width ?? EstimateWidth(columns[c], values.Take(300).Select(r => r[c])) * Math.Max(1, style.FontSize / 11);
                 sb.Append($"<col min=\"{c + 1}\" max=\"{c + 1}\" width=\"{width.ToString("0.##", CultureInfo.InvariantCulture)}\" customWidth=\"1\"/>");
             }
 
             sb.Append("</cols>");
         }
 
+        string RowOpen(int r) => rowHeight is null ? $"<row r=\"{r}\">" : $"<row r=\"{r}\" ht=\"{rowHeight}\" customHeight=\"1\">";
+
         sb.Append("<sheetData>");
         if (table.Title is not null)
         {
-            sb.Append($"<row r=\"1\" ht=\"22\" customHeight=\"1\"><c r=\"A1\" t=\"inlineStr\" s=\"{styles.Title}\"><is><t xml:space=\"preserve\">{Esc(table.Title)}</t></is></c></row>");
+            var titleStyle = styles.Get(new CellFormat { Bold = true, Size = style.TitleSize, Color = style.Argb(style.TitleColor ?? "primary") });
+            sb.Append($"<row r=\"1\" ht=\"{(style.TitleSize * 1.5).ToString("0.##", CultureInfo.InvariantCulture)}\" customHeight=\"1\"><c r=\"A1\" t=\"inlineStr\" s=\"{titleStyle}\"><is><t xml:space=\"preserve\">{Esc(table.Title)}</t></is></c></row>");
         }
 
+        var aligns = Enumerable.Range(0, columns.Count).Select(c => AlignOf(columns[c], values.FirstOrDefault(r => r[c] is not null)?[c])).ToArray();
         if (columns.Count > 0)
         {
-            sb.Append($"<row r=\"{headerRow}\">");
+            var headerLine = style.Argb(style.HeaderLine ?? "primary");
+            var header = new CellFormat
+            {
+                Bold = style.HeaderBold,
+                Color = style.Argb(style.HeaderColor),
+                Fill = style.HeaderBackground is null ? "FF" + Tint(Hex(style.Accent), 0.88) : style.Argb(style.HeaderBackground),
+                Bottom = headerLine is null ? BodyBorder(style, "bottom") : "medium|" + headerLine,
+                Top = BodyBorder(style, "top"),
+                Sides = BodyBorder(style, "side"),
+                Wrap = true,
+            };
+            sb.Append(rowHeight is null ? $"<row r=\"{headerRow}\">" : RowOpen(headerRow));
             for (var c = 0; c < columns.Count; c++)
             {
-                var align = HelixExportTable.IsRightAligned(columns[c], values.FirstOrDefault(r => r[c] is not null)?[c]) ? "right" : null;
-                sb.Append($"<c r=\"{Ref(c, headerRow)}\" t=\"inlineStr\" s=\"{styles.Get(null, header: true, align: align)}\"><is><t xml:space=\"preserve\">{Esc(columns[c].Header)}</t></is></c>");
+                sb.Append($"<c r=\"{Ref(c, headerRow)}\" t=\"inlineStr\" s=\"{styles.Get(header with { Align = aligns[c] == "right" ? "right" : aligns[c] })}\"><is><t xml:space=\"preserve\">{Esc(columns[c].Header)}</t></is></c>");
             }
 
             sb.Append("</row>");
@@ -134,8 +161,36 @@ public sealed class HelixExcel
         for (var r = 0; r < values.Count; r++)
         {
             var row = headerRow + 1 + r;
-            sb.Append($"<row r=\"{row}\">");
-            for (var c = 0; c < columns.Count; c++) Cell(sb, Ref(c, row), values[r][c], columns[c], styles, total: false);
+            sb.Append(RowOpen(row));
+            for (var c = 0; c < columns.Count; c++)
+            {
+                var format = new CellFormat
+                {
+                    Fill = style.Striped && r % 2 == 1 ? style.Argb(style.StripeColor) : null,
+                    Bottom = BodyBorder(style, "bottom"),
+                    Top = BodyBorder(style, "top"),
+                    Sides = BodyBorder(style, "side"),
+                    Align = aligns[c] == "right" ? null : aligns[c],
+                };
+                var value = values[r][c];
+                if (style.NegativeColor is not null && HelixExportTable.IsNumber(value) && Convert.ToDouble(value, CultureInfo.InvariantCulture) < 0)
+                {
+                    format = format with { Color = style.Argb(style.NegativeColor) };
+                }
+
+                if (style.CellStyle?.Invoke(new HelixExcelCell(columns[c], rows[r], value, r)) is { } custom)
+                {
+                    format = format with
+                    {
+                        Color = custom.Color is null ? format.Color : style.Argb(custom.Color),
+                        Fill = custom.Background is null ? format.Fill : style.Argb(custom.Background),
+                        Bold = custom.Bold, Italic = custom.Italic,
+                    };
+                }
+
+                Cell(sb, Ref(c, row), value, columns[c], styles, format);
+            }
+
             sb.Append("</row>");
         }
 
@@ -143,7 +198,12 @@ public sealed class HelixExcel
         {
             var row = lastData + 1;
             var labelColumn = Enumerable.Range(0, columns.Count).FirstOrDefault(c => columns[c].Total == HelixTotal.None, -1);
-            sb.Append($"<row r=\"{row}\">");
+            var totals = new CellFormat
+            {
+                Bold = true, Fill = style.Argb(style.TotalsBackground), Top = "thin|FF9CA3AF",
+                Bottom = BodyBorder(style, "bottom"), Sides = BodyBorder(style, "side"),
+            };
+            sb.Append(RowOpen(row));
             for (var c = 0; c < columns.Count; c++)
             {
                 var column = columns[c];
@@ -152,16 +212,17 @@ public sealed class HelixExcel
                     var cached = HelixExportTable.TotalOf(column.Total, values.Select(v => v[c]));
                     var function = column.Total switch { HelixTotal.Sum => "SUM", HelixTotal.Average => "AVERAGE", HelixTotal.Count => "COUNTA", HelixTotal.Min => "MIN", _ => "MAX" };
                     var formula = values.Count == 0 ? "0" : $"{function}({Ref(c, firstData)}:{Ref(c, lastData)})";
-                    var style = styles.Get(column.Total == HelixTotal.Count ? "0" : NumberFormat(column, cached), header: false, align: null, bold: true, topBorder: true);
-                    sb.Append($"<c r=\"{Ref(c, row)}\" s=\"{style}\"><f>{formula}</f>{(cached is null ? "" : $"<v>{Convert.ToDouble(cached, CultureInfo.InvariantCulture).ToString("R", CultureInfo.InvariantCulture)}</v>")}</c>");
+                    var format = totals with { NumberFormat = column.Total == HelixTotal.Count ? "0" : NumberFormat(column, cached) };
+                    if (style.NegativeColor is not null && cached is double d && d < 0) format = format with { Color = style.Argb(style.NegativeColor) };
+                    sb.Append($"<c r=\"{Ref(c, row)}\" s=\"{styles.Get(format)}\"><f>{formula}</f>{(cached is null ? "" : $"<v>{Convert.ToDouble(cached, CultureInfo.InvariantCulture).ToString("R", CultureInfo.InvariantCulture)}</v>")}</c>");
                 }
                 else if (c == labelColumn)
                 {
-                    sb.Append($"<c r=\"{Ref(c, row)}\" t=\"inlineStr\" s=\"{styles.Get(null, false, null, bold: true, topBorder: true)}\"><is><t>{Esc(table.TotalLabel)}</t></is></c>");
+                    sb.Append($"<c r=\"{Ref(c, row)}\" t=\"inlineStr\" s=\"{styles.Get(totals)}\"><is><t>{Esc(table.TotalLabel)}</t></is></c>");
                 }
                 else
                 {
-                    sb.Append($"<c r=\"{Ref(c, row)}\" s=\"{styles.Get(null, false, null, bold: true, topBorder: true)}\"/>");
+                    sb.Append($"<c r=\"{Ref(c, row)}\" s=\"{styles.Get(totals)}\"/>");
                 }
             }
 
@@ -179,36 +240,52 @@ public sealed class HelixExcel
         return sb.ToString();
     }
 
-    private static void Cell(StringBuilder sb, string reference, object? value, HelixExportColumn column, StyleSheet styles, bool total)
+    private static string? AlignOf(HelixExportColumn column, object? sample) => column.Align switch
     {
-        var align = column.Align switch { HelixExportAlign.Left => "left", HelixExportAlign.Center => "center", HelixExportAlign.Right => "right", _ => null };
+        HelixExportAlign.Left => "left",
+        HelixExportAlign.Center => "center",
+        HelixExportAlign.Right => "right",
+        _ => sample is bool ? "center" : HelixExportTable.IsRightAligned(column, sample) ? "right" : null,
+    };
+
+    /// <summary>Thin border of a body cell for the chosen <see cref="HelixExcelBorders"/>, as "style|ARGB".</summary>
+    private static string? BodyBorder(HelixExcelStyle style, string side) => style.Borders switch
+    {
+        HelixExcelBorders.All => "thin|" + style.Argb(style.BorderColor),
+        HelixExcelBorders.Rows when side == "bottom" => "thin|" + style.Argb(style.BorderColor),
+        _ => null,
+    };
+
+    private static void Cell(StringBuilder sb, string reference, object? value, HelixExportColumn column, StyleSheet styles, CellFormat format)
+    {
+        var empty = format.Fill is not null || format.Bottom is not null || format.Top is not null || format.Sides is not null;
         switch (value)
         {
             case null:
+                if (empty) sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(format)}\"/>");
                 return;
             case bool b:
-                sb.Append($"<c r=\"{reference}\" t=\"b\" s=\"{styles.Get(null, false, align ?? "center")}\"><v>{(b ? 1 : 0)}</v></c>");
+                sb.Append($"<c r=\"{reference}\" t=\"b\" s=\"{styles.Get(format with { Align = format.Align ?? "center" })}\"><v>{(b ? 1 : 0)}</v></c>");
                 return;
             case DateTime d:
-                var serial = d.ToOADate();
                 var dateFormat = column.ExcelFormat ?? (column.Format is { } f ? DateFormat(f) : d.TimeOfDay == TimeSpan.Zero ? "yyyy-mm-dd" : "yyyy-mm-dd hh:mm");
-                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(dateFormat, false, align)}\"><v>{serial.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
+                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(format with { NumberFormat = dateFormat })}\"><v>{d.ToOADate().ToString("R", CultureInfo.InvariantCulture)}</v></c>");
                 return;
             case TimeSpan t:
-                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(column.ExcelFormat ?? "[h]:mm:ss", false, align)}\"><v>{t.TotalDays.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
+                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(format with { NumberFormat = column.ExcelFormat ?? "[h]:mm:ss" })}\"><v>{t.TotalDays.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
                 return;
             case TimeOnly time:
-                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(column.ExcelFormat ?? "hh:mm", false, align)}\"><v>{time.ToTimeSpan().TotalDays.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
+                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(format with { NumberFormat = column.ExcelFormat ?? "hh:mm" })}\"><v>{time.ToTimeSpan().TotalDays.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
                 return;
             case var n when HelixExportTable.IsNumber(n):
                 var number = Convert.ToDouble(n, CultureInfo.InvariantCulture);
                 if (double.IsNaN(number) || double.IsInfinity(number)) return;
-                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(NumberFormat(column, n), false, align)}\"><v>{number.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
+                sb.Append($"<c r=\"{reference}\" s=\"{styles.Get(format with { NumberFormat = NumberFormat(column, n) })}\"><v>{number.ToString("R", CultureInfo.InvariantCulture)}</v></c>");
                 return;
             default:
                 var text = HelixExportTable.Text(value, column.Format, CultureInfo.CurrentCulture);
                 if (text.Length > 32767) text = text[..32767];
-                sb.Append($"<c r=\"{reference}\" t=\"inlineStr\" s=\"{styles.Get(null, false, align, wrap: text.Contains('\n'))}\"><is><t xml:space=\"preserve\">{Esc(text)}</t></is></c>");
+                sb.Append($"<c r=\"{reference}\" t=\"inlineStr\" s=\"{styles.Get(format with { Wrap = text.Contains('\n') })}\"><is><t xml:space=\"preserve\">{Esc(text)}</t></is></c>");
                 return;
         }
     }
@@ -305,23 +382,53 @@ public sealed class HelixExcel
         return result;
     }
 
-    /// <summary>Collects the cell formats used, and writes styles.xml.</summary>
-    private sealed class StyleSheet(string accent)
+    /// <summary>The look of a cell; borders are "style|ARGB" (thin, medium).</summary>
+    private sealed record CellFormat
     {
+        public string? NumberFormat { get; init; }
+        public bool Bold { get; init; }
+        public bool Italic { get; init; }
+        public double? Size { get; init; }
+        public string? Color { get; init; }
+        public string? Fill { get; init; }
+        public string? Top { get; init; }
+        public string? Bottom { get; init; }
+        public string? Sides { get; init; }
+        public string? Align { get; init; }
+        public bool Wrap { get; init; }
+    }
+
+    /// <summary>Collects the fonts, fills, borders and formats used, and writes styles.xml.</summary>
+    private sealed class StyleSheet
+    {
+        private readonly HelixExcelStyle _style;
         private readonly List<string> _formats = [];
-        // 0: default, 1: the sheet title.
-        private readonly List<(int NumFmt, int Font, int Fill, int Border, string? Align, bool Wrap)> _xfs = [(0, 0, 0, 0, null, false), (0, 2, 0, 0, null, false)];
+        private readonly List<(bool Bold, bool Italic, double Size, string? Color)> _fonts;
+        private readonly List<string?> _fills = [null, null]; // 0: none, 1: gray125 (both required by Excel)
+        private readonly List<(string? Top, string? Bottom, string? Sides)> _borders = [(null, null, null)];
+        private readonly List<(int NumFmt, int Font, int Fill, int Border, string? Align, bool Wrap)> _xfs = [(0, 0, 0, 0, null, false)];
 
-        public int Title { get; } = 1;
-
-        public int Get(string? numberFormat, bool header, string? align, bool bold = false, bool topBorder = false, bool wrap = false)
+        public StyleSheet(HelixExcelStyle style)
         {
-            var numFmt = numberFormat is null ? 0 : FormatId(numberFormat);
-            var key = (numFmt, header ? 1 : bold ? 3 : 0, header ? 2 : 0, header ? 1 : topBorder ? 2 : 0, align, wrap);
-            var index = _xfs.IndexOf(key);
+            _style = style;
+            _fonts = [(false, false, style.FontSize, null)];
+        }
+
+        public int Get(CellFormat f)
+        {
+            var numFmt = f.NumberFormat is null ? 0 : FormatId(f.NumberFormat);
+            var font = IndexOf(_fonts, (f.Bold, f.Italic, f.Size ?? _style.FontSize, f.Color));
+            var fill = f.Fill is null ? 0 : IndexOf(_fills, f.Fill, start: 2);
+            var border = IndexOf(_borders, (f.Top, f.Bottom, f.Sides));
+            return IndexOf(_xfs, (numFmt, font, fill, border, f.Align, f.Wrap));
+        }
+
+        private static int IndexOf<T>(List<T> list, T item, int start = 0)
+        {
+            var index = list.FindIndex(start, x => EqualityComparer<T>.Default.Equals(x, item));
             if (index >= 0) return index;
-            _xfs.Add(key);
-            return _xfs.Count - 1;
+            list.Add(item);
+            return list.Count - 1;
         }
 
         private int FormatId(string format)
@@ -331,6 +438,13 @@ public sealed class HelixExcel
             var index = _formats.IndexOf(format);
             if (index < 0) { _formats.Add(format); index = _formats.Count - 1; }
             return 164 + index;
+        }
+
+        private static string Side(string name, string? spec)
+        {
+            if (spec is null) return $"<{name}/>";
+            var parts = spec.Split('|');
+            return $"<{name} style=\"{parts[0]}\"><color rgb=\"{parts[1]}\"/></{name}>";
         }
 
         public string Xml()
@@ -344,16 +458,27 @@ public sealed class HelixExcel
                 sb.Append("</numFmts>");
             }
 
-            sb.Append("<fonts count=\"4\">" +
-                "<font><sz val=\"11\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
-                "<font><b/><sz val=\"11\"/><color rgb=\"FF1F2937\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
-                $"<font><b/><sz val=\"15\"/><color rgb=\"FF{accent}\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
-                "<font><b/><sz val=\"11\"/><name val=\"Calibri\"/><family val=\"2\"/></font></fonts>");
-            sb.Append("<fills count=\"3\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill>" +
-                $"<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FF{Tint(accent, 0.88)}\"/><bgColor indexed=\"64\"/></patternFill></fill></fills>");
-            sb.Append("<borders count=\"3\"><border><left/><right/><top/><bottom/><diagonal/></border>" +
-                $"<border><left/><right/><top/><bottom style=\"medium\"><color rgb=\"FF{accent}\"/></bottom><diagonal/></border>" +
-                "<border><left/><right/><top style=\"thin\"><color rgb=\"FF9CA3AF\"/></top><bottom/><diagonal/></border></borders>");
+            var name = Esc(_style.FontName);
+            sb.Append($"<fonts count=\"{_fonts.Count}\">");
+            foreach (var (bold, italic, size, color) in _fonts)
+            {
+                sb.Append("<font>").Append(bold ? "<b/>" : "").Append(italic ? "<i/>" : "")
+                  .Append($"<sz val=\"{size.ToString("0.##", CultureInfo.InvariantCulture)}\"/>")
+                  .Append(color is null ? "" : $"<color rgb=\"{color}\"/>")
+                  .Append($"<name val=\"{name}\"/><family val=\"2\"/></font>");
+            }
+
+            sb.Append("</fonts>");
+            sb.Append($"<fills count=\"{_fills.Count}\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill>");
+            foreach (var fill in _fills.Skip(2)) sb.Append($"<fill><patternFill patternType=\"solid\"><fgColor rgb=\"{fill}\"/><bgColor indexed=\"64\"/></patternFill></fill>");
+            sb.Append("</fills>");
+            sb.Append($"<borders count=\"{_borders.Count}\">");
+            foreach (var (top, bottom, sides) in _borders)
+            {
+                sb.Append("<border>").Append(Side("left", sides)).Append(Side("right", sides)).Append(Side("top", top)).Append(Side("bottom", bottom)).Append("<diagonal/></border>");
+            }
+
+            sb.Append("</borders>");
             sb.Append("<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>");
             sb.Append($"<cellXfs count=\"{_xfs.Count}\">");
             foreach (var (numFmt, font, fill, border, align, wrap) in _xfs)
@@ -366,7 +491,7 @@ public sealed class HelixExcel
                 if (align is null && !wrap) { sb.Append("/>"); continue; }
                 sb.Append(" applyAlignment=\"1\"><alignment");
                 if (align is not null) sb.Append($" horizontal=\"{align}\"");
-                if (wrap) sb.Append(" vertical=\"top\" wrapText=\"1\"");
+                if (wrap) sb.Append(" vertical=\"center\" wrapText=\"1\"");
                 sb.Append("/></xf>");
             }
 
