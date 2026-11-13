@@ -9,6 +9,9 @@ public static class HelixConverters
     public static readonly IValueConverter IsWarning = new FuncValueConverter<HelixSeverity, bool>(s => s == HelixSeverity.Warning);
     public static readonly IValueConverter IsDanger = new FuncValueConverter<HelixSeverity, bool>(s => s == HelixSeverity.Danger);
 
+    /// <summary>True for a number above zero (e.g. a count).</summary>
+    public static readonly IValueConverter IsPositive = new FuncValueConverter<int, bool>(n => n > 0);
+
     /// <summary>A width times a share (the parameter, 0 to 1).</summary>
     public static readonly IMultiValueConverter Share = new FuncMultiValueConverter<object?, double>(values =>
     {

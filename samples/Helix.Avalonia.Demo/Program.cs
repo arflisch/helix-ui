@@ -318,6 +318,46 @@ internal static class Program
         HelixNotifications.Remove(withAction);
         Pump(20);
         Check("dismiss removes it", !HelixNotifications.Items.Contains(withAction));
+
+        // Filters, color, files
+        window.ShowPage(MainWindow.IndexOf("Filters & files"));
+        Pump(150);
+        var filters = Named<HelixFilterBar>("Filters");
+        var staff = Named<HelixDataGrid>("Staff");
+        var engineers = Pages.DataPage.SampleEmployees().Count(e => e.Department == "Engineering" && e.Status == "Active");
+        Check($"a saved filter applies to the grid ({staff.TotalCount} rows, {engineers} expected, '{filters.SavedText}')",
+            staff.TotalCount == engineers && filters.SavedText == "Active engineers" && filters.ActiveCount == 2);
+        var statusFilter = filters.Items.OfType<HelixChoiceFilter>().First();
+        Check($"the choice filter lists the statuses and shows the chosen one ({statusFilter.Choices?.Count}, {statusFilter.Chosen?.Count})",
+            statusFilter.Choices?.Count == 4 && statusFilter.Chosen?.Count == 1);
+        filters.ClearFilters();
+        Pump(20);
+        Check($"clear shows every row ({staff.TotalCount})", staff.TotalCount == 37 && filters.ActiveCount == 0);
+        Named<HelixToggleFilter>("HighPay").IsOn = true;
+        Pump(20);
+        var high = Pages.DataPage.SampleEmployees().Count(e => e.Salary >= 60000);
+        Check($"the toggle filter keeps the high salaries ({staff.TotalCount} of {high}; state {string.Join(",", filters.State!.Keys)})", staff.TotalCount == high && filters.State!["high"] == "1");
+        filters.SavePreset("High pay");
+        Check($"saving names the current set ({filters.SavedText}, {filters.Presets!.Count} saved)", filters.SavedText == "High pay" && filters.Presets.Count == 2);
+        filters.State = new Dictionary<string, string> { ["q"] = "Design" };
+        Pump(20);
+        Check($"setting State from code updates the field and the grid ({filters.Items.OfType<HelixTextFilter>().First().Text}, {staff.TotalCount} rows)",
+            filters.Items.OfType<HelixTextFilter>().First().Text == "Design" && !Named<HelixToggleFilter>("HighPay").IsOn && staff.TotalCount < 37);
+
+        var brand = Named<HelixColorPicker>("Brand");
+        Check($"color picker shows the hex ({brand.Hex})", brand.Hex == "#4F46E5" && brand.HasValue);
+        brand.SetHsv(0, 1, 1);
+        Check($"pure red from the HSV area ({brand.Hex})", brand.Hex == "#FF0000");
+        Check($"hex parsing with alpha ({HelixColorPicker.ParseHex("#11223380")})", HelixColorPicker.ParseHex("#11223380") == global::Avalonia.Media.Color.FromArgb(0x80, 0x11, 0x22, 0x33) && HelixColorPicker.ParseHex("zz") is null);
+
+        var drop = Named<HelixFileDrop>("Drop");
+        Check($"file drop lists the files ({drop.Files.Count}: {string.Join(", ", drop.Files.Select(f => f.Name + " " + f.SizeText))})", drop.Files.Count == 2 && drop.HasFiles);
+        var bad = Path.Combine(Path.GetTempPath(), "helix-demo", "virus.exe");
+        File.WriteAllBytes(bad, [1, 2, 3]);
+        drop.AddFiles([bad]);
+        Check($"a refused type explains why ({drop.Error})", drop.Files.Count == 2 && drop.Error?.Contains("virus.exe") == true);
+        drop.Files[0].RemoveCommand.Execute(null);
+        Check($"remove takes a file out ({drop.Files.Count})", drop.Files.Count == 1);
         return failures;
     }
 
@@ -387,6 +427,15 @@ internal static class Program
             window.CaptureRenderedFrame()?.Save(livePath);
             Console.WriteLine(livePath);
             ((HelixNotificationCenter)Find("Bell")).IsOpen = false;
+            var tools = MainWindow.IndexOf("Filters & files");
+            window.ShowPage(tools);
+            Settle();
+            ((HelixColorPicker)Find("Brand")).IsDropDownOpen = true;
+            Settle();
+            var colorPath = Path.Combine(folder, $"{tools + 1:00}-tools-color-{variant.Key.ToString()!.ToLowerInvariant()}.png");
+            window.CaptureRenderedFrame()?.Save(colorPath);
+            Console.WriteLine(colorPath);
+            ((HelixColorPicker)Find("Brand")).IsDropDownOpen = false;
             Capture("prompt", () => _ = HelixConfirm.PromptAsync("Rename the board", value: "", placeholder: "Board name", validate: t => string.IsNullOrWhiteSpace(t) ? "The name cannot be empty." : null));
         }
 

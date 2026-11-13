@@ -185,3 +185,20 @@ HelixNotifications.RemoveTag("network");                                        
 ```
 
 `HelixTimeBarMath` (Repeating, Fixed, FormatRemaining) is usable on its own; `Now` and `TimeProvider` make the bar testable.
+
+## Filters, colors, files
+
+```xml
+<helix:HelixFilterBar Target="{Binding #Grid}" State="{Binding SavedState}" Presets="{Binding MyPresets}">
+    <helix:HelixTextFilter Key="q" Paths="Name,Department" />
+    <helix:HelixChoiceFilter Key="status" Path="Status" Label="Status" />          <!-- options from the rows -->
+    <helix:HelixDateFilter Key="start" Path="Start" Label="Started between" />
+    <helix:HelixToggleFilter Key="late" Path="IsLate" Label="Late only" />
+</helix:HelixFilterBar>
+
+<helix:HelixColorPicker Label="Brand color" SelectedColor="{Binding Brand}" ShowAlpha="True" />
+<helix:HelixFileDrop Accept=".xlsx,.csv,image/*" MaxFileSize="10485760" MaxFiles="5" FilesChanged="OnFiles" />
+```
+
+`State` is a key → text dictionary, easy to save or send to a server; users save sets of filters from the star menu.
+The color picker's `Hex` is `#RRGGBB` (or `#RRGGBBAA`); in XAML, Avalonia reads `SelectedColor` as `#AARRGGBB`.
