@@ -21,6 +21,7 @@ public partial class MainWindow : Window
         ("Dashboard", () => new DashboardPage()),
         ("Navigation", () => new Pages.NavigationPage()),
         ("Dialogs", () => new DialogsPage()),
+        ("Live", () => new LivePage()),
         ("Feedback", () => new FeedbackPage(showToasts: true)),
     ];
 

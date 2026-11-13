@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.LivePage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Live</TextBlock>
+        <TextBlock Classes="lead">A countdown to the next deadline and a notification center fed from anywhere in the app.</TextBlock>
+
+        <TextBlock Classes="h2">Time bar</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="28">
+                <helix:HelixTimeBar Name="Quarter" Label="Next submission" Step="0:15:00" Lead="0:05:00" Warning="0:03:00" Critical="0:01:00"
+                                    Hint="Activation window: the next quarter hour" SlotsBefore="1" SlotsAfter="3" />
+                <helix:HelixTimeBar Name="Fixed" Label="Offer closes" Compact="True" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Notification center</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="16">
+                <DockPanel>
+                    <helix:HelixNotificationCenter Name="Bell" DockPanel.Dock="Right" VerticalAlignment="Top" />
+                    <TextBlock Foreground="{DynamicResource Helix.TextMuted}" TextWrapping="Wrap" VerticalAlignment="Center">
+                        The bell shows the unread count; its panel groups notifications by day.
+                    </TextBlock>
+                </DockPanel>
+                <WrapPanel ItemSpacing="10" LineSpacing="10">
+                    <helix:HelixButton Content="Info" Variant="Soft" Click="OnInfo" />
+                    <helix:HelixButton Content="Warning" Tone="Warning" Variant="Soft" Click="OnWarning" />
+                    <helix:HelixButton Content="Error + toast" Tone="Danger" Variant="Soft" Click="OnError" />
+                    <helix:HelixButton Content="Mark all read" Variant="Outline" Tone="Neutral" Click="OnMarkAll" />
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

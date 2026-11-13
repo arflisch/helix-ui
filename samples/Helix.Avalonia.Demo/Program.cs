@@ -279,6 +279,45 @@ internal static class Program
         Check("an open drawer shows in the host", host.Overlays.OfType<HelixDrawerSlot>().Any());
         Key(global::Avalonia.Input.Key.Escape);
         Check($"Escape closes the drawer and unsets IsOpen ({drawer.IsOpen})", !drawer.IsOpen && host.Overlays.Count == 0);
+
+        // Live: time bar and notifications
+        window.ShowPage(MainWindow.IndexOf("Live"));
+        Pump(100);
+        var bar = Named<HelixTimeBar>("Quarter");
+        bar.Now = new DateTime(2026, 11, 13, 14, 6, 30);
+        Check($"time bar counts to :10 with a 5 min lead ({bar.RemainingText} {bar.UntilText})", bar.Until == new DateTime(2026, 11, 13, 14, 10, 0) && bar.RemainingText == "03:30");
+        Check($"time bar shows 5 slots around now, the current one second ({bar.Slots.Count}, {bar.Slots[1].Label})", bar.Slots.Count == 5 && bar.Slots[1].IsCurrent && bar.Slots[1].Label == "14:00–14:15");
+        bar.Now = new DateTime(2026, 11, 13, 14, 9, 30);
+        Check($"time bar turns critical under a minute ({bar.State})", bar.State == "critical" && bar.Classes.Contains(":critical") || bar.State == "critical");
+        DateTime? reached = null;
+        bar.DeadlineReached += (_, d) => reached = d;
+        var clock = new FakeClock();
+        bar.TimeProvider = clock;
+        bar.Now = new DateTime(2026, 11, 13, 14, 9, 59);
+        clock.Advance(TimeSpan.FromSeconds(2));
+        bar.Tick();
+        Check($"time bar raises DeadlineReached at 14:10 ({reached:HH:mm}, next {bar.Until:HH:mm})", reached == new DateTime(2026, 11, 13, 14, 10, 0) && bar.Until.Minute == 25);
+        var bell = Named<HelixNotificationCenter>("Bell");
+        var unread = bell.UnreadCount;
+        HelixNotifications.Warning("Test");
+        Pump(20);
+        Check($"a new notification adds to the unread count ({unread} → {bell.UnreadCount})", bell.UnreadCount == unread + 1);
+        Check($"rows are grouped by day ({string.Join(", ", bell.Rows.OfType<HelixNotificationGroup>().Select(g => g.Name))})",
+            bell.Rows.OfType<HelixNotificationGroup>().Select(g => g.Name).SequenceEqual(new[] { HelixTexts.Current.Today, HelixTexts.Current.Yesterday, HelixTexts.Current.Earlier }));
+        HelixNotifications.MarkAllRead();
+        Pump(20);
+        Check($"mark all read empties the count ({bell.UnreadCount}, badge {bell.HasUnread})", bell.UnreadCount == 0 && !bell.HasUnread);
+        var opened = false;
+        var withAction = HelixNotifications.Add("Open me", action: () => opened = true);
+        bell.IsOpen = true;
+        Pump(50);
+        withAction.OpenCommand.Execute(null);
+        Pump(20);
+        Check($"clicking a notification runs its action and closes the panel ({opened}, open={bell.IsOpen})", opened && !bell.IsOpen && withAction.IsRead);
+        HelixNotifications.RemoveTag("none");
+        HelixNotifications.Remove(withAction);
+        Pump(20);
+        Check("dismiss removes it", !HelixNotifications.Items.Contains(withAction));
         return failures;
     }
 
@@ -339,9 +378,27 @@ internal static class Program
             Capture("dialog", () => ((HelixDialog)Find("Dialog")).IsOpen = true);
             Capture("drawer", () => ((HelixDrawer)Find("Drawer")).IsOpen = true);
             Capture("confirm", () => _ = HelixConfirm.AskAsync("Delete 3 sites?", "This cannot be undone.", danger: true));
+            var live = MainWindow.IndexOf("Live");
+            window.ShowPage(live);
+            Settle();
+            ((HelixNotificationCenter)Find("Bell")).IsOpen = true;
+            Settle();
+            var livePath = Path.Combine(folder, $"{live + 1:00}-live-panel-{variant.Key.ToString()!.ToLowerInvariant()}.png");
+            window.CaptureRenderedFrame()?.Save(livePath);
+            Console.WriteLine(livePath);
+            ((HelixNotificationCenter)Find("Bell")).IsOpen = false;
             Capture("prompt", () => _ = HelixConfirm.PromptAsync("Rename the board", value: "", placeholder: "Board name", validate: t => string.IsNullOrWhiteSpace(t) ? "The name cannot be empty." : null));
         }
 
         return 0;
+    }
+
+    /// <summary>A clock the self-test moves by hand.</summary>
+    private sealed class FakeClock : TimeProvider
+    {
+        private DateTimeOffset _now = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => _now;
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+        public void Advance(TimeSpan by) => _now += by;
     }
 }

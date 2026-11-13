@@ -163,3 +163,25 @@ Escape and the backdrop close the top-most overlay (`CloseOnEscape`, `CloseOnBac
     </helix:HelixMenuButton.Menu>
 </helix:HelixMenuButton>
 ```
+
+## Countdown and notifications
+
+```xml
+<!-- Repeats every quarter hour, deadline 5 min before the end of each slot; orange under 3 min, red under 1 -->
+<helix:HelixTimeBar Label="Next submission" Step="0:15:00" Lead="0:05:00" Warning="0:03:00" Critical="0:01:00"
+                    DeadlineCommand="{Binding SubmitCommand}" />
+<helix:HelixTimeBar Label="Offer closes" Deadline="{Binding ClosesAt}" Compact="True" />
+
+<helix:HelixNotificationCenter />   <!-- a bell with the unread count; the panel groups by day -->
+```
+
+```csharp
+timeBar.SlotColor = slot => statuses[slot.Start] == "sent" ? "success" : null;   // a dot per slot chip
+timeBar.SlotText  = slot => statuses[slot.Start];
+
+HelixNotifications.Warning("Deadline in 5 minutes", "Submit before 14:10.");     // any thread
+HelixNotifications.Add("Export ready", HelixSeverity.Success, actionText: "Open", action: OpenFile, toast: true);
+HelixNotifications.RemoveTag("network");                                           // once the problem is solved
+```
+
+`HelixTimeBarMath` (Repeating, Fixed, FormatRemaining) is usable on its own; `Now` and `TimeProvider` make the bar testable.
