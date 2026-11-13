@@ -20,7 +20,7 @@
                 or add the reference to your <code>.csproj</code> yourself.
                 With central package management, the version goes in <code>Directory.Packages.props</code> instead.
             </p>
-            <CodeBlock Language="xml" Code="@PackageReferenceCode" WpfCode="@WpfPackageReferenceCode" />
+            <CodeBlock Language="xml" Code="@PackageReferenceCode" WpfCode="@WpfPackageReferenceCode" AvaloniaCode="@AvaloniaPackageReferenceCode" />
         </div>
         <div class="step">
             <p class="step__title">Register the services</p>
@@ -105,6 +105,18 @@
                 <!-- your layout -->
             </helix:HelixHost>
         </Window>
+        """;
+
+    private const string AvaloniaPackageReferenceCode = """
+        <!-- YourApp.csproj (net8.0 or later; Windows, macOS, Linux) -->
+        <ItemGroup>
+            <PackageReference Include="Helix.Avalonia" Version="0.3.0" />
+        </ItemGroup>
+
+        <!-- Or, with central package management: Directory.Packages.props -->
+        <PackageVersion Include="Helix.Avalonia" Version="0.3.0" />
+        <!-- and in YourApp.csproj -->
+        <PackageReference Include="Helix.Avalonia" />
         """;
 
     private const string AvaloniaTemplateCode = """

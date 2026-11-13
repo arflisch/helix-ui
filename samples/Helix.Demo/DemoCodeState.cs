@@ -34,17 +34,19 @@ public static partial class DemoAvalonia
             .Replace("https://helix-ui.dev/wpf", "using:Helix.Avalonia")
             .Replace("Helix.Wpf", "Helix.Avalonia")
             .Replace("helix-wpf", "helix-avalonia")
-            .Replace("helix:HelixResources", "helix:HelixTheme")
+            .Replace("HelixResources", "HelixTheme")
             .Replace("HierarchicalDataTemplate", "TreeDataTemplate")
             .Replace(", UpdateSourceTrigger=PropertyChanged", "")
             .Replace("helix:HelixChartSeries Name=", "helix:HelixChartSeries Label=")
             .Replace(" AutoGenerateColumns=\"False\"", "")
+            .Replace("SelectedItemChanged=", "SelectionChanged=")
             .Replace("DisplayDateStart=", "Minimum=")
             .Replace("DisplayDateEnd=", "Maximum=")
             .Replace("ToolTipService.InitialShowDelay=", "ToolTip.ShowDelay=")
             .Replace("ToolTipService.Placement=", "ToolTip.Placement=")
             .Replace("WPF ·", "Avalonia ·");
-        code = ToolTip().Replace(code, " ToolTip.Tip=");
+        code = ToolTip().Replace(code, "ToolTip.Tip=");
+        code = ToolTipElement().Replace(code, "<$1ToolTip.Tip>");
         code = ElementName().Replace(code, "{Binding #$1");
         code = Visibility().Replace(code, m => m.Groups[1].Value == "Visible" ? "IsVisible=\"True\"" : "IsVisible=\"False\"");
         return code;
@@ -52,6 +54,9 @@ public static partial class DemoAvalonia
 
     [GeneratedRegex(@"(?<=\s)ToolTip=(?="")")]
     private static partial Regex ToolTip();
+
+    [GeneratedRegex(@"<(/?)helix:\w+\.ToolTip>")]
+    private static partial Regex ToolTipElement();
 
     [GeneratedRegex(@"\{Binding ElementName=(\w+)")]
     private static partial Regex ElementName();
