@@ -2,7 +2,7 @@
 @using System.Globalization
 @inject IJSRuntime JS
 
-<DemoPage Title="Export: Excel, Word, CSV" Eyebrow="Guide" Description="Helix.Export writes real .xlsx and .docx files from your lists: typed cells, formats, totals, frozen header, filters, headings, tables and page numbers. No dependency and no Office needed; it is plain .NET, so it works the same in Blazor, WPF, an API or a background job.">
+<DemoPage Title="Export: Excel, Word, CSV" Eyebrow="Guide" Description="Helix.Export writes real .xlsx and .docx files from your lists: typed cells, formats, totals, frozen header, filters, headings, tables and page numbers. No dependency and no Office needed; it is plain .NET, so it works the same in Blazor, WPF, Avalonia, an API or a background job.">
     <section class="demo-section">
         <h2 class="demo-section__title">Try it</h2>
         <p class="demo-section__text">These files are generated in your browser from the 48 demo employees.</p>
@@ -26,7 +26,7 @@
     <section class="demo-section">
         <h2 class="demo-section__title">Install</h2>
         <CodeBlock Language="bash" Code="dotnet add package Helix.Export" />
-        <p class="demo-section__text">Helix.Blazor already brings it (the grid uses it); for WPF or any other project, add the package.</p>
+        <p class="demo-section__text">Helix.Blazor already brings it (the grid uses it); Helix.Avalonia too; for WPF or any other project, add the package.</p>
     </section>
 
     <section class="demo-section">
@@ -68,6 +68,7 @@
         <HelixDescriptionList Columns="1" Bordered="true">
             <HelixDescription Label="Blazor"><code>await JS.HelixDownloadAsync("report.xlsx", bytes);</code> (content type from the extension)</HelixDescription>
             <HelixDescription Label="WPF / desktop"><code>excel.Save(path)</code>, or <code>grid.ExportFile(HelixExportFormat.Excel)</code> which asks where to save.</HelixDescription>
+            <HelixDescription Label="Avalonia"><code>await grid.ExportFileAsync(HelixExportFormat.Excel)</code> opens the save dialog of the platform (Windows, macOS, Linux).</HelixDescription>
             <HelixDescription Label="ASP.NET Core API"><code>Results.File(bytes, HelixExport.ExcelContentType, "report.xlsx")</code></HelixDescription>
             <HelixDescription Label="Stream"><code>WriteTo(stream)</code>: an HTTP response, a blob, an e-mail attachment.</HelixDescription>
         </HelixDescriptionList>

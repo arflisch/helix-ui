@@ -31,6 +31,8 @@
                     <helix:HelixSwitch Content="Success tone" Tone="Success" IsChecked="True" />
                     <helix:HelixSwitch Content="Custom accent" Accent="#FF8A00" IsChecked="True" />
                     <helix:HelixSwitch Content="Label first" LabelPosition="Start" IsChecked="True" />
+                    <helix:HelixSwitch Content="With texts" OnText="ON" OffText="OFF" IsChecked="True" />
+                    <helix:HelixSwitch Content="Dark mode" OnIcon="moon" OffIcon="sun" ThumbOnBrush="#FDE68A" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="14">
                     <helix:HelixCheckBox Content="I accept the terms" IsChecked="True" />

@@ -35,9 +35,9 @@ public partial class PickersPage : UserControl
         var plans = this.FindControl<HelixRadioGroup>("Plans")!;
         plans.ItemsSource = new[]
         {
-            new HelixRadioOption("Starter", "starter", "For one site, up to 5 users.", "user"),
-            new HelixRadioOption("Team", "team", "Several sites, shared dashboards.", "layout"),
-            new HelixRadioOption("Enterprise", "enterprise", "SSO, audit trail and support.", "lock"),
+            new HelixRadioOption("Starter", "For one site, up to 5 users.", "user", "starter"),
+            new HelixRadioOption("Team", "Several sites, shared dashboards.", "layout", "team"),
+            new HelixRadioOption("Enterprise", "SSO, audit trail and support.", "lock", "enterprise"),
         };
         plans.SelectedIndex = 1;
     }

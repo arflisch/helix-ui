@@ -521,15 +521,21 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <DockPanel Background="{TemplateBinding Background}">
-                    <Panel Name="Track" DockPanel.Dock="Left" Width="36" Height="20" VerticalAlignment="Center">
+                    <Panel Name="Track" DockPanel.Dock="Left" Width="{TemplateBinding TrackWidth}" Height="20" VerticalAlignment="Center">
                         <Border Name="Halo" Margin="-3" CornerRadius="999" BorderThickness="3" BorderBrush="{TemplateBinding Accent}" Opacity="0" />
                         <Border CornerRadius="999" Background="{TemplateBinding TrackBrush}" />
                         <Border Name="On" CornerRadius="999" Background="{TemplateBinding Accent}" Opacity="0">
                             <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.15" /></Transitions></Border.Transitions>
                         </Border>
-                        <Border Name="Thumb" Width="16" Height="16" Margin="2" CornerRadius="999" Background="{TemplateBinding ThumbBrush}"
+                        <TextBlock Name="OnLabel" Text="{TemplateBinding OnText}" FontSize="9.5" FontWeight="Bold" Foreground="White" Margin="8,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center" IsVisible="False" />
+                        <TextBlock Name="OffLabel" Text="{TemplateBinding OffText}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource Helix.TextMuted}" Margin="0,0,7,0"
+                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <Border Name="Thumb" Width="16" Height="16" Margin="{TemplateBinding ThumbMargin}" CornerRadius="999" Background="{TemplateBinding ActualThumbBrush}"
                                 HorizontalAlignment="Left" VerticalAlignment="Center" BoxShadow="0 1 2 0 #33000000">
-                            <Border.Transitions><Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" /></Transitions></Border.Transitions>
+                            <Border.Transitions><Transitions><ThicknessTransition Property="Margin" Duration="0:0:0.18" Easing="CubicEaseOut" /></Transitions></Border.Transitions>
+                            <h:HelixIcon Icon="{TemplateBinding ThumbIcon}" Size="10" StrokeWidth="2.6" Foreground="{DynamicResource Helix.TextMuted}"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                     </Panel>
                     <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -553,7 +559,8 @@
             <Setter Property="Accent" Value="{DynamicResource Helix.Info}" />
         </Style>
         <Style Selector="^:checked /template/ Border#On"><Setter Property="Opacity" Value="1" /></Style>
-        <Style Selector="^:checked /template/ Border#Thumb"><Setter Property="RenderTransform" Value="translateX(16px)" /></Style>
+        <Style Selector="^:checked /template/ TextBlock#OnLabel"><Setter Property="IsVisible" Value="True" /></Style>
+        <Style Selector="^:checked /template/ TextBlock#OffLabel"><Setter Property="IsVisible" Value="False" /></Style>
         <Style Selector="^:focus-visible /template/ Border#Halo"><Setter Property="Opacity" Value="0.25" /></Style>
         <Style Selector="^[LabelPosition=Start] /template/ Panel#Track"><Setter Property="DockPanel.Dock" Value="Right" /></Style>
         <Style Selector="^[LabelPosition=Start] /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Margin" Value="0,0,10,0" /></Style>

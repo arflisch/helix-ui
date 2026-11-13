@@ -1,22 +1,22 @@
 @page "/getting-started"
 
-<DemoPage Title="Installation" Eyebrow="Guide" Description="A few steps, and every component is available in your Blazor or WPF app. The Blazor / WPF switch on code blocks changes the examples across the whole site.">
+<DemoPage Title="Installation" Eyebrow="Guide" Description="A few steps, and every component is available in your Blazor, WPF or Avalonia app. The Blazor / WPF / Avalonia switch on code blocks changes the examples across the whole site.">
     <section class="demo-section" style="margin-bottom:28px">
         <h2 class="demo-section__title">Start a new app</h2>
         <p class="demo-section__text">The templates create an app with the Helix theme (light, dark or system), a layout and a ready-made report page: filters, a grid with totals and CSV export, preferences remembered per user.</p>
-        <CodeBlock Language="bash" Code="@TemplateCode" WpfCode="@WpfTemplateCode" />
+        <CodeBlock Language="bash" Code="@TemplateCode" WpfCode="@WpfTemplateCode" AvaloniaCode="@AvaloniaTemplateCode" />
         <p class="demo-section__text" style="margin-top:14px">Or add Helix to an existing app, in a few steps:</p>
     </section>
     <div class="steps">
         <div class="step">
             <p class="step__title">Install the NuGet package</p>
             <p class="step__text">
-                <code>Helix.Blazor</code> needs .NET 10. <code>Helix.Wpf</code> works with .NET 8 and later (Windows).
+                <code>Helix.Blazor</code> needs .NET 10. <code>Helix.Wpf</code> works with .NET 8 and later (Windows). <code>Helix.Avalonia</code> works with .NET 8 and later on Windows, macOS and Linux (Avalonia 12).
                 From a terminal in your project folder:
             </p>
             <CodeBlock Language="bash" Code="dotnet add package Helix.Blazor" WpfCode="dotnet add package Helix.Wpf" />
             <p class="step__text" style="margin-top:14px">
-                Or search for <code>Helix.Blazor</code> / <code>Helix.Wpf</code> in Visual Studio's NuGet package manager,
+                Or search for <code>Helix.Blazor</code> / <code>Helix.Wpf</code> / <code>Helix.Avalonia</code> in Visual Studio's NuGet package manager,
                 or add the reference to your <code>.csproj</code> yourself.
                 With central package management, the version goes in <code>Directory.Packages.props</code> instead.
             </p>
@@ -25,17 +25,17 @@
         <div class="step">
             <p class="step__title">Register the services</p>
             <p class="step__text">One line in <code>Program.cs</code> (needed for toasts).</p>
-            <CodeBlock Language="c#" Code="@ProgramCode" WpfCode="@WpfAppCode" />
+            <CodeBlock Language="c#" Code="@ProgramCode" WpfCode="@WpfAppCode" AvaloniaCode="@AvaloniaAppCode" />
         </div>
         <div class="step">
             <p class="step__title">Add the stylesheet and the using</p>
             <p class="step__text">In <code>App.razor</code> and <code>_Imports.razor</code>.</p>
-            <CodeBlock Language="razor" Code="@ImportsCode" WpfCode="@WpfNamespaceCode" />
+            <CodeBlock Language="razor" Code="@ImportsCode" WpfCode="@WpfNamespaceCode" AvaloniaCode="@AvaloniaNamespaceCode" />
         </div>
         <div class="step">
             <p class="step__title">Wrap the layout</p>
             <p class="step__text"><code>HelixProvider</code> applies the theme and dark mode, and shows toasts.</p>
-            <CodeBlock Language="razor" Code="@LayoutCode" WpfCode="@WpfHostCode" />
+            <CodeBlock Language="razor" Code="@LayoutCode" WpfCode="@WpfHostCode" AvaloniaCode="@AvaloniaHostCode" />
         </div>
         <div class="step">
             <p class="step__title">Use the components</p>
@@ -100,6 +100,37 @@
 
     private const string WpfHostCode = """
         <!-- WPF · MainWindow.xaml: HelixHost shows notifications, dialogs and confirmations -->
+        <Window … Background="{DynamicResource Helix.Background}">
+            <helix:HelixHost>
+                <!-- your layout -->
+            </helix:HelixHost>
+        </Window>
+        """;
+
+    private const string AvaloniaTemplateCode = """
+        dotnet new install Avalonia.Templates
+        dotnet new avalonia.app -n MyApp          # then add Helix.Avalonia (next step)
+        """;
+
+    private const string AvaloniaAppCode = """
+        <!-- Avalonia · App.axaml: the Fluent theme, then Helix (light, dark or like the system) -->
+        <Application xmlns:helix="using:Helix.Avalonia" …>
+            <Application.Styles>
+                <FluentTheme />
+                <helix:HelixTheme Mode="System" />
+            </Application.Styles>
+        </Application>
+        """;
+
+    private const string AvaloniaNamespaceCode = """
+        <!-- Avalonia · a single XAML namespace for every control -->
+        <Window xmlns:helix="using:Helix.Avalonia" … >
+
+        // In C#: using Helix.Avalonia;
+        """;
+
+    private const string AvaloniaHostCode = """
+        <!-- Avalonia · MainWindow.axaml: HelixHost shows toasts, dialogs, drawers and confirmations -->
         <Window … Background="{DynamicResource Helix.Background}">
             <helix:HelixHost>
                 <!-- your layout -->

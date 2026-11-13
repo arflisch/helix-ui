@@ -98,8 +98,53 @@ public class HelixSwitch : ToggleButton
     public static readonly StyledProperty<IBrush?> ThumbBrushProperty = AvaloniaProperty.Register<HelixSwitch, IBrush?>(nameof(ThumbBrush));
     public static readonly StyledProperty<HelixLabelPosition> LabelPositionProperty =
         AvaloniaProperty.Register<HelixSwitch, HelixLabelPosition>(nameof(LabelPosition));
+    public static readonly StyledProperty<IBrush?> ThumbOnBrushProperty = AvaloniaProperty.Register<HelixSwitch, IBrush?>(nameof(ThumbOnBrush));
+    public static readonly StyledProperty<string?> OnTextProperty = AvaloniaProperty.Register<HelixSwitch, string?>(nameof(OnText));
+    public static readonly StyledProperty<string?> OffTextProperty = AvaloniaProperty.Register<HelixSwitch, string?>(nameof(OffText));
+    public static readonly StyledProperty<string?> OnIconProperty = AvaloniaProperty.Register<HelixSwitch, string?>(nameof(OnIcon));
+    public static readonly StyledProperty<string?> OffIconProperty = AvaloniaProperty.Register<HelixSwitch, string?>(nameof(OffIcon));
+    public static readonly DirectProperty<HelixSwitch, double> TrackWidthProperty = AvaloniaProperty.RegisterDirect<HelixSwitch, double>(nameof(TrackWidth), s => s.TrackWidth);
+    public static readonly DirectProperty<HelixSwitch, Thickness> ThumbMarginProperty = AvaloniaProperty.RegisterDirect<HelixSwitch, Thickness>(nameof(ThumbMargin), s => s.ThumbMargin);
+    public static readonly DirectProperty<HelixSwitch, IBrush?> ActualThumbBrushProperty = AvaloniaProperty.RegisterDirect<HelixSwitch, IBrush?>(nameof(ActualThumbBrush), s => s.ActualThumbBrush);
+    public static readonly DirectProperty<HelixSwitch, string?> ThumbIconProperty = AvaloniaProperty.RegisterDirect<HelixSwitch, string?>(nameof(ThumbIcon), s => s.ThumbIcon);
+
+    private double _trackWidth = 36;
+    private Thickness _thumbMargin = new(2);
+    private IBrush? _actualThumbBrush;
+    private string? _thumbIcon;
 
     protected override Type StyleKeyOverride => typeof(HelixSwitch);
+
+    /// <summary>Thumb color when on (ThumbBrush otherwise).</summary>
+    public IBrush? ThumbOnBrush { get => GetValue(ThumbOnBrushProperty); set => SetValue(ThumbOnBrushProperty, value); }
+
+    /// <summary>Short text inside the track when on / off ("ON", "OFF"…); the track widens to fit.</summary>
+    public string? OnText { get => GetValue(OnTextProperty); set => SetValue(OnTextProperty, value); }
+    public string? OffText { get => GetValue(OffTextProperty); set => SetValue(OffTextProperty, value); }
+
+    /// <summary>Built-in icon inside the thumb when on / off (e.g. "sun" / "moon").</summary>
+    public string? OnIcon { get => GetValue(OnIconProperty); set => SetValue(OnIconProperty, value); }
+    public string? OffIcon { get => GetValue(OffIconProperty); set => SetValue(OffIconProperty, value); }
+
+    /// <summary>Template values.</summary>
+    public double TrackWidth { get => _trackWidth; private set => SetAndRaise(TrackWidthProperty, ref _trackWidth, value); }
+    public Thickness ThumbMargin { get => _thumbMargin; private set => SetAndRaise(ThumbMarginProperty, ref _thumbMargin, value); }
+    public IBrush? ActualThumbBrush { get => _actualThumbBrush; private set => SetAndRaise(ActualThumbBrushProperty, ref _actualThumbBrush, value); }
+    public string? ThumbIcon { get => _thumbIcon; private set => SetAndRaise(ThumbIconProperty, ref _thumbIcon, value); }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        var p = change.Property;
+        if (p != IsCheckedProperty && p != OnTextProperty && p != OffTextProperty && p != ThumbBrushProperty && p != ThumbOnBrushProperty
+            && p != OnIconProperty && p != OffIconProperty) return;
+        var on = IsChecked == true;
+        var longest = Math.Max(OnText?.Length ?? 0, OffText?.Length ?? 0);
+        TrackWidth = longest == 0 ? 36 : 30 + longest * 7;
+        ThumbMargin = on ? new Thickness(TrackWidth - 18, 2, 2, 2) : new Thickness(2);
+        ActualThumbBrush = on && ThumbOnBrush is not null ? ThumbOnBrush : ThumbBrush;
+        ThumbIcon = on ? OnIcon : OffIcon;
+    }
 
     public HelixTone Tone { get => GetValue(ToneProperty); set => SetValue(ToneProperty, value); }
 
@@ -132,6 +177,9 @@ public class HelixCheckBox : CheckBox
 
     /// <summary>Color of the check mark; automatic for a custom Accent.</summary>
     public IBrush? OnAccent { get => GetValue(OnAccentProperty); set => SetValue(OnAccentProperty, value); }
+
+    /// <summary>Color of the check mark (same as OnAccent, the name used by Helix for WPF).</summary>
+    public IBrush? CheckBrush { get => OnAccent; set => OnAccent = value; }
     public IBrush? ToneOnBrush { get => GetValue(ToneOnBrushProperty); set => SetValue(ToneOnBrushProperty, value); }
     public IBrush? ResolvedOnAccent => GetValue(ResolvedOnAccentProperty);
 

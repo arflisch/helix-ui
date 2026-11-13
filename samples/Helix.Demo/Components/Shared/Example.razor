@@ -8,7 +8,7 @@
         <div class="demo-example__stage" style="@StageStyle">@ChildContent</div>
         @if (!string.IsNullOrEmpty(Code))
         {
-            <CodeBlock Code="@Code" WpfCode="@WpfCode" Flush="true" />
+            <CodeBlock Code="@Code" WpfCode="@WpfCode" AvaloniaCode="@AvaloniaCode" Flush="true" />
         }
     </div>
 </section>
@@ -21,5 +21,8 @@
 
     /// <summary>The same example for WPF.</summary>
     [Parameter] public string? WpfCode { get; set; }
+
+    /// <summary>The Avalonia version when it differs from the WPF one beyond names.</summary>
+    [Parameter] public string? AvaloniaCode { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

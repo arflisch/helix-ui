@@ -4,7 +4,7 @@
         <div class="pg__stage" style="@StageStyle">@Preview</div>
         <aside class="pg__controls">@Controls</aside>
     </div>
-    <CodeBlock Code="@Code" WpfCode="@WpfCode" />
+    <CodeBlock Code="@Code" WpfCode="@WpfCode" AvaloniaCode="@AvaloniaCode" />
 </section>
 
 @code {
@@ -15,4 +15,7 @@
 
     /// <summary>The same example for WPF.</summary>
     [Parameter] public string? WpfCode { get; set; }
+
+    /// <summary>The Avalonia version when it differs from the WPF one beyond names.</summary>
+    [Parameter] public string? AvaloniaCode { get; set; }
 }

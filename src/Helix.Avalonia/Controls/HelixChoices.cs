@@ -17,8 +17,9 @@ public sealed class HelixRadioOption
 {
     public HelixRadioOption() { }
 
-    public HelixRadioOption(string title, object? value = null, string? description = null, string? icon = null) =>
-        (Title, Value, Description, Icon) = (title, value ?? title, description, icon);
+    /// <summary>Same order as in Helix for WPF: title, description, icon, then the value (the title by default).</summary>
+    public HelixRadioOption(string title, string? description = null, string? icon = null, object? value = null) =>
+        (Title, Description, Icon, Value) = (title, description, icon, value ?? title);
 
     public string Title { get; set; } = "";
     public string? Description { get; set; }
@@ -32,6 +33,31 @@ public sealed class HelixRadioOption
     public bool HasIcon => !string.IsNullOrEmpty(Icon);
 
     public override string ToString() => Title;
+}
+
+/// <summary>An option written in XAML inside a <see cref="HelixRadioGroup"/>: Content (title), Description and Icon.</summary>
+public class HelixRadioItem : ListBoxItem
+{
+    public static readonly StyledProperty<string?> DescriptionProperty = AvaloniaProperty.Register<HelixRadioItem, string?>(nameof(Description));
+    public static readonly StyledProperty<string?> IconProperty = AvaloniaProperty.Register<HelixRadioItem, string?>(nameof(Icon));
+
+    private string? _title;
+    private bool _wrapping;
+
+    public string? Description { get => GetValue(DescriptionProperty); set => SetValue(DescriptionProperty, value); }
+    public string? Icon { get => GetValue(IconProperty); set => SetValue(IconProperty, value); }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ContentProperty && !_wrapping) _title = Content as string;
+        if (change.Property != ContentProperty && change.Property != DescriptionProperty && change.Property != IconProperty) return;
+        if (_title is null || _wrapping || (Description is null && Icon is null)) return;
+        // Shown like a HelixRadioOption, so the group's look (default, cards, segmented) applies.
+        _wrapping = true;
+        SetCurrentValue(ContentProperty, new HelixRadioOption(_title, Description, Icon));
+        _wrapping = false;
+    }
 }
 
 /// <summary>

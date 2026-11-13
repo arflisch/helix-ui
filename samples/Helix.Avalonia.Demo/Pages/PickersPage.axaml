@@ -42,6 +42,10 @@
                     <helix:HelixRadioGroup Name="Period2" Grid.Column="2" Label="View" Appearance="Segmented" />
                 </Grid>
                 <helix:HelixRadioGroup Name="Plans" Label="Plan" Appearance="Cards" />
+                <helix:HelixRadioGroup Name="Xaml" Label="Written in XAML" SelectedIndex="1" Orientation="Horizontal">
+                    <helix:HelixRadioItem Content="Standard" Description="3 to 5 days" />
+                    <helix:HelixRadioItem Content="Express" Description="Tomorrow" />
+                </helix:HelixRadioGroup>
                 <Grid ColumnDefinitions="*,24,*">
                     <StackPanel Spacing="16">
                         <helix:HelixSlider Label="Volume" Value="64" Maximum="100" Unit="%" Format="0" />

@@ -13,8 +13,11 @@
         else
         {
             <div class="code__tabs" role="tablist" aria-label="Code version">
-                <button role="tab" aria-selected="@(!ShowWpf ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", !ShowWpf).Build())" @onclick="() => CodeState.Set(false)">Blazor</button>
-                <button role="tab" aria-selected="@(ShowWpf ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", ShowWpf).Build())" @onclick="() => CodeState.Set(true)">WPF</button>
+                @foreach (var (flavor, name) in Flavors)
+                {
+                    <button role="tab" aria-selected="@(Shown == flavor ? "true" : "false")" class="@(new CssBuilder("code__tab").Add("is-active", Shown == flavor).Build())"
+                            @onclick="() => CodeState.Set(flavor)">@name</button>
+                }
             </div>
         }
         <button class="code__copy" @onclick="Copy">
@@ -30,12 +33,22 @@
     [Parameter] public string Language { get; set; } = "razor";
     [Parameter] public bool Flush { get; set; }
 
-    /// <summary>The same example for WPF (XAML, and C# when needed). Adds a Blazor / WPF switch.</summary>
+    /// <summary>The same example for WPF (XAML, and C# when needed). Adds a Blazor / WPF / Avalonia switch.</summary>
     [Parameter] public string? WpfCode { get; set; }
 
-    private bool ShowWpf => CodeState.ShowWpf && !string.IsNullOrEmpty(WpfCode);
+    /// <summary>The Avalonia version when it differs from the WPF one beyond names (else derived from WpfCode).</summary>
+    [Parameter] public string? AvaloniaCode { get; set; }
 
-    private string Current => ShowWpf ? WpfCode! : Code;
+    private static readonly (DemoFlavor Flavor, string Name)[] Flavors = [(DemoFlavor.Blazor, "Blazor"), (DemoFlavor.Wpf, "WPF"), (DemoFlavor.Avalonia, "Avalonia")];
+
+    private DemoFlavor Shown => string.IsNullOrEmpty(WpfCode) ? DemoFlavor.Blazor : CodeState.Flavor;
+
+    private string Current => Shown switch
+    {
+        DemoFlavor.Wpf => WpfCode!,
+        DemoFlavor.Avalonia => AvaloniaCode ?? DemoAvalonia.FromWpf(WpfCode!),
+        _ => Code,
+    };
 
     protected override void OnInitialized() => CodeState.Changed += OnFlavorChanged;
 
