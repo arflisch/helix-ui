@@ -72,6 +72,14 @@ public partial class FeedbackPage : UserControl
     private void OnToastWarning(object sender, RoutedEventArgs e) => HelixToasts.Warning("Il reste 8 % de l'espace disponible.");
     private void OnToastError(object sender, RoutedEventArgs e) => HelixToasts.Error("Le serveur ne répond pas. Réessayez dans un instant.", "Erreur réseau");
 
+    private int _notified;
+
+    private void OnNotify(object sender, RoutedEventArgs e) => _ = (++_notified % 3) switch
+    {
+        1 => HelixNotifications.Warning("Échéance dans 5 minutes", "Soumission pour le quart d'heure suivant", actionText: "Voir"),
+        2 => HelixNotifications.Error("Soumission refusée", "Créneau 14:15–14:30 : valeur au-dessus de la limite."),
+        _ => HelixNotifications.Success("Rapport exporté", "rapport-equipe.docx"),
+    };
     private void OnOpenDialog(object sender, RoutedEventArgs e) => Dialog.IsOpen = true;
     private void OnCloseDialog(object sender, RoutedEventArgs e) => Dialog.IsOpen = false;
 

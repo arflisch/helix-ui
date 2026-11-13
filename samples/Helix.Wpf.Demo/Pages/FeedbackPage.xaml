@@ -99,6 +99,7 @@
                     <helix:HelixButton Content="Erreur" Tone="Danger" Variant="Soft" Click="OnToastError" Margin="0,0,10,10" />
                     <helix:HelixButton Content="Ouvrir un dialogue" Variant="Outline" Tone="Neutral" Click="OnOpenDialog" Margin="0,0,10,10" />
                     <helix:HelixButton Content="Supprimer…" Tone="Danger" Icon="trash" Click="OnDelete" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Envoyer une notification" Icon="bell" Variant="Outline" Tone="Neutral" Click="OnNotify" Margin="0,0,10,10" />
                 </WrapPanel>
                 <TextBox Style="{StaticResource Code}" Text="HelixToasts.Success(&quot;Enregistré&quot;);&#10;if (await HelixConfirm.AskAsync(&quot;Supprimer ?&quot;, &quot;Action définitive.&quot;, danger: true)) { … }" />
             </StackPanel>

@@ -25,6 +25,19 @@ public sealed record HelixTexts
     public string LogWarning { get; init; } = "Warning";
     public string LogError { get; init; } = "Error";
     public string FollowLog { get; init; } = "Follow";
+    public string Notifications { get; init; } = "Notifications";
+    public string MarkAllRead { get; init; } = "Mark all as read";
+    public string NoNotifications { get; init; } = "You're all caught up";
+    /// <summary>{0} = number of unread notifications.</summary>
+    public string UnreadCount { get; init; } = "{0} unread";
+    public string Earlier { get; init; } = "Earlier";
+    public string JustNow { get; init; } = "Just now";
+    /// <summary>{0} = minutes.</summary>
+    public string MinutesAgo { get; init; } = "{0} min ago";
+    /// <summary>{0} = hours.</summary>
+    public string HoursAgo { get; init; } = "{0} h ago";
+    public string ClearAll { get; init; } = "Clear all";
+    public string Dismiss { get; init; } = "Dismiss";
     /// <summary>{0} = the deadline time, e.g. "until 14:10".</summary>
     public string TimeBarUntil { get; init; } = "until {0}";
     public string TimeBarCurrent { get; init; } = "Current";
@@ -195,7 +208,7 @@ public sealed record HelixTexts
     public static HelixTexts French { get; } = new()
     {
         Close = "Fermer", Clear = "Effacer", Loading = "Chargement", NoData = "Aucune donnée",
-        Confirm = "Confirmer", Cancel = "Annuler", LogLevels = "Niveaux", LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
+        Confirm = "Confirmer", Cancel = "Annuler", LogLevels = "Niveaux", LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", Notifications = "Notifications", MarkAllRead = "Tout marquer comme lu", NoNotifications = "Vous êtes à jour", UnreadCount = "{0} non lues", Earlier = "Plus ancien", JustNow = "À l'instant", MinutesAgo = "il y a {0} min", HoursAgo = "il y a {0} h", ClearAll = "Tout effacer", Dismiss = "Retirer", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
         SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »", Delete = "Supprimer ?", Previous = "Précédent", Next = "Suivant",
         Expand = "Déplier", Collapse = "Replier", Retry = "Réessayer", Reset = "Réinitialiser",
         PositionOf = "{0} sur {1}", Required = "obligatoire",

@@ -1,0 +1,107 @@
+@page "/components/notifications"
+@inject HelixNotificationService Notifications
+@implements IDisposable
+
+<DemoPage Title="NotificationCenter" Description="A bell with the unread count; it opens the notifications grouped by day, with severity, relative time, link or action, dismiss and mark as read. Unlike a toast, a notification stays until it is read or dismissed. Feed it from anywhere with HelixNotificationService — the bell in the top bar of this site is a live one.">
+    <Playground WpfCode="@Wpf1" Code="@Code">
+        <Preview>
+            <div class="row" style="gap:16px;align-items:center">
+                <HelixButton Color="@ColorOf(_severity)" OnClick="Push">Send a notification</HelixButton>
+                <HelixNotificationCenter Align="HelixAlign.Start" MarkReadOnOpen="_markOnOpen" />
+                <span class="muted" style="font-size:13px">@Notifications.UnreadCount unread</span>
+            </div>
+        </Preview>
+        <Controls>
+            <Choice TEnum="HelixSeverity" Label="Severity" @bind-Value="_severity" />
+            <HelixTextField Label="Title" @bind-Value="_title" />
+            <HelixTextField Label="Text" @bind-Value="_text" />
+            <HelixSwitch Label="Link to the TimeBar page" @bind-Checked="_link" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Also show a toast" @bind-Checked="_toast" Size="HelixSize.Sm" />
+            <HelixSwitch Label="Mark all as read on open" @bind-Checked="_markOnOpen" Size="HelixSize.Sm" />
+        </Controls>
+    </Playground>
+
+    <Example Title="From a service or a background event" Description="Inject the service where something happens (a SignalR message, a deadline, the end of an export). Tag lets you remove a notification once the problem is solved." Code="@ServiceCode" />
+
+    <Example Title="With the TimeBar" Description="Warn before each deadline and when it passes." Code="@TimeBarCode" />
+
+    <ApiTable Title="HelixNotificationCenter" Rows="Api" />
+    <ApiTable Title="HelixNotificationService" Rows="ServiceApi" />
+</DemoPage>
+
+@code {
+    private HelixSeverity _severity = HelixSeverity.Warning;
+    private string _title = "Deadline in 5 minutes";
+    private string _text = "Submission for the next quarter hour";
+    private bool _link = true, _toast, _markOnOpen;
+
+    protected override void OnInitialized() => Notifications.Changed += Refresh;
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Notifications.Changed -= Refresh;
+
+    private void Push() => Notifications.Add(_title, _severity, string.IsNullOrWhiteSpace(_text) ? null : _text,
+        link: _link ? "components/timebar" : null, actionText: _link ? "Open" : null, toast: _toast);
+
+    private static string ColorOf(HelixSeverity severity) => severity switch
+    {
+        HelixSeverity.Success => "success",
+        HelixSeverity.Warning => "warning",
+        HelixSeverity.Danger => "danger",
+        _ => "primary",
+    };
+
+    private string Code => $$"""
+        @inject HelixNotificationService Notifications
+
+        <HelixNotificationCenter{{(_markOnOpen ? " MarkReadOnOpen=\"true\"" : "")}} />   @* in your top bar *@
+
+        Notifications.Add("{{_title}}", HelixSeverity.{{_severity}}{{(string.IsNullOrWhiteSpace(_text) ? "" : $", \"{_text}\"")}}{{(_link ? ",\n    link: \"/timebar\", actionText: \"Open\"" : "")}}{{(_toast ? ", toast: true" : "")}});
+        """;
+
+    private const string ServiceCode = """
+        public sealed class SubmissionWatcher(HelixNotificationService notifications)
+        {
+            public void OnRejected(Slot slot, string reason) =>
+                notifications.Error($"Submission rejected for {slot.Label()}", reason, link: "/demand", tag: slot.Id);
+
+            public void OnAccepted(Slot slot) => notifications.RemoveTag(slot.Id);   // the problem is gone
+        }
+
+        // past notifications from your database:
+        notifications.Add(n.Title, n.Severity, n.Text, time: n.CreatedAt, read: n.Read);
+        """;
+
+    private const string TimeBarCode = """
+        <HelixTimeBar Step="TimeSpan.FromMinutes(15)" Warning="TimeSpan.FromMinutes(5)"
+                      OnDeadline="@(d => Notifications.Info($"Deadline {d:HH:mm} reached"))" />
+        """;
+
+    private const string Wpf1 = """
+        <!-- in the title bar of the window -->
+        <helix:HelixNotificationCenter />
+
+        // anywhere (any thread):
+        HelixNotifications.Warning("Deadline in 5 minutes", "Submission for the next quarter hour",
+            action: () => Navigate("TimeBar"), actionText: "Open");
+        """;
+
+    private static readonly ApiRow[] Api =
+    [
+        new("Title / Width / Align", "string / string / HelixAlign", null, "Panel title (Notifications), width (360px), alignment on the bell (End)."),
+        new("MaxVisible", "int", "30", "How many notifications the panel lists."),
+        new("MarkReadOnOpen", "bool", "false", "Opening the panel marks everything as read."),
+        new("Trigger / Footer", "RenderFragment", null, "Your own trigger instead of the bell; extra footer content."),
+        new("OnClick", "EventCallback<HelixNotification>", null, "After the notification's Link or Action."),
+    ];
+
+    private static readonly ApiRow[] ServiceApi =
+    [
+        new("Add(title, severity, text, link, actionText, action, tag, toast, time, read)", "HelixNotification", null, "Adds a notification (newest first, 100 kept). toast: also as a toast."),
+        new("Info / Success / Warning / Error", "HelixNotification", null, "Shortcuts."),
+        new("MarkRead(id) / MarkAllRead()", "void", null, "Unread count goes down."),
+        new("Remove(id) / RemoveTag(tag) / Clear()", "void", null, "Dismiss one, a group, or all."),
+        new("Items / UnreadCount / Changed", "list / int / event", null, "To build your own view or a badge elsewhere."),
+    ];
+}

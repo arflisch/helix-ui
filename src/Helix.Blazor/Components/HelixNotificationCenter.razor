@@ -1,0 +1,191 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@implements IDisposable
+@inject HelixNotificationService Notifications
+@inject NavigationManager Navigation
+
+@* A bell with the unread count; opens the notifications grouped by day. Feed it from anywhere with HelixNotificationService. *@
+<div @attributes="Attributes" class="@(new CssBuilder("helix-notif").Add("is-open", _open).Add(Class).Build())" style="@Style">
+    <button type="button" class="helix-notif__bell" aria-expanded="@(_open ? "true" : "false")" aria-haspopup="dialog"
+            aria-label="@($"{Title ?? Texts.Notifications}{(_unread > 0 ? ", " + HelixTexts.Format(Texts.UnreadCount, _unread) : "")}")" @onclick="Toggle">
+        @if (Trigger is not null)
+        {
+            @Trigger
+        }
+        else
+        {
+            <HelixIcon Name="bell" Size="20" />
+        }
+        @if (_unread > 0)
+        {
+            <span class="helix-notif__count" aria-hidden="true">@(_unread > 99 ? "99+" : _unread)</span>
+        }
+    </button>
+    @if (_open)
+    {
+        <div class="helix-select__backdrop" @onclick="Close"></div>
+        <div class="helix-notif__panel helix-notif__panel--@Align.Css()" role="dialog" aria-label="@(Title ?? Texts.Notifications)"
+             style="@(Width is null ? null : $"width:{Width}")" @onkeydown="OnKey">
+            <div class="helix-notif__head">
+                <span class="helix-notif__title">@(Title ?? Texts.Notifications)</span>
+                @if (_unread > 0)
+                {
+                    <button type="button" class="helix-notif__link" @onclick="Notifications.MarkAllRead">@Texts.MarkAllRead</button>
+                }
+            </div>
+            <div class="helix-notif__list">
+                @if (_items.Count == 0)
+                {
+                    <div class="helix-notif__empty">
+                        <HelixIcon Name="bell" Size="22" />
+                        <span>@Texts.NoNotifications</span>
+                    </div>
+                }
+                @foreach (var group in _items.Take(MaxVisible).GroupBy(n => GroupOf(n.Time)))
+                {
+                    <div class="helix-notif__group">@group.Key</div>
+                    @foreach (var n in group)
+                    {
+                        <div @key="n.Id" class="@(new CssBuilder("helix-notif__item").Add("is-unread", !n.IsRead).Add("is-clickable", n.Link is not null || n.Action is not null).Build())"
+                             @onclick="() => OpenAsync(n)">
+                            <span class="helix-notif__dot helix-notif__dot--@n.Severity.ToString().ToLowerInvariant()" aria-hidden="true"></span>
+                            <div class="helix-notif__body">
+                                <span class="helix-notif__item-title">@n.Title</span>
+                                @if (!string.IsNullOrEmpty(n.Text))
+                                {
+                                    <span class="helix-notif__text">@n.Text</span>
+                                }
+                                <span class="helix-notif__meta">
+                                    <time datetime="@n.Time.ToString("o")" title="@n.Time.ToString("g")">@Relative(n.Time)</time>
+                                    @if (!string.IsNullOrEmpty(n.ActionText))
+                                    {
+                                        <span aria-hidden="true">·</span>
+                                        <span class="helix-notif__action">@n.ActionText</span>
+                                    }
+                                </span>
+                            </div>
+                            <button type="button" class="helix-notif__dismiss" aria-label="@Texts.Dismiss" title="@Texts.Dismiss"
+                                    @onclick="() => Notifications.Remove(n.Id)" @onclick:stopPropagation="true">
+                                <HelixIcon Name="x" Size="14" />
+                            </button>
+                        </div>
+                    }
+                }
+            </div>
+            @if (_items.Count > 0)
+            {
+                <div class="helix-notif__foot">
+                    <button type="button" class="helix-notif__link is-muted" @onclick="Notifications.Clear">@Texts.ClearAll</button>
+                    @Footer
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Panel title ("Notifications").</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>End (default): the panel is aligned on the right edge of the bell, for a top bar.</summary>
+    [Parameter] public HelixAlign Align { get; set; } = HelixAlign.End;
+
+    /// <summary>Panel width (360px).</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>How many notifications the panel lists (30).</summary>
+    [Parameter] public int MaxVisible { get; set; } = 30;
+
+    /// <summary>Marks every notification as read when the panel opens (false: only those clicked, or "Mark all as read").</summary>
+    [Parameter] public bool MarkReadOnOpen { get; set; }
+
+    /// <summary>Your own trigger content instead of the bell icon.</summary>
+    [Parameter] public RenderFragment? Trigger { get; set; }
+
+    /// <summary>Extra content at the bottom of the panel, e.g. a "See all" link.</summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Raised when a notification is clicked (after its Link or Action).</summary>
+    [Parameter] public EventCallback<HelixNotification> OnClick { get; set; }
+
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    private readonly HelixTicker _ticker = new();
+    private IReadOnlyList<HelixNotification> _items = [];
+    private int _unread;
+    private bool _open;
+
+    private DateTime Now => (TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime;
+
+    protected override void OnInitialized()
+    {
+        Notifications.Changed += OnChanged;
+        Refresh();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Keeps "2 min ago" current.
+        if (firstRender) _ticker.Start(TimeSpan.FromSeconds(30), TimeProvider ?? TimeProvider.System, () => InvokeAsync(StateHasChanged));
+    }
+
+    private void OnChanged() => InvokeAsync(() =>
+    {
+        Refresh();
+        StateHasChanged();
+    });
+
+    private void Refresh()
+    {
+        _items = Notifications.Items;
+        _unread = _items.Count(n => !n.IsRead);
+    }
+
+    private void Toggle()
+    {
+        _open = !_open;
+        if (_open && MarkReadOnOpen) Notifications.MarkAllRead();
+    }
+
+    private void Close() => _open = false;
+
+    private void OnKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") _open = false;
+    }
+
+    private async Task OpenAsync(HelixNotification n)
+    {
+        Notifications.MarkRead(n.Id);
+        if (n.Action is not null) await n.Action();
+        if (n.Link is not null)
+        {
+            _open = false;
+            Navigation.NavigateTo(n.Link);
+        }
+
+        await OnClick.InvokeAsync(n);
+    }
+
+    private string GroupOf(DateTime time)
+    {
+        var days = (Now.Date - time.Date).Days;
+        return days <= 0 ? Texts.Today : days == 1 ? Texts.Yesterday : Texts.Earlier;
+    }
+
+    private string Relative(DateTime time)
+    {
+        var age = Now - time;
+        return age < TimeSpan.FromMinutes(1) ? Texts.JustNow
+            : age < TimeSpan.FromHours(1) ? HelixTexts.Format(Texts.MinutesAgo, (int)age.TotalMinutes)
+            : age < TimeSpan.FromHours(12) && time.Date == Now.Date ? HelixTexts.Format(Texts.HoursAgo, (int)age.TotalHours)
+            : time.Date == Now.Date || time.Date == Now.Date.AddDays(-1) ? time.ToString("t")
+            : time.ToString("g");
+    }
+
+    public void Dispose()
+    {
+        Notifications.Changed -= OnChanged;
+        _ticker.Dispose();
+    }
+}

@@ -83,6 +83,7 @@ public static class DemoNav
         [
             new("Alert", "components/alert", "Contextual messages with severity.", "warning"),
             new("Toast", "components/toast", "Notifications from any service.", "bell"),
+            new("NotificationCenter", "components/notifications", "A bell with unread count and a history.", "bell"),
             new("Dialog", "components/dialog", "Accessible modal window.", "external"),
             new("Drawer", "components/drawer", "Side panel: right, left or bottom.", "external"),
             new("Confirm", "components/confirm", "if (await Confirm.AskAsync(…)) in one line.", "warning"),

@@ -54,6 +54,7 @@
                         </Border>
                         <TextBlock Text="Helix" FontSize="17" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource Helix.Text}" />
                         <TextBlock Text=" WPF" FontSize="17" Margin="0" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextSubtle}" />
+                        <helix:HelixNotificationCenter PanelAlignment="Left" Margin="56,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
 
                     <StackPanel DockPanel.Dock="Bottom">

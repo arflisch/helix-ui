@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject DemoThemeState ThemeState
 @inject IJSRuntime JS
+@inject HelixNotificationService Notifications
 
 <HelixProvider Theme="ThemeState.Theme" Class="demo">
     <aside class="@(new CssBuilder("demo-sidebar").Add("is-open", _menuOpen).Build())">
@@ -30,6 +31,10 @@
                 <HelixIcon Svg="<path d='M4 7h16M4 12h16M4 17h16'/>" Size="18" />
             </button>
             <div class="demo-topbar__spacer"></div>
+
+            <HelixNotificationCenter>
+                <Footer><a class="helix-notif__link" href="components/notifications">About this panel</a></Footer>
+            </HelixNotificationCenter>
 
             <HelixMenu Align="HelixAlign.End" MinWidth="230px">
                 <Trigger>
@@ -88,7 +93,18 @@
         _ => "sun",
     };
 
-    protected override void OnInitialized() => ThemeState.Changed += OnThemeChanged;
+    protected override void OnInitialized()
+    {
+        ThemeState.Changed += OnThemeChanged;
+        if (Notifications.Items.Count == 0)
+        {
+            var now = DateTime.Now;
+            Notifications.Add("Welcome to Helix UI 0.3", HelixSeverity.Info, "TimeBar, Excel and Word export, notification center.", link: "export", actionText: "See the export", time: now.AddDays(-2), read: true);
+            Notifications.Add("Report exported", HelixSeverity.Success, "team-report.docx", link: "export", actionText: "Open", time: now.AddMinutes(-12));
+            Notifications.Add("Deadline in 5 minutes", HelixSeverity.Warning, "Submission for the next quarter hour", link: "components/timebar", actionText: "Open the TimeBar", time: now.AddMinutes(-5));
+            Notifications.Add("Submission rejected", HelixSeverity.Danger, "Slot 14:15–14:30: the value is above the limit.", time: now.AddMinutes(-2));
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
