@@ -4,7 +4,7 @@
         x:Class="Helix.Avalonia.Demo.MainWindow"
         Title="Helix UI · Avalonia" Width="1180" Height="860" MinWidth="720"
         Background="{DynamicResource Helix.Background}" FontFamily="{DynamicResource Helix.FontFamily}">
-    <Panel>
+    <helix:HelixHost>
         <DockPanel>
             <Border DockPanel.Dock="Left" Width="230" Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,1,0">
                 <DockPanel Margin="14,18">
@@ -43,6 +43,5 @@
                 <ContentControl Name="Page" Margin="40,32" MaxWidth="920" />
             </ScrollViewer>
         </DockPanel>
-        <helix:HelixToastHost />
-    </Panel>
+    </helix:HelixHost>
 </Window>

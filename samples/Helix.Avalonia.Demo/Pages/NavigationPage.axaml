@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.NavigationPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Navigation</TextBlock>
+        <TextBlock Classes="lead">Tabs, accordion, breadcrumb, pagination, stepper, avatars, skeletons, splitter and menus.</TextBlock>
+
+        <TextBlock Classes="h2">Tabs</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="24">
+                <helix:HelixTabs Name="Tabs">
+                    <helix:HelixTab Header="Overview" Icon="home"><TextBlock Foreground="{DynamicResource Helix.TextMuted}">Underline tabs: the default.</TextBlock></helix:HelixTab>
+                    <helix:HelixTab Header="Activity" Icon="bell"><TextBlock Foreground="{DynamicResource Helix.TextMuted}">Recent activity.</TextBlock></helix:HelixTab>
+                    <helix:HelixTab Header="Settings" Icon="settings"><TextBlock Foreground="{DynamicResource Helix.TextMuted}">Settings.</TextBlock></helix:HelixTab>
+                    <helix:HelixTab Header="Archived" IsEnabled="False" />
+                </helix:HelixTabs>
+                <helix:HelixTabs Variant="Pills">
+                    <helix:HelixTab Header="Day" /><helix:HelixTab Header="Week" /><helix:HelixTab Header="Month" />
+                </helix:HelixTabs>
+                <helix:HelixTabs Variant="Segmented">
+                    <helix:HelixTab Header="List" Icon="menu" /><helix:HelixTab Header="Board" Icon="columns" /><helix:HelixTab Header="Calendar" Icon="calendar" />
+                </helix:HelixTabs>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Accordion</TextBlock>
+        <helix:HelixAccordion Name="Faq">
+            <helix:HelixAccordionItem Header="What is Helix?" Subtitle="The short version" Icon="info" IsExpanded="True">
+                One component library for Blazor, WPF and Avalonia, with the same names and the same look.
+            </helix:HelixAccordionItem>
+            <helix:HelixAccordionItem Header="Does it support dark mode?" Icon="moon">
+                Yes: every color is a theme brush, so switching the theme variant repaints everything.
+            </helix:HelixAccordionItem>
+            <helix:HelixAccordionItem Header="Can I export grids?" Icon="download">
+                Excel, Word and CSV, without any extra dependency.
+            </helix:HelixAccordionItem>
+        </helix:HelixAccordion>
+
+        <TextBlock Classes="h2">Breadcrumb, button group and pagination</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="22">
+                <helix:HelixBreadcrumb Name="Crumbs" />
+                <helix:HelixButtonGroup Name="Range">
+                    <ListBoxItem>Today</ListBoxItem><ListBoxItem>7 days</ListBoxItem><ListBoxItem>30 days</ListBoxItem><ListBoxItem>Year</ListBoxItem>
+                </helix:HelixButtonGroup>
+                <helix:HelixPagination Name="Pager" TotalItems="187" PageSize="10" Page="6" ShowInfo="True" />
+                <helix:HelixPagination Count="9" Page="3" IsCompact="True" ShowLabels="True" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Stepper</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="28">
+                <helix:HelixStepper Name="Stepper" ActiveIndex="2" IsClickable="True" />
+                <helix:HelixStepper Name="Stepper2" ActiveIndex="1" Tone="Success" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Avatars and skeletons</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="22">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <helix:HelixAvatar DisplayName="Ada Lovelace" Size="Sm" />
+                    <helix:HelixAvatar DisplayName="Grace Hopper" Status="Online" />
+                    <helix:HelixAvatar DisplayName="Alan Turing" Status="Away" />
+                    <helix:HelixAvatar DisplayName="Linus Torvalds" Status="Busy" />
+                    <helix:HelixAvatar DisplayName="Margaret Hamilton" Size="Lg" Status="Offline" />
+                    <helix:HelixAvatarGroup Name="Team" Max="4" Margin="20,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <helix:HelixSkeleton IsCircle="True" Width="44" Height="44" VerticalAlignment="Top" />
+                    <helix:HelixSkeleton Lines="3" Width="360" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Splitter and menus</TextBlock>
+        <Border Classes="stage" Padding="0" Height="150" ClipToBounds="True">
+            <Grid ColumnDefinitions="220,Auto,*">
+                <StackPanel Margin="18" Spacing="6">
+                    <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}">Sidebar</TextBlock>
+                    <TextBlock Foreground="{DynamicResource Helix.TextMuted}" TextWrapping="Wrap">Drag the line to resize.</TextBlock>
+                </StackPanel>
+                <helix:HelixSplitter Grid.Column="1" />
+                <StackPanel Grid.Column="2" Margin="18" Spacing="10" Orientation="Horizontal" VerticalAlignment="Top">
+                    <helix:HelixMenuButton Content="Actions" Icon="chevron-down" Variant="Outline" Tone="Neutral">
+                        <helix:HelixMenuButton.Menu>
+                            <helix:HelixContextMenu>
+                                <helix:HelixMenuLabel Text="Document" />
+                                <helix:HelixMenuItem Header="Edit" IconName="edit" Shortcut="Ctrl+E" />
+                                <helix:HelixMenuItem Header="Duplicate" IconName="copy" Shortcut="Ctrl+D" />
+                                <helix:HelixMenuItem Header="Export" IconName="download" Description="Excel, Word or CSV" />
+                                <helix:HelixMenuSeparator />
+                                <helix:HelixMenuItem Header="Delete" IconName="trash" IsDanger="True" />
+                            </helix:HelixContextMenu>
+                        </helix:HelixMenuButton.Menu>
+                    </helix:HelixMenuButton>
+                    <Border Background="{DynamicResource Helix.Surface2}" CornerRadius="8" Padding="14,9">
+                        <Border.ContextMenu>
+                            <helix:HelixContextMenu>
+                                <helix:HelixMenuItem Header="Copy" IconName="copy" />
+                                <helix:HelixMenuItem Header="Refresh" IconName="refresh" />
+                            </helix:HelixContextMenu>
+                        </Border.ContextMenu>
+                        <TextBlock Foreground="{DynamicResource Helix.TextMuted}">Right-click me</TextBlock>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </StackPanel>
+</UserControl>

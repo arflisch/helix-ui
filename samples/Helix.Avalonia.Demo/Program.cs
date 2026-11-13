@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -73,7 +74,19 @@ internal static class Program
         IEnumerable<Visual> PopupContent(Control owner) =>
             owner.GetVisualDescendants().OfType<global::Avalonia.Controls.Primitives.Popup>().First().Child!.GetVisualDescendants();
         Button Day(Control owner, DateTime day) => PopupContent(owner).OfType<Button>().First(b => b.Tag is DateTime d && d == day.Date);
-        void Click(Button b) => b.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        void Click(Button b)
+        {
+            if (b.Command is { } command) command.Execute(b.CommandParameter);
+            else b.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            Pump(30);
+        }
+
+        void Key(Key key)
+        {
+            window.KeyPress(key, RawInputModifiers.None, PhysicalKey.Escape, null);
+            window.KeyRelease(key, RawInputModifiers.None, PhysicalKey.Escape, null);
+            Pump(30);
+        }
 
         var number = Find<HelixNumberField>("Capacity");
         number.Text = "120*0.8";
@@ -201,6 +214,71 @@ internal static class Program
         Drag(sitesHeader.TranslatePoint(new Point(40, 10), window)!.Value, loadTile.TranslatePoint(new Point(30, 30), window)!.Value);
         var order = dashboard.Layout!.Select(l => l.Id).ToList();
         Check($"dashboard: dragging a tile by its header moves it before another ({string.Join(", ", order)})", order.IndexOf("sites") < order.IndexOf("load"));
+
+        // Navigation
+        window.ShowPage(MainWindow.IndexOf("Navigation"));
+        Pump(200);
+        T Named<T>(string name) where T : Control => window.GetVisualDescendants().OfType<T>().First(c => c.Name == name);
+        var faq = Named<HelixAccordion>("Faq");
+        var sections = faq.GetLogicalChildren().OfType<HelixAccordionItem>().ToList();
+        sections[2].IsExpanded = true;
+        Pump(50);
+        Check($"accordion keeps one section open ({string.Join(", ", sections.Select(x => x.IsExpanded))})", !sections[0].IsExpanded && sections[2].IsExpanded);
+        var tabs = Named<HelixTabs>("Tabs");
+        tabs.SelectedIndex = 1;
+        Pump(50);
+        Check($"tabs show the selected tab's content ({(tabs.SelectedContent as TextBlock)?.Text})", (tabs.SelectedContent as TextBlock)?.Text == "Recent activity.");
+        var pager = Named<HelixPagination>("Pager");
+        Check($"pagination counts 19 pages and gaps around page 6 ({string.Join(" ", HelixPagination.Numbers(6, 19).Select(n => n?.ToString() ?? "…"))})",
+            pager.PageCount == 19 && HelixPagination.Numbers(6, 19).SequenceEqual(new int?[] { 1, null, 5, 6, 7, null, 19 }));
+        var seven = window.GetVisualDescendants().OfType<Button>().First(b => b.FindAncestorOfType<HelixPagination>() == pager && (b.Content as string) == "7");
+        Click(seven);
+        Check($"clicking 7 goes to page 7 ({pager.Page})", pager.Page == 7);
+        var stepper = Named<HelixStepper>("Stepper");
+        var firstStep = stepper.TranslatePoint(new Point(14, 14), window)!.Value;
+        window.MouseDown(firstStep, MouseButton.Left);
+        window.MouseUp(firstStep, MouseButton.Left);
+        Pump(30);
+        Check($"clicking a done step goes back to it ({stepper.ActiveIndex})", stepper.ActiveIndex == 0);
+
+        // Dialogs
+        window.ShowPage(MainWindow.IndexOf("Dialogs"));
+        Pump(200);
+        var host = HelixHost.Active!;
+        var ask = HelixConfirm.AskAsync("Delete?", danger: true);
+        Pump(50);
+        var confirmRequest = (HelixConfirmRequest)host.Overlays[0];
+        var confirmButton = host.GetVisualDescendants().OfType<HelixButton>().First(b => b.Command == confirmRequest.ConfirmCommand);
+        Click(confirmButton);
+        Check($"confirm returns true on Confirm and closes ({ask.IsCompleted && ask.Result}, {host.Overlays.Count} open)", ask.IsCompleted && ask.Result && host.Overlays.Count == 0);
+        ask = HelixConfirm.AskAsync("Delete?");
+        Pump(50);
+        Key(global::Avalonia.Input.Key.Escape);
+        Check($"Escape cancels a confirm ({ask.IsCompleted && !ask.Result})", ask.IsCompleted && !ask.Result && host.Overlays.Count == 0);
+        var prompt = HelixConfirm.PromptAsync("Rename", value: "", validate: t => string.IsNullOrWhiteSpace(t) ? "Empty" : null);
+        Pump(50);
+        var request = (HelixPromptRequest)host.Overlays[0];
+        request.ConfirmCommand.Execute(null);
+        Check($"prompt refuses an invalid text ({request.Error})", !prompt.IsCompleted && request.Error == "Empty");
+        request.Text = "Q4";
+        request.ConfirmCommand.Execute(null);
+        Pump(20);
+        Check($"prompt returns the text ({prompt.Result})", prompt.IsCompleted && prompt.Result == "Q4");
+        var view = HelixDialogs.ShowAsync<string>(handle =>
+        {
+            var pick = new HelixButton { Name = "Pick", Content = "Pick" };
+            pick.Click += (_, _) => handle.Close("north");
+            return pick;
+        }, "Pick a site");
+        Pump(50);
+        Click(host.GetVisualDescendants().OfType<HelixButton>().First(b => b.Name == "Pick"));
+        Check($"a view dialog returns its result ({view.Result})", view.IsCompleted && view.Result == "north");
+        var drawer = Named<HelixDrawer>("Drawer");
+        drawer.IsOpen = true;
+        Pump(50);
+        Check("an open drawer shows in the host", host.Overlays.OfType<HelixDrawerSlot>().Any());
+        Key(global::Avalonia.Input.Key.Escape);
+        Check($"Escape closes the drawer and unsets IsOpen ({drawer.IsOpen})", !drawer.IsOpen && host.Overlays.Count == 0);
         return failures;
     }
 
@@ -231,6 +309,37 @@ internal static class Program
                 window.CaptureRenderedFrame()?.Save(path);
                 Console.WriteLine(path);
             }
+
+            // The overlays of the Dialogs page, one capture each.
+            var page = MainWindow.IndexOf("Dialogs");
+            void Capture(string name, Action open)
+            {
+                window.ShowPage(page);
+                Settle();
+                open();
+                Settle();
+                var path = Path.Combine(folder, $"{page + 1:00}-dialogs-{name}-{variant.Key.ToString()!.ToLowerInvariant()}.png");
+                window.CaptureRenderedFrame()?.Save(path);
+                Console.WriteLine(path);
+                HelixHost.Active?.CloseTop();
+                Settle();
+            }
+
+            void Settle()
+            {
+                for (var tick = 0; tick < 12; tick++)
+                {
+                    Dispatcher.UIThread.RunJobs();
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+                    Thread.Sleep(40);
+                }
+            }
+
+            Control Find(string name) => window.GetVisualDescendants().OfType<Control>().First(c => c.Name == name);
+            Capture("dialog", () => ((HelixDialog)Find("Dialog")).IsOpen = true);
+            Capture("drawer", () => ((HelixDrawer)Find("Drawer")).IsOpen = true);
+            Capture("confirm", () => _ = HelixConfirm.AskAsync("Delete 3 sites?", "This cannot be undone.", danger: true));
+            Capture("prompt", () => _ = HelixConfirm.PromptAsync("Rename the board", value: "", placeholder: "Board name", validate: t => string.IsNullOrWhiteSpace(t) ? "The name cannot be empty." : null));
         }
 
         return 0;

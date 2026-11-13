@@ -23,7 +23,7 @@ dotnet add package Helix.Avalonia
 ```
 
 ```csharp
-HelixToasts.Success("Saved");          // needs <helix:HelixToastHost /> over the window content
+HelixToasts.Success("Saved");          // needs a <helix:HelixHost> around the window content
 HelixTheme.Current?.Toggle();          // light / dark
 ```
 
@@ -104,3 +104,62 @@ More are being ported from Helix.Wpf.
 
 Gallery: `dotnet run --project samples/Helix.Avalonia.Demo`
 (`-- --screenshots <folder>` renders every page in light and dark to PNG; `-- --selftest` checks the grid, the pickers and the drags (24 checks)).
+
+## Dialogs
+
+Wrap the window content once in a host; it draws dialogs, drawers, confirmations, prompts and toasts above it.
+
+```xml
+<Window ...>
+    <helix:HelixHost>
+        <!-- your layout -->
+    </helix:HelixHost>
+</Window>
+```
+
+```xml
+<helix:HelixDialog IsOpen="{Binding IsInviteOpen}" Title="Invite people" Description="They get an email.">
+    <helix:HelixTextField Label="Email" Text="{Binding Email}" />
+    <helix:HelixDialog.Footer>
+        <helix:HelixButton Content="Send invite" Command="{Binding SendCommand}" />
+    </helix:HelixDialog.Footer>
+</helix:HelixDialog>
+<helix:HelixDrawer IsOpen="{Binding IsFilterOpen}" Title="Filters" Position="Right" DrawerSize="420">…</helix:HelixDrawer>
+```
+
+```csharp
+if (await HelixConfirm.AskAsync("Delete 3 sites?", "This cannot be undone.", danger: true)) …
+var name = await HelixConfirm.PromptAsync("Rename", value: board.Name,
+    validate: t => string.IsNullOrWhiteSpace(t) ? "The name cannot be empty." : null);   // null when cancelled
+var site = await HelixDialogs.ShowAsync<Site>(new EditSiteView { DataContext = vm }, "Edit the site");
+// inside the view: HelixDialogs.Close(this, result);
+```
+
+Escape and the backdrop close the top-most overlay (`CloseOnEscape`, `CloseOnBackdrop`); the focus moves into it.
+
+## Navigation
+
+```xml
+<helix:HelixTabs Variant="Pills">                          <!-- Underline, Pills, Segmented -->
+    <helix:HelixTab Header="Overview" Icon="home">…</helix:HelixTab>
+</helix:HelixTabs>
+<helix:HelixAccordion>                                     <!-- AllowMultiple, IsFlush -->
+    <helix:HelixAccordionItem Header="What is Helix?" Subtitle="The short version" Icon="info">…</helix:HelixAccordionItem>
+</helix:HelixAccordion>
+<helix:HelixBreadcrumb ItemsSource="{Binding Path}" ItemClick="OnCrumb" />
+<helix:HelixButtonGroup SelectedIndex="1"><ListBoxItem>Today</ListBoxItem><ListBoxItem>7 days</ListBoxItem></helix:HelixButtonGroup>
+<helix:HelixPagination Page="{Binding Page}" TotalItems="187" PageSize="10" ShowInfo="True" />
+<helix:HelixStepper Steps="{Binding Steps}" ActiveIndex="{Binding Step}" IsClickable="True" />
+<helix:HelixAvatar DisplayName="Grace Hopper" Status="Online" />
+<helix:HelixSkeleton Lines="3" />
+<helix:HelixSplitter Grid.Column="1" />
+<helix:HelixMenuButton Content="Actions">
+    <helix:HelixMenuButton.Menu>
+        <helix:HelixContextMenu>
+            <helix:HelixMenuItem Header="Edit" IconName="edit" Shortcut="Ctrl+E" />
+            <helix:HelixMenuSeparator />
+            <helix:HelixMenuItem Header="Delete" IconName="trash" IsDanger="True" />
+        </helix:HelixContextMenu>
+    </helix:HelixMenuButton.Menu>
+</helix:HelixMenuButton>
+```

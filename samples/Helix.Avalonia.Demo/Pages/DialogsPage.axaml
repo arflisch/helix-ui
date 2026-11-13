@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.DialogsPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Dialogs</TextBlock>
+        <TextBlock Classes="lead">Declared dialogs and drawers, one-line confirmations and prompts, and any view shown as a dialog with a typed result. They need one HelixHost around the window content.</TextBlock>
+
+        <TextBlock Classes="h2">Dialog and drawers</TextBlock>
+        <Border Classes="stage">
+            <WrapPanel ItemSpacing="10" LineSpacing="10">
+                <helix:HelixButton Content="Open dialog" Icon="plus" Click="OnOpenDialog" />
+                <helix:HelixButton Content="Drawer (right)" Variant="Outline" Tone="Neutral" Click="OnOpenDrawer" />
+                <helix:HelixButton Content="Drawer (bottom)" Variant="Outline" Tone="Neutral" Click="OnOpenSheet" />
+            </WrapPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Confirm and prompt</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="14">
+                <WrapPanel ItemSpacing="10" LineSpacing="10">
+                    <helix:HelixButton Content="Confirm" Variant="Soft" Click="OnConfirm" />
+                    <helix:HelixButton Content="Delete…" Tone="Danger" Variant="Soft" Icon="trash" Click="OnDelete" />
+                    <helix:HelixButton Content="Rename…" Variant="Soft" Tone="Neutral" Icon="edit" Click="OnPrompt" />
+                    <helix:HelixButton Content="Edit a site (view + result)" Variant="Soft" Tone="Neutral" Click="OnView" />
+                </WrapPanel>
+                <TextBlock Name="Result" Foreground="{DynamicResource Helix.TextMuted}" Text="The answer shows here." />
+            </StackPanel>
+        </Border>
+
+        <helix:HelixDialog Name="Dialog" Title="Invite people" Description="They get an email with a link to join the workspace." DialogWidth="460">
+            <StackPanel Spacing="12">
+                <helix:HelixTextField Label="Email" Placeholder="name@company.com" />
+                <helix:HelixSelect Label="Role" SelectedIndex="0">
+                    <ComboBoxItem>Member</ComboBoxItem><ComboBoxItem>Admin</ComboBoxItem>
+                </helix:HelixSelect>
+            </StackPanel>
+            <helix:HelixDialog.Footer>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <helix:HelixButton Content="Cancel" Variant="Outline" Tone="Neutral" Click="OnCloseDialog" />
+                    <helix:HelixButton Content="Send invite" Icon="mail" Click="OnCloseDialog" />
+                </StackPanel>
+            </helix:HelixDialog.Footer>
+        </helix:HelixDialog>
+
+        <helix:HelixDrawer Name="Drawer" Title="Filters" Description="Narrow down the list.">
+            <StackPanel Spacing="14">
+                <helix:HelixTextField Label="Search" Placeholder="Name, site…" />
+                <helix:HelixCheckBox Content="Only active" IsChecked="True" />
+                <helix:HelixCheckBox Content="Include archived" />
+            </StackPanel>
+            <helix:HelixDrawer.Footer>
+                <helix:HelixButton Content="Apply" Click="OnCloseDrawer" />
+            </helix:HelixDrawer.Footer>
+        </helix:HelixDrawer>
+
+        <helix:HelixDrawer Name="Sheet" Title="Details" Position="Bottom" DrawerSize="260">
+            <TextBlock Foreground="{DynamicResource Helix.TextMuted}" TextWrapping="Wrap">A bottom sheet: the same drawer with Position="Bottom".</TextBlock>
+        </helix:HelixDrawer>
+    </StackPanel>
+</UserControl>
