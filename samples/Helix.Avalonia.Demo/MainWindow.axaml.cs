@@ -14,6 +14,8 @@ public partial class MainWindow : Window
         ("Buttons", () => new ButtonsPage()),
         ("Forms", () => new FormsPage()),
         ("Display", () => new DisplayPage()),
+        ("Data", () => new DataPage()),
+        ("Charts", () => new ChartsPage()),
         ("Feedback", () => new FeedbackPage(showToasts: true)),
     ];
 

@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.ChartsPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Charts</TextBlock>
+        <TextBlock Classes="lead">Lines, areas, steps and bars on one axis, reference lines and a now line; donut, gauge, heatmap and ranked bars. Same colors and order as Helix for Blazor and WPF; hover shows the values.</TextBlock>
+        <Border Classes="stage">
+            <helix:HelixChart Name="Load" Title="Load over the day" Subtitle="Forecast versus measured, MW" Unit="MW" ShowNow="True">
+                <helix:HelixChartSeries Label="Measured" Type="Area" />
+                <helix:HelixChartSeries Label="Forecast" IsDashed="True" />
+                <helix:HelixChart.Lines>
+                    <helix:HelixChartLine Y="520" Label="Limit" Color="danger" />
+                </helix:HelixChart.Lines>
+            </helix:HelixChart>
+        </Border>
+        <Grid ColumnDefinitions="*,16,*" Margin="0,16,0,0">
+            <Border Classes="stage">
+                <helix:HelixChart Name="Months" Title="Revenue by month" Unit="k€" PlotHeight="220">
+                    <helix:HelixChartSeries Label="2025" Type="Bar" />
+                    <helix:HelixChartSeries Label="2026" Type="Bar" />
+                </helix:HelixChart>
+            </Border>
+            <Border Classes="stage" Grid.Column="2">
+                <helix:HelixChart Name="Steps" Title="Set point" Subtitle="Changes every quarter hour" Unit="MW" PlotHeight="220">
+                    <helix:HelixChartSeries Label="Set point" Type="Step" Color="series-3" />
+                </helix:HelixChart>
+            </Border>
+        </Grid>
+        <Grid ColumnDefinitions="*,16,Auto" Margin="0,16,0,0">
+            <Border Classes="stage">
+                <helix:HelixDonut Name="Mix" Title="Energy mix" Subtitle="Share of production today" Unit="MWh" />
+            </Border>
+            <Border Classes="stage" Grid.Column="2">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Capacity used" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                    <helix:HelixGauge Name="Gauge" Value="82" Unit="%" Size="190" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+        <Border Classes="stage" Margin="0,16,0,0">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Imbalance by hour" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                <helix:HelixHeatmap Name="Heat" Title="Imbalance" Unit="MW" IsDiverging="True" ColumnLabelEvery="3" CellHeight="24" />
+            </StackPanel>
+        </Border>
+        <Grid ColumnDefinitions="*,16,*" Margin="0,16,0,0">
+            <Border Classes="stage">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Top sites" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" />
+                    <helix:HelixBarList Name="Sites" LabelHeader="Site" ValueHeader="MWh" Limit="4" />
+                </StackPanel>
+            </Border>
+            <Border Classes="stage" Grid.Column="2">
+                <helix:HelixDonut Name="Segments" Title="Tickets by status" Shape="SegmentedBar" Thickness="14" />
+            </Border>
+        </Grid>
+    </StackPanel>
+</UserControl>

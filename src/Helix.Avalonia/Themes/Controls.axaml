@@ -619,6 +619,146 @@
         <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.5" /></Style>
     </ControlTheme>
 
+
+    <!-- ===================================================================== Chart -->
+
+    <ControlTheme x:Key="{x:Type h:HelixChart}" TargetType="h:HelixChart">
+        <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Spacing="10">
+                    <DockPanel>
+                        <WrapPanel Name="PART_Legend" DockPanel.Dock="Right" VerticalAlignment="Top" />
+                        <StackPanel Spacing="2" VerticalAlignment="Top">
+                            <TextBlock Text="{TemplateBinding Title}" FontSize="15" FontWeight="SemiBold"
+                                       IsVisible="{TemplateBinding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <TextBlock Text="{TemplateBinding Subtitle}" FontSize="12.5" Foreground="{DynamicResource Helix.TextMuted}"
+                                       IsVisible="{TemplateBinding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <h:HelixPlot Name="PART_Plot" Height="{TemplateBinding PlotHeight}" />
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type h:HelixDonut}" TargetType="h:HelixDonut">
+        <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Spacing="14">
+                    <StackPanel Spacing="2" IsVisible="{TemplateBinding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{TemplateBinding Title}" FontSize="15" FontWeight="SemiBold" />
+                        <TextBlock Text="{TemplateBinding Subtitle}" FontSize="12.5" Foreground="{DynamicResource Helix.TextMuted}"
+                                   IsVisible="{TemplateBinding Subtitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                    <DockPanel>
+                        <h:HelixPlot Name="PART_Plot" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,24,0" />
+                        <StackPanel Name="PART_Legend" VerticalAlignment="Center" />
+                    </DockPanel>
+                </StackPanel>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^[Shape=SegmentedBar] /template/ h|HelixPlot#PART_Plot">
+            <Setter Property="DockPanel.Dock" Value="Top" />
+            <Setter Property="Margin" Value="0,0,0,14" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type h:HelixBarList}" TargetType="h:HelixBarList">
+        <Setter Property="Accent" Value="{DynamicResource Helix.Primary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Name="PART_Rows" />
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^[Tone=Neutral]">
+            <Setter Property="Accent" Value="{DynamicResource Helix.Neutral}" />
+        </Style>
+        <Style Selector="^[Tone=Success]">
+            <Setter Property="Accent" Value="{DynamicResource Helix.Success}" />
+        </Style>
+        <Style Selector="^[Tone=Warning]">
+            <Setter Property="Accent" Value="{DynamicResource Helix.Warning}" />
+        </Style>
+        <Style Selector="^[Tone=Danger]">
+            <Setter Property="Accent" Value="{DynamicResource Helix.Danger}" />
+        </Style>
+        <Style Selector="^[Tone=Info]">
+            <Setter Property="Accent" Value="{DynamicResource Helix.Info}" />
+        </Style>
+    </ControlTheme>
+
+    <!-- ===================================================================== Data grid -->
+
+    <ControlTheme x:Key="{x:Type h:HelixDataGrid}" TargetType="h:HelixDataGrid">
+        <Setter Property="SearchPlaceholder" Value="{x:Static h:HelixDataGrid.SearchPlaceholderText}" />
+        <Setter Property="EmptyText" Value="{x:Static h:HelixDataGrid.EmptyTextDefault}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource Helix.FontSize}" />
+        <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+        <Setter Property="Background" Value="{DynamicResource Helix.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}" ClipToBounds="True">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="12" IsVisible="{TemplateBinding HasToolbar}">
+                            <h:HelixButton Name="PART_Export" DockPanel.Dock="Right" Icon="download" Content="{x:Static h:HelixDataGrid.ExportText}" Variant="Outline"
+                                           Tone="Neutral" Size="Sm" Margin="8,0,0,0" VerticalAlignment="Center" IsVisible="{TemplateBinding IsExportable}" />
+                            <h:HelixButton Name="PART_Columns" DockPanel.Dock="Right" Icon="columns" Content="{x:Static h:HelixDataGrid.ColumnsText}" Variant="Outline"
+                                           Tone="Neutral" Size="Sm" Margin="8,0,0,0" VerticalAlignment="Center" IsVisible="{TemplateBinding ShowColumnChooser}" />
+                            <h:HelixTextField DockPanel.Dock="Right" Width="240" Icon="search" IsClearable="True" VerticalAlignment="Center"
+                                              Text="{TemplateBinding SearchText, Mode=TwoWay}" Placeholder="{TemplateBinding SearchPlaceholder}" IsVisible="{TemplateBinding IsSearchable}" />
+                            <ContentPresenter Content="{TemplateBinding Toolbar}" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <DockPanel DockPanel.Dock="Bottom" Margin="16,8" IsVisible="{TemplateBinding HasPager}">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+                                <h:HelixButton Name="PART_Previous" Icon="chevron-left" Variant="Outline" Tone="Neutral" Size="Sm" Width="32" Padding="0" />
+                                <TextBlock Text="{TemplateBinding PageText}" FontSize="13" VerticalAlignment="Center" Margin="6,0" Foreground="{DynamicResource Helix.TextMuted}" />
+                                <h:HelixButton Name="PART_Next" Icon="chevron-right" Variant="Outline" Tone="Neutral" Size="Sm" Width="32" Padding="0" />
+                            </StackPanel>
+                            <TextBlock Text="{TemplateBinding InfoText}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextMuted}" />
+                        </DockPanel>
+                        <Border DockPanel.Dock="Bottom" Height="42" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,1,0,1"
+                                Background="{DynamicResource Helix.Surface2}" IsVisible="{TemplateBinding HasTotals}" ClipToBounds="True">
+                            <StackPanel Name="PART_Totals" Orientation="Horizontal" />
+                        </Border>
+                        <Panel>
+                            <DataGrid Name="PART_Grid" Classes="helix-grid" IsReadOnly="True" CanUserSortColumns="True" CanUserResizeColumns="True"
+                                      GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0"
+                                      HorizontalGridLinesBrush="{DynamicResource Helix.Border}" RowDetailsTemplate="{TemplateBinding RowDetailsTemplate}"
+                                      SelectedItem="{TemplateBinding SelectedItem, Mode=TwoWay}" />
+                            <h:HelixEmptyState Title="{TemplateBinding EmptyMessage}" VerticalAlignment="Center" Margin="0,40,0,0" IsHitTestVisible="False">
+                                <h:HelixEmptyState.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <TemplateBinding Property="IsEmpty" />
+                                        <TemplateBinding Property="Error" Converter="{x:Static ObjectConverters.IsNull}" />
+                                    </MultiBinding>
+                                </h:HelixEmptyState.IsVisible>
+                            </h:HelixEmptyState>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12" Margin="0,40,0,0"
+                                        IsVisible="{TemplateBinding Error, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <h:HelixIcon Icon="danger" Size="22" Foreground="{DynamicResource Helix.Danger}" HorizontalAlignment="Center" />
+                                <TextBlock Text="{TemplateBinding Error}" Foreground="{DynamicResource Helix.TextMuted}" HorizontalAlignment="Center" />
+                                <h:HelixButton Name="PART_Retry" Content="{x:Static h:HelixDataGrid.RetryText}" Icon="refresh" Variant="Soft" HorizontalAlignment="Center" />
+                            </StackPanel>
+                            <Border Background="{DynamicResource Helix.Surface}" Opacity="0.7" IsVisible="{TemplateBinding IsLoading}">
+                                <h:HelixSpinner Size="28" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Panel>
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
     <!-- ===================================================================== Toasts -->
 
     <ControlTheme x:Key="{x:Type h:HelixToastHost}" TargetType="h:HelixToastHost">

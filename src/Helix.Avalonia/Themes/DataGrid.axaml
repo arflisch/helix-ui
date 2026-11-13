@@ -1,0 +1,40 @@
+<!-- The Helix look of the DataGrid inside HelixDataGrid (class helix-grid). -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style Selector="DataGrid.helix-grid">
+        <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+        <Setter Property="RowBackground" Value="Transparent" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource Helix.Surface2}" />
+        <Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="SeparatorBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridColumnHeader:pointerover /template/ Grid#PART_ColumnHeaderRoot">
+        <Setter Property="Background" Value="{DynamicResource Helix.Surface3}" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridCell">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontSize" Value="{DynamicResource Helix.FontSize}" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridCell:focus /template/ Grid#FocusVisual">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="{DynamicResource Helix.Surface2}" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="{DynamicResource Helix.PrimarySoft}" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="DataGrid.helix-grid DataGridRowGroupHeader">
+        <Setter Property="Background" Value="{DynamicResource Helix.Surface2}" />
+        <Setter Property="Foreground" Value="{DynamicResource Helix.Text}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+</Styles>
