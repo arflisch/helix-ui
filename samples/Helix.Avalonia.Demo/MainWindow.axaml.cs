@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     [
         ("Buttons", () => new ButtonsPage()),
         ("Forms", () => new FormsPage()),
+        ("Pickers", () => new PickersPage()),
         ("Display", () => new DisplayPage()),
         ("Data", () => new DataPage()),
         ("Charts", () => new ChartsPage()),
@@ -21,6 +22,7 @@ public partial class MainWindow : Window
 
     public static int PageCount => Pages.Length;
     public static string PageName(int index) => Pages[index].Name;
+    public static int IndexOf(string name) => Array.FindIndex(Pages, p => p.Name == name);
 
     public MainWindow()
     {

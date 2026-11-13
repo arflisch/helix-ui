@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.PickersPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Fields and pickers</TextBlock>
+        <TextBlock Classes="lead">Numbers with calculations, lists with search, several choices, dates, date and time, periods with shortcuts, radio groups, sliders and ratings.</TextBlock>
+        <TextBlock Classes="h2">Numbers and lists</TextBlock>
+        <Border Classes="stage">
+            <Grid ColumnDefinitions="*,24,*" RowDefinitions="Auto,18,Auto">
+                <helix:HelixNumberField Name="Capacity" Label="Capacity" Value="120" Unit="MW" Minimum="0" Maximum="500" Step="5" AllowExpressions="True"
+                                        Hint="Type a calculation: 120*0.8" />
+                <helix:HelixNumberField Grid.Column="2" Label="Change vs yesterday" Value="-4.2" Unit="%" Decimals="1" IsSigned="True" ShowSteppers="False" />
+                <helix:HelixSelect Name="Region" Grid.Row="2" Label="Region" Icon="home" IsSearchable="True" IsRequired="True" />
+                <helix:HelixMultiSelect Name="Teams" Grid.Row="2" Grid.Column="2" Label="Teams" IsSearchable="True" MaxChips="2" Placeholder="Choose teams" />
+            </Grid>
+        </Border>
+        <TextBlock Classes="h2">Dates</TextBlock>
+        <Border Classes="stage">
+            <Grid ColumnDefinitions="*,24,*" RowDefinitions="Auto,18,Auto,18,Auto">
+                <helix:HelixDatePicker Name="Delivery" Label="Delivery date" Placeholder="Pick a day" Hint="Weekends are not available" />
+                <helix:HelixDateTimePicker Name="Start" Grid.Column="2" Label="Start" Placeholder="Pick a date and time" MinuteStep="15" />
+                <helix:HelixDateRangePicker Name="Period" Grid.Row="2" Label="Period" Placeholder="Pick a period" MaxDays="31" />
+                <helix:HelixDatePicker Grid.Row="2" Grid.Column="2" Label="With an error" Error="The date must be in the future." />
+                <Border Grid.Row="4" Grid.ColumnSpan="3" HorizontalAlignment="Left" Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}"
+                        BorderThickness="1" CornerRadius="12" Padding="12">
+                    <helix:HelixCalendar Name="Inline" />
+                </Border>
+            </Grid>
+        </Border>
+        <TextBlock Classes="h2">Choices</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="22">
+                <Grid ColumnDefinitions="*,24,*">
+                    <helix:HelixRadioGroup Name="Delivery2" Label="Delivery" Hint="Free above 50 €" />
+                    <helix:HelixRadioGroup Name="Period2" Grid.Column="2" Label="View" Appearance="Segmented" />
+                </Grid>
+                <helix:HelixRadioGroup Name="Plans" Label="Plan" Appearance="Cards" />
+                <Grid ColumnDefinitions="*,24,*">
+                    <StackPanel Spacing="16">
+                        <helix:HelixSlider Label="Volume" Value="64" Maximum="100" Unit="%" Format="0" />
+                        <helix:HelixSlider Label="Target" Value="120" Maximum="200" Unit="MW" Format="0" Tone="Success" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="12">
+                        <helix:HelixRating Value="4" ShowValue="True" Count="128" />
+                        <helix:HelixRating Name="Feedback" Value="3" Shape="heart" Tone="Danger" Size="Lg" />
+                        <helix:HelixRating Value="4.5" IsReadOnly="True" Size="Sm" ShowValue="True" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

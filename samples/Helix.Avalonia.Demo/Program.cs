@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -33,7 +34,7 @@ internal static class Program
         AppBuilder.Configure<App>().UseSkia().WithInterFont().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
         var window = new MainWindow { Width = 1180, Height = 1500 };
         window.Show();
-        window.ShowPage(3);
+        window.ShowPage(MainWindow.IndexOf("Data"));
         void Pump(int ms = 0)
         {
             var end = DateTime.Now.AddMilliseconds(ms);
@@ -62,6 +63,77 @@ internal static class Program
         Check($"Excel export is a zip ({xlsx.Length} bytes)", xlsx.Length > 1000 && xlsx[0] == (byte)'P' && xlsx[1] == (byte)'K');
         var csv = grid.ToCsv();
         Check($"CSV has a header and 37 rows + total ({csv.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length} lines)", csv.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length == 39);
+
+        // ----- Fields and pickers -----
+        window.ShowPage(MainWindow.IndexOf("Pickers"));
+        Pump(200);
+        var page = window.GetVisualDescendants().OfType<Helix.Avalonia.Demo.Pages.PickersPage>().First();
+        T Find<T>(string name) where T : Control => page.FindControl<T>(name)!;
+        IEnumerable<Visual> PopupContent(Control owner) =>
+            owner.GetVisualDescendants().OfType<global::Avalonia.Controls.Primitives.Popup>().First().Child!.GetVisualDescendants();
+        Button Day(Control owner, DateTime day) => PopupContent(owner).OfType<Button>().First(b => b.Tag is DateTime d && d == day.Date);
+        void Click(Button b) => b.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+
+        var number = Find<HelixNumberField>("Capacity");
+        number.Text = "120*0.8";
+        number.Commit();
+        Check($"number field computes 120*0.8 ({number.Value})", number.Value == 96);
+        number.Text = "900";
+        number.Commit();
+        Check($"number field clamps to its maximum ({number.Value})", number.Value == 500);
+
+        var date = Find<HelixDatePicker>("Delivery");
+        date.IsDropDownOpen = true;
+        Pump(100);
+        var monday = DateTime.Today.AddDays(((int)DayOfWeek.Monday - (int)DateTime.Today.DayOfWeek + 7) % 7 + 7);
+        var saturday = monday.AddDays(5);
+        Check("weekend days are disabled", !Day(date, saturday).IsEnabled);
+        Click(Day(date, monday));
+        Pump(50);
+        Check($"date picker takes the clicked day and closes ({date.DisplayText}, open={date.IsDropDownOpen})", date.SelectedDate == monday && !date.IsDropDownOpen);
+
+        var range = Find<HelixDateRangePicker>("Period");
+        range.IsDropDownOpen = true;
+        Pump(100);
+        Click(Day(range, monday));
+        Pump(50);
+        Check("range picker asks for the last day after the first click", range.IsPickingEnd && range.IsDropDownOpen);
+        Click(Day(range, monday.AddDays(3)));
+        Pump(50);
+        Check($"range picker keeps 4 days ({range.DisplayText})", range.SelectedRange?.Days == 4 && !range.IsDropDownOpen);
+
+        var start = Find<HelixDateTimePicker>("Start");
+        start.IsDropDownOpen = true;
+        Pump(100);
+        Click(Day(start, monday));
+        Pump(50);
+        var times = PopupContent(start).OfType<ListBox>().First();
+        times.SelectedItem = times.ItemsSource!.Cast<HelixTimeSlot>().First(t => t.Time == TimeSpan.FromHours(9.5));
+        Pump(50);
+        Check($"date-time picker keeps the day and the time ({start.DisplayText})", start.SelectedDateTime == monday.AddHours(9.5) && !start.IsDropDownOpen);
+
+        var teams = Find<HelixMultiSelect>("Teams");
+        teams.IsDropDownOpen = true;
+        Pump(100);
+        var product = PopupContent(teams).OfType<HelixCheckBox>().First(b => (string?)b.Content == "Product");
+        product.IsChecked = true;
+        Pump(50);
+        Check($"multiselect adds a choice ({teams.SelectedItems?.Count} chosen, chips {teams.Chips.Count} {teams.MoreText})", teams.SelectedItems?.Count == 4 && teams.MoreText == "+2");
+        teams.SearchText = "fin";
+        Pump(50);
+        Check("multiselect search hides the other options", PopupContent(teams).OfType<HelixCheckBox>().Count(b => b.IsVisible) == 1);
+        teams.IsDropDownOpen = false;
+
+        var region = Find<HelixSelect>("Region");
+        region.IsDropDownOpen = true;
+        Pump(100);
+        region.SearchText = "th";
+        Pump(50);
+        var visible = Enumerable.Range(0, region.ItemCount).Count(i => region.ContainerFromIndex(i)?.IsVisible == true);
+        Check($"select search keeps North and South ({visible} visible)", visible == 2);
+        region.IsDropDownOpen = false;
+        Pump(50);
+        Check("select search is emptied when the list closes", string.IsNullOrEmpty(region.SearchText));
         return failures;
     }
 

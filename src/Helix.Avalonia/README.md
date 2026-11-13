@@ -60,12 +60,30 @@ Avalonia DataGrid columns (the DataGrid theme is included by HelixTheme).
 HelixChart (line, area, step, bar), HelixDonut (or segmented bar), HelixGauge, HelixHeatmap, HelixBarList.
 Note: a series is named with `Label` (in Avalonia, `Name` is the element's x:Name).
 
+## Fields and pickers
+
+```xml
+<helix:HelixNumberField Label="Capacity" Value="{Binding Capacity}" Unit="MW" Minimum="0" Step="5" AllowExpressions="True" />
+<helix:HelixSelect Label="Region" ItemsSource="{Binding Regions}" SelectedItem="{Binding Region}" IsSearchable="True" />
+<helix:HelixMultiSelect Label="Teams" ItemsSource="{Binding Teams}" SelectedItems="{Binding Chosen}" MaxChips="2" />
+<helix:HelixDatePicker Label="Delivery" SelectedDate="{Binding Delivery}" Minimum="{Binding Today}" />
+<helix:HelixDateTimePicker Label="Start" SelectedDateTime="{Binding Start}" MinuteStep="15" />
+<helix:HelixDateRangePicker Label="Period" SelectedRange="{Binding Period}" MaxDays="31" />
+<helix:HelixRadioGroup Label="Plan" ItemsSource="{Binding Plans}" Appearance="Cards" />   <!-- Default, Cards, Segmented -->
+<helix:HelixSlider Label="Volume" Value="{Binding Volume}" Maximum="100" Unit="%" />
+<helix:HelixRating Value="{Binding Stars}" ShowValue="True" />
+```
+
+`IsDateDisabled` (e.g. weekends) on the date pickers and on `HelixCalendar`, which can also be used on its own.
+
 ## Controls so far
 
 HelixButton, HelixIcon, HelixBadge, HelixAlert, HelixCard, HelixStat, HelixProgress, HelixSpinner, HelixEmptyState,
 HelixTextField, HelixSwitch, HelixCheckBox, HelixToasts / HelixToastHost, HelixAsyncCommand,
-HelixDataGrid, HelixChart, HelixDonut, HelixGauge, HelixHeatmap, HelixBarList.
+HelixDataGrid, HelixChart, HelixDonut, HelixGauge, HelixHeatmap, HelixBarList,
+HelixNumberField, HelixSelect, HelixMultiSelect, HelixCalendar, HelixDatePicker, HelixDateTimePicker, HelixDateRangePicker,
+HelixRadioGroup, HelixSlider, HelixRating.
 More are being ported from Helix.Wpf.
 
 Gallery: `dotnet run --project samples/Helix.Avalonia.Demo`
-(`-- --screenshots <folder>` renders every page in light and dark to PNG; `-- --selftest` checks the grid behavior).
+(`-- --screenshots <folder>` renders every page in light and dark to PNG; `-- --selftest` checks the grid and the pickers).

@@ -43,6 +43,7 @@ public sealed record HelixTexts
     public string LogWarning { get; init; } = "Warning";
     public string LogError { get; init; } = "Error";
     public string FollowLog { get; init; } = "Follow";
+    public string ExpressionHint { get; init; } = "You can type a calculation, e.g. 120*0.8";
     public string Notifications { get; init; } = "Notifications";
     public string MarkAllRead { get; init; } = "Mark all as read";
     public string NoNotifications { get; init; } = "You're all caught up";
@@ -114,7 +115,7 @@ public sealed record HelixTexts
         Today = "Aujourd'hui", ChooseDateTime = "Choisir une date et une heure", ChooseTime = "Heure", ChoosePeriod = "Choisir une période", Yesterday = "Hier", Last7Days = "7 derniers jours", Last30Days = "30 derniers jours", ThisWeek = "Cette semaine", ThisMonth = "Ce mois-ci", LastMonth = "Le mois dernier", PickEndDate = "Choisissez maintenant le dernier jour",
         SelectAll = "Tout sélectionner",
         Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés", SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »",
-        LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", Notifications = "Notifications", MarkAllRead = "Tout marquer comme lu", NoNotifications = "Vous êtes à jour", UnreadCount = "{0} non lues", Earlier = "Plus ancien", JustNow = "À l'instant", MinutesAgo = "il y a {0} min", HoursAgo = "il y a {0} h", ClearAll = "Tout effacer", Dismiss = "Retirer", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée",
+        LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Notifications = "Notifications", MarkAllRead = "Tout marquer comme lu", NoNotifications = "Vous êtes à jour", UnreadCount = "{0} non lues", Earlier = "Plus ancien", JustNow = "À l'instant", MinutesAgo = "il y a {0} min", HoursAgo = "il y a {0} h", ClearAll = "Tout effacer", Dismiss = "Retirer", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée",
         Export = "Exporter", ShowDetails = "Afficher le détail", HideDetails = "Masquer le détail",
         Close = "Fermer", Clear = "Effacer", Confirm = "Confirmer", Cancel = "Annuler", Loading = "Chargement",
         NoData = "Aucune donnée", SelectPlaceholder = "Sélectionner…", ChooseDate = "Choisir une date",
