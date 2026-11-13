@@ -23,6 +23,7 @@ public partial class MainWindow : Window
         ("Dialogs", () => new DialogsPage()),
         ("Live", () => new LivePage()),
         ("Filters & files", () => new ToolsPage()),
+        ("Trees & logs", () => new BrowsePage()),
         ("Feedback", () => new FeedbackPage(showToasts: true)),
     ];
 

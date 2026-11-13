@@ -202,3 +202,22 @@ HelixNotifications.RemoveTag("network");                                        
 
 `State` is a key → text dictionary, easy to save or send to a server; users save sets of filters from the star menu.
 The color picker's `Hex` is `#RRGGBB` (or `#RRGGBBAA`); in XAML, Avalonia reads `SelectedColor` as `#AARRGGBB`.
+
+## Trees, carousel, logs
+
+```xml
+<!-- No template needed: ChildrenPath + TextPath (and IconPath, DescriptionPath) build one -->
+<helix:HelixTreeView ItemsSource="{Binding Folders}" ChildrenPath="Children" TextPath="Name" IconPath="Icon" ExpandDepth="2" />
+<helix:HelixTreeView ItemsSource="{Binding Org}" Layout="Diagram" ChildrenPath="Reports" TextPath="Name" DescriptionPath="Role" />
+
+<helix:HelixCarousel SlidesPerView="2" Autoplay="True" Interval="0:0:6">   <!-- any content as slides; arrows, dots, keys, swipe -->
+    <Border>…</Border>
+    <Border>…</Border>
+</helix:HelixCarousel>
+
+<helix:HelixLogViewer ItemsSource="{Binding Lines}" />   <!-- ObservableCollection<HelixLogEntry>, followed live -->
+```
+
+```csharp
+Lines.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Warning, "Forecast is 12 minutes old", Source: "forecast"));
+```

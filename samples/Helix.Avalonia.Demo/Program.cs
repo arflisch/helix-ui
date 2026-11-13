@@ -358,6 +358,46 @@ internal static class Program
         Check($"a refused type explains why ({drop.Error})", drop.Files.Count == 2 && drop.Error?.Contains("virus.exe") == true);
         drop.Files[0].RemoveCommand.Execute(null);
         Check($"remove takes a file out ({drop.Files.Count})", drop.Files.Count == 1);
+
+        // Tree, carousel, log
+        window.ShowPage(MainWindow.IndexOf("Trees & logs"));
+        Pump(200);
+        var files = Named<HelixTreeView>("Files");
+        var nodes = files.GetVisualDescendants().OfType<HelixTreeViewItem>().ToList();
+        var src = nodes.First(n => (n.DataContext as Pages.TreeNode)?.Name == "src");
+        var avaloniaNode = nodes.First(n => (n.DataContext as Pages.TreeNode)?.Name == "Helix.Avalonia");
+        Check($"tree opens two levels with ExpandDepth=2 ({src.IsExpanded}, {avaloniaNode.IsExpanded})", src.IsExpanded && avaloniaNode.IsExpanded
+            && !nodes.Any(n => (n.DataContext as Pages.TreeNode)?.Name == "HelixButton.cs" && n.IsEffectivelyVisible));
+        Check($"tree indents by level ({avaloniaNode.Indent.Left})", avaloniaNode.Indent.Left == 18);
+        avaloniaNode.IsExpanded = false;
+        Pump(30);
+        Check("collapsing hides the children", !files.GetVisualDescendants().OfType<HelixTreeViewItem>().Any(n => (n.DataContext as Pages.TreeNode)?.Name == "Controls" && n.IsEffectivelyVisible));
+        var org = Named<HelixTreeView>("Org");
+        var orgNodes = org.GetVisualDescendants().OfType<HelixTreeViewItem>().ToList();
+        var ceo = orgNodes.First();
+        var reports = ceo.GetRealizedContainers().OfType<HelixTreeViewItem>().ToList();
+        Check($"org chart lays the reports side by side ({reports.Count}, y {string.Join("/", reports.Select(r => (int)r.Bounds.Y))})",
+            reports.Count == 3 && reports.Select(r => r.Bounds.Y).Distinct().Count() == 1 && reports[0].Bounds.X < reports[1].Bounds.X);
+
+        var slides = Named<HelixCarousel>("Slides");
+        Check($"carousel with 2 per view has 4 positions ({slides.GetVisualDescendants().OfType<StackPanel>().First(p => p.Name == "PART_Dots").Children.Count})",
+            slides.GetVisualDescendants().OfType<StackPanel>().First(p => p.Name == "PART_Dots").Children.Count == 4);
+        slides.Go(3);
+        Check($"carousel stops at the last position ({slides.SelectedIndex})", slides.SelectedIndex == 3);
+        slides.Go(4, wrap: true);
+        Check($"next on the last one wraps to the first ({slides.SelectedIndex})", slides.SelectedIndex == 0);
+
+        var log = Named<HelixLogViewer>("Log");
+        Check($"log counts by level and hides debug ({log.InfoLabel}, {log.VisibleCount} shown)", log.Counts[1] == 6 && log.Counts[0] == 2 && log.VisibleCount == 9);
+        log.SearchText = "submission";
+        Check($"search filters the lines ({log.VisibleCount})", log.VisibleCount == 3);
+        log.SearchText = "";
+        log.ShowInfo = false;
+        Check($"level toggle hides info lines ({log.VisibleCount})", log.VisibleCount == 3);
+        log.ShowInfo = true;
+        Pages.BrowsePage.Lines.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Error, "Live line"));
+        log.Flush();
+        Check($"a new line updates the counts and the view ({log.ErrorLabel}, {log.VisibleCount})", log.Counts[3] == 2 && log.VisibleCount == 10);
         return failures;
     }
 
