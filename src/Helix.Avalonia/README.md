@@ -221,3 +221,29 @@ The color picker's `Hex` is `#RRGGBB` (or `#RRGGBBAA`); in XAML, Avalonia reads 
 ```csharp
 Lines.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Warning, "Forecast is 12 minutes old", Source: "forecast"));
 ```
+
+## Auto form and details
+
+```csharp
+public sealed class SiteForm
+{
+    [Display(Name = "Site name"), Required, StringLength(40, MinimumLength = 3)] public string? Name { get; set; }
+    [Range(0, 1000), HelixField(Unit = "MW", Step = 10)] public double Capacity { get; set; }
+    public ContractKind Kind { get; set; }                                   // enum → select
+    [HelixField(WithTime = false)] public DateTime Commissioned { get; set; } // date picker
+    public bool IsActive { get; set; }                                       // switch
+    [HelixField(Span = 2)] public string? Notes { get; set; }
+}
+```
+
+```xml
+<helix:HelixAutoForm Model="{Binding Site}" Columns="2" ShowCancel="True" Submitted="OnSaved" />
+
+<helix:HelixDescriptionList Columns="3" IsBordered="True">
+    <helix:HelixDescription Label="Site" Icon="home">North plant</helix:HelixDescription>
+    <helix:HelixDescription Label="Notes" Span="3">…</helix:HelixDescription>
+</helix:HelixDescriptionList>
+
+<helix:HelixTargetBar Label="North plant" Value="412" Target="420" Tolerance="10" Maximum="600" Unit="MW" />
+<helix:HelixBusy IsBusy="{Binding IsSaving}" Text="Saving…"> … </helix:HelixBusy>
+```

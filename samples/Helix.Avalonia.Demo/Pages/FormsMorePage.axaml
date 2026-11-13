@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.FormsMorePage"
+             x:CompileBindings="False">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Auto form and details</TextBlock>
+        <TextBlock Classes="lead">A form generated from a class and its attributes, details as label / value pairs, a value against its target and a busy veil.</TextBlock>
+
+        <TextBlock Classes="h2">Auto form</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="12">
+                <helix:HelixAutoForm Name="Form" ShowCancel="True" />
+                <TextBlock Name="FormResult" FontSize="12.5" Foreground="{DynamicResource Helix.TextMuted}" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Description list</TextBlock>
+        <Border Classes="stage">
+            <helix:HelixDescriptionList Columns="3" IsBordered="True">
+                <helix:HelixDescription Label="Site" Icon="home">North plant</helix:HelixDescription>
+                <helix:HelixDescription Label="Capacity" Icon="zap">480 MW</helix:HelixDescription>
+                <helix:HelixDescription Label="Status">
+                    <helix:HelixBadge Content="Running" Tone="Success" ShowDot="True" HorizontalAlignment="Left" />
+                </helix:HelixDescription>
+                <helix:HelixDescription Label="Manager" Icon="user">Grace Hopper</helix:HelixDescription>
+                <helix:HelixDescription Label="Commissioned" Icon="calendar">12/03/2019</helix:HelixDescription>
+                <helix:HelixDescription Label="Contract">Day-ahead and intraday</helix:HelixDescription>
+                <helix:HelixDescription Label="Notes" Span="3">Maintenance window every first Sunday of the month, 02:00–06:00. Ramp rate limited to 8 MW/min during the winter.</helix:HelixDescription>
+            </helix:HelixDescriptionList>
+        </Border>
+
+        <TextBlock Classes="h2">Target bar</TextBlock>
+        <Border Classes="stage">
+            <StackPanel Spacing="20">
+                <helix:HelixTargetBar Name="OnTarget" Label="North plant" Value="412" Target="420" Tolerance="10" Maximum="600" Unit="MW" />
+                <helix:HelixTargetBar Label="South plant" Value="338" Target="300" Tolerance="20" Maximum="600" Unit="MW" />
+                <helix:HelixTargetBar Name="Banded" Label="East plant" Value="510" Target="380" Tolerance="25" Maximum="600" Unit="MW" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Busy</TextBlock>
+        <helix:HelixBusy Name="Busy" Text="Saving…" IsBusy="True" Delay="0:0:0">
+            <Border Classes="stage">
+                <helix:HelixDescriptionList Columns="2" IsInline="True" LabelWidth="110">
+                    <helix:HelixDescription Label="Offer">Day-ahead, 24 slots</helix:HelixDescription>
+                    <helix:HelixDescription Label="Volume">1 450 MWh</helix:HelixDescription>
+                    <helix:HelixDescription Label="Price">78,50 €/MWh</helix:HelixDescription>
+                    <helix:HelixDescription Label="Sent by">Ada Lovelace</helix:HelixDescription>
+                </helix:HelixDescriptionList>
+            </Border>
+        </helix:HelixBusy>
+    </StackPanel>
+</UserControl>

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
@@ -398,6 +399,41 @@ internal static class Program
         Pages.BrowsePage.Lines.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Error, "Live line"));
         log.Flush();
         Check($"a new line updates the counts and the view ({log.ErrorLabel}, {log.VisibleCount})", log.Counts[3] == 2 && log.VisibleCount == 10);
+
+        // Auto form, description list, target bar, busy
+        window.ShowPage(MainWindow.IndexOf("Auto form"));
+        Pump(150);
+        var form = Named<HelixAutoForm>("Form");
+        var model = (Pages.SiteForm)form.Model!;
+        var kinds = form.FieldControls.Select(c => c.GetType().Name).ToList();
+        Check($"auto form picks a control per type ({string.Join(", ", kinds)})",
+            kinds.SequenceEqual(["HelixTextField", "HelixNumberField", "HelixSelect", "HelixDatePicker", "HelixTextField", "StackPanel", "HelixTextField"]));
+        var nameField = (HelixTextField)form.FieldControls[0];
+        Check($"labels come from [Display] and the field is bound ({nameField.Label}: {nameField.Text})", nameField.Label == "Site name" && nameField.Text == "North plant" && nameField.IsRequired);
+        nameField.Text = "Ab";
+        Pump(20);
+        Check($"typing updates the model and checks the rule at once ({model.Name}; {nameField.Error})", model.Name == "Ab" && !string.IsNullOrEmpty(nameField.Error));
+        var capacity = (HelixNumberField)form.FieldControls[1];
+        capacity.Value = 1200;
+        Pump(20);
+        var submitted = false;
+        form.Submitted += (_, _) => submitted = true;
+        Check($"submit refuses invalid values ({form.Submit()}, capacity error '{capacity.Error}')", !submitted && !string.IsNullOrEmpty(capacity.Error));
+        nameField.Text = "South plant";
+        capacity.Value = 350;
+        Pump(20);
+        Check($"submit passes once fixed ({form.Submit()}; {model.Name}, {model.Capacity})", submitted && model.Name == "South plant" && model.Capacity == 350 && nameField.Error is null);
+        Check($"a Span=2 field takes the full row ({form.FieldControls[6].Bounds.Width:0} vs {form.FieldControls[0].Bounds.Width:0})",
+            form.FieldControls[6].Bounds.Width > form.FieldControls[0].Bounds.Width * 1.8);
+
+        var onTarget = Named<HelixTargetBar>("OnTarget");
+        var banded = Named<HelixTargetBar>("Banded");
+        Check($"target bar states ({onTarget.State} {onTarget.DeltaText}, {banded.State} {banded.DeltaText})", onTarget.State == "ok" && onTarget.DeltaText == "-8 MW" && banded.State == "off" && banded.DeltaText == "+130 MW");
+        var busy = Named<HelixBusy>("Busy");
+        Check($"busy shows the veil and blocks the content ({busy.IsVeilShown})", busy.IsVeilShown && busy.GetVisualDescendants().OfType<ContentPresenter>().First(p => p.Name == "PART_ContentPresenter").IsEnabled == false);
+        busy.IsBusy = false;
+        Check("not busy hides it at once", !busy.IsVeilShown);
+        busy.IsBusy = true;
         return failures;
     }
 

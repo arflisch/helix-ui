@@ -24,6 +24,7 @@ public partial class MainWindow : Window
         ("Live", () => new LivePage()),
         ("Filters & files", () => new ToolsPage()),
         ("Trees & logs", () => new BrowsePage()),
+        ("Auto form", () => new FormsMorePage()),
         ("Feedback", () => new FeedbackPage(showToasts: true)),
     ];
 
