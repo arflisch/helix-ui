@@ -25,6 +25,7 @@ public partial class MainWindow : Window
         ("Filters & files", () => new ToolsPage()),
         ("Trees & logs", () => new BrowsePage()),
         ("Auto form", () => new FormsMorePage()),
+        ("Grid extras", () => new ExtrasPage()),
         ("Feedback", () => new FeedbackPage(showToasts: true)),
     ];
 

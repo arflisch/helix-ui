@@ -16,7 +16,7 @@ Helix.slnx
 │  ├─ Controls/           champs, boutons, HelixDataGrid, HelixChart, HelixDonut, HelixTimeline, HelixKanban, HelixDashboard, HelixTreeView… (55+ contrôles)
 │  ├─ Core/               HelixResources (thème), HelixPalette, HelixIcon, HelixTexts
 │  └─ Themes/Generic.xaml styles par défaut (couleurs en DynamicResource)
-├─ src/Helix.Avalonia      la librairie pour Avalonia 12 (Windows, macOS, Linux) — en cours de portage
+├─ src/Helix.Avalonia      la librairie pour Avalonia 12 (Windows, macOS, Linux), mêmes composants que WPF
 ├─ src/Helix.Export        fichiers Excel (.xlsx), Word (.docx) et CSV, sans dépendance (.NET 8 et 10, partout)
 ├─ samples/Helix.Demo      site de démo Blazor avec un playground par composant
 ├─ samples/Helix.Wpf.Demo  galerie WPF
@@ -153,8 +153,8 @@ Nouveau projet : `dotnet new install Helix.Templates`, puis `dotnet new helix-bl
 |---|---|
 | `Helix.Blazor` | `dotnet add package Helix.Blazor` |
 | `Helix.Wpf` | `dotnet add package Helix.Wpf` |
-| `Helix.Avalonia` | `dotnet add package Helix.Avalonia` (en cours) |
-| `Helix.Export` | `dotnet add package Helix.Export` (déjà inclus par Helix.Blazor et Helix.Wpf) |
+| `Helix.Avalonia` | `dotnet add package Helix.Avalonia` |
+| `Helix.Export` | `dotnet add package Helix.Export` (déjà inclus par Helix.Blazor, Helix.Wpf et Helix.Avalonia) |
 
 Créer les packages en local :
 

@@ -34,6 +34,9 @@ internal static class Program
     /// <summary>Checks the grid behavior headlessly: search, paging, export.</summary>
     private static int SelfTest()
     {
+        // Settings go to a throwaway file, not the user's.
+        var settingsFile = Path.Combine(Path.GetTempPath(), $"helix-selftest-{Guid.NewGuid():N}.json");
+        HelixSettings.Store = new HelixFileSettingsStore(settingsFile);
         AppBuilder.Configure<App>().UseSkia().WithInterFont().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
         var window = new MainWindow { Width = 1180, Height = 1500 };
         window.Show();
@@ -434,11 +437,63 @@ internal static class Program
         busy.IsBusy = false;
         Check("not busy hides it at once", !busy.IsVeilShown);
         busy.IsBusy = true;
+
+        // Grid extras, field, settings, live collection, time slots
+        window.ShowPage(MainWindow.IndexOf("Grid extras"));
+        Pump(200);
+        var sites = Named<HelixDataGrid>("Sites");
+        var badges = sites.GetVisualDescendants().OfType<HelixBadge>().ToList();
+        Check($"badge column shows tone badges ({badges.Count}: {string.Join(", ", badges.Select(b => b.Content + "/" + b.Tone))})",
+            badges.Count == 5 && badges[1].Tone == HelixTone.Warning && (string?)badges[3].Content == "Stopped");
+        var signed = sites.GetVisualDescendants().OfType<HelixSignedValue>().ToList();
+        // Two signed columns per row: [delta, cost] for each site.
+        Check($"signed column: sign, unit and good/bad ({string.Join(" | ", signed.Where((_, i) => i % 2 == 0).Select(v => v.Text + ":" + v.State))})",
+            signed[0].Text.StartsWith("+2") && signed[0].Text.EndsWith(" %") && signed[0].State == "good" && signed[2].State == "bad" && signed[4].State == "flat");
+        Check($"lower cost is good with HigherIsBetter=False ({signed[1].Text} {signed[1].State}, {signed[3].Text} {signed[3].State})",
+            signed[1].State == "good" && signed[3].State == "bad" && signed[3].Text.StartsWith('+'));
+        var toggle = sites.GetVisualDescendants().OfType<HelixDetailsToggle>().First();
+        var row = toggle.FindAncestorOfType<DataGridRow>()!;
+        Check("details stay closed on selection", !row.AreDetailsVisible);
+        toggle.IsChecked = true;
+        Pump(50);
+        Check($"the chevron opens the row details ({row.AreDetailsVisible})", row.AreDetailsVisible && row.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text?.StartsWith("Maintenance") == true));
+        var rampField = Named<HelixField>("RampField");
+        Check($"field frame shows the hint ({rampField.Message})", rampField.Message == "MW per minute" && !rampField.HasError);
+        rampField.Error = "Too fast";
+        Check($"an error replaces the hint ({rampField.Message}, {rampField.HasError})", rampField.Message == "Too fast" && rampField.HasError && rampField.Classes.Contains(":error"));
+
+        // Settings: hide a column, leave the page, come back.
+        sites.Columns.First(c => (string?)c.Header == "Cost").IsVisible = false;
+        sites.PageSize = 3;
+        window.ShowPage(MainWindow.IndexOf("Data"));
+        Pump(100);
+        var stored = File.Exists(settingsFile) ? File.ReadAllText(settingsFile) : "";
+        window.ShowPage(MainWindow.IndexOf("Grid extras"));
+        Pump(150);
+        var again = Named<HelixDataGrid>("Sites");
+        Check($"RememberAs keeps hidden columns and page size ({again.Columns.First(c => (string?)c.Header == "Cost").IsVisible}, {again.PageSize})",
+            stored.Contains("extras-sites") && !again.Columns.First(c => (string?)c.Header == "Cost").IsVisible && again.PageSize == 3);
+
+        var live = new HelixLiveCollection<int>(TimeSpan.FromHours(1), maxCount: 50);
+        var notifications = 0;
+        live.CollectionChanged += (_, _) => notifications++;
+        Task.WaitAll(Enumerable.Range(0, 4).Select(t => Task.Run(() => { for (var i = 0; i < 30; i++) live.Enqueue(t * 100 + i); })).ToArray());
+        live.Flush();
+        Check($"live collection: 120 items from 4 threads in one notification, trimmed to 50 ({live.Count}, {notifications})", live.Count == 50 && notifications == 1);
+        live.Dispose();
+
+        var paris = Pages.ExtrasPage.FindZone();
+        var spring = HelixTimeSlots.ForDay(new DateOnly(2026, 3, 29), TimeSpan.FromMinutes(15), paris);
+        var autumn = HelixTimeSlots.ForDay(new DateOnly(2026, 10, 25), TimeSpan.FromMinutes(15), paris);
+        Check($"time slots follow daylight saving ({spring.Count} / {autumn.Count} in {paris.Id})", paris.Id == TimeZoneInfo.Local.Id && paris.Id != "Europe/Paris" || spring.Count == 92 && autumn.Count == 100);
+        HelixSettings.Store = new HelixFileSettingsStore(Path.Combine(Path.GetTempPath(), "unused.json"));
+        try { File.Delete(settingsFile); } catch (IOException) { }
         return failures;
     }
 
     private static int Screenshots(string folder)
     {
+        HelixSettings.Store = new HelixFileSettingsStore(Path.Combine(Path.GetTempPath(), $"helix-shots-{Guid.NewGuid():N}.json"));
         Directory.CreateDirectory(folder);
         AppBuilder.Configure<App>().UseSkia().WithInterFont()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })

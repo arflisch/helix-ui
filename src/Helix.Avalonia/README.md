@@ -247,3 +247,29 @@ public sealed class SiteForm
 <helix:HelixTargetBar Label="North plant" Value="412" Target="420" Tolerance="10" Maximum="600" Unit="MW" />
 <helix:HelixBusy IsBusy="{Binding IsSaving}" Text="Saving…"> … </helix:HelixBusy>
 ```
+
+## Grid columns and helpers
+
+```xml
+<helix:HelixDataGrid Source="{Binding Sites}" helix:HelixSettings.RememberAs="sites">   <!-- columns and page size kept per user -->
+    <helix:HelixDataGrid.RowDetailsTemplate><DataTemplate>…</DataTemplate></helix:HelixDataGrid.RowDetailsTemplate>
+    <helix:HelixDataGrid.Columns>
+        <helix:HelixDetailsColumn />                                                   <!-- chevron opens the row details -->
+        <helix:HelixBadgeColumn Header="Status" Binding="{Binding Status}" ToneBinding="{Binding Tone}" />
+        <helix:HelixSignedColumn Header="vs plan" Binding="{Binding Delta}" Format="N1" Unit="%" />
+        <helix:HelixSignedColumn Header="Cost" Binding="{Binding Cost}" Unit="€" HigherIsBetter="False" />
+    </helix:HelixDataGrid.Columns>
+</helix:HelixDataGrid>
+
+<helix:HelixField Label="Ramp rate" Hint="MW per minute" Error="{Binding RampError}">
+    <helix:HelixSlider Value="{Binding Ramp}" Maximum="20" />                         <!-- any input, with the field look -->
+</helix:HelixField>
+```
+
+```csharp
+HelixSettings.Store = new MyDatabaseStore();            // IHelixSettingsStore; a JSON file per user by default
+var points = new HelixLiveCollection<HelixPoint>();      // Enqueue from any thread, flushed on the UI thread in batches
+var slots = HelixTimeSlots.ForDay(day, TimeSpan.FromMinutes(15), zone);   // 92 / 96 / 100 quarter hours with DST
+```
+
+`RememberAs` also works on `HelixDashboard` (layout) and `HelixFilterBar` (saved filters).

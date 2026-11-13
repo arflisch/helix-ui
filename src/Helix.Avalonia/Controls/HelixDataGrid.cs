@@ -220,6 +220,8 @@ public class HelixDataGrid : TemplatedControl
         if (_grid is not null)
         {
             foreach (var column in Columns) _grid.Columns.Add(column);
+            // With a details column, details open only with its chevron, not on selection.
+            if (Columns.OfType<HelixDetailsColumn>().Any()) _grid.RowDetailsVisibilityMode = DataGridRowDetailsVisibilityMode.Collapsed;
             _grid.Sorting += OnSorting;
             _grid.LayoutUpdated += OnGridLayout;
             ApplyDensity();
@@ -521,7 +523,7 @@ public class HelixDataGrid : TemplatedControl
         return value;
     }
 
-    private static double? Number(object? value) => value switch
+    internal static double? Number(object? value) => value switch
     {
         null or bool or string or char or DateTime or DateTimeOffset or Enum => null,
         IConvertible convertible => convertible.ToDouble(CultureInfo.InvariantCulture),

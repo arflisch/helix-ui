@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.ExtrasPage"
+             x:CompileBindings="False">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Grid extras and helpers</TextBlock>
+        <TextBlock Classes="lead">Badge, signed and details columns, a field frame for any input, settings remembered per user, live collections and the time slots of a day.</TextBlock>
+
+        <TextBlock Classes="h2">Columns</TextBlock>
+        <helix:HelixDataGrid Name="Sites" PageSize="0" Height="330" helix:HelixSettings.RememberAs="extras-sites">
+            <helix:HelixDataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <Border Padding="52,10,16,14" Background="{DynamicResource Helix.Surface2}">
+                        <TextBlock Text="{Binding Notes}" TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" />
+                    </Border>
+                </DataTemplate>
+            </helix:HelixDataGrid.RowDetailsTemplate>
+            <helix:HelixDataGrid.Columns>
+                <helix:HelixDetailsColumn />
+                <DataGridTextColumn Header="Site" Binding="{Binding Name}" Width="*" />
+                <helix:HelixBadgeColumn Header="Status" Binding="{Binding Status}" ToneBinding="{Binding Tone}" Width="140" />
+                <DataGridTextColumn Header="Output" Binding="{Binding Output, StringFormat={}{0:N0} MW}" Width="110" />
+                <helix:HelixSignedColumn Header="vs plan" Binding="{Binding Delta}" Format="N1" Unit="%" Width="110" />
+                <helix:HelixSignedColumn Header="Cost" Binding="{Binding Cost}" Format="N0" Unit="€" HigherIsBetter="False" Width="110" />
+            </helix:HelixDataGrid.Columns>
+        </helix:HelixDataGrid>
+
+        <TextBlock Classes="h2">Field frame</TextBlock>
+        <Border Classes="stage">
+            <WrapPanel ItemSpacing="24" LineSpacing="12">
+                <helix:HelixField Name="RampField" Label="Ramp rate" Hint="MW per minute" IsRequired="True" Width="300">
+                    <helix:HelixSlider Name="Ramp" Maximum="20" Value="8" Unit=" MW/min" />
+                </helix:HelixField>
+                <helix:HelixField Label="Shift" Error="Pick at least one day" Width="300">
+                    <WrapPanel ItemSpacing="12">
+                        <helix:HelixCheckBox Content="Mon" /><helix:HelixCheckBox Content="Tue" /><helix:HelixCheckBox Content="Wed" />
+                    </WrapPanel>
+                </helix:HelixField>
+            </WrapPanel>
+        </Border>
+
+        <TextBlock Classes="h2">Time slots</TextBlock>
+        <Border Classes="stage">
+            <TextBlock Name="SlotsText" FontFamily="Menlo, Consolas, monospace" FontSize="12.5" Foreground="{DynamicResource Helix.TextMuted}" TextWrapping="Wrap" />
+        </Border>
+    </StackPanel>
+</UserControl>
