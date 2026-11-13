@@ -76,14 +76,31 @@ Note: a series is named with `Label` (in Avalonia, `Name` is the element's x:Nam
 
 `IsDateDisabled` (e.g. weekends) on the date pickers and on `HelixCalendar`, which can also be used on its own.
 
+## Planning and boards
+
+```xml
+<helix:HelixTimeline Title="Schedule" Start="{Binding From}" End="{Binding To}" SlotDuration="0:30:00"
+                     Items="{Binding Items}" Statuses="{Binding Statuses}" IsEditable="True" ItemChanged="OnItemChanged" />
+<helix:HelixKanban Columns="{Binding Columns}" ItemsSource="{Binding Cards}" ColumnPath="Status" />
+<helix:HelixSortableList ItemsSource="{Binding Priorities}" />
+<helix:HelixDashboard Title="Operations" ColumnCount="3" Layout="{Binding SavedLayout}">
+    <helix:HelixDashboardTile TileId="load" Title="Load" DefaultSpan="2">…</helix:HelixDashboardTile>
+</helix:HelixDashboard>
+```
+
+Dragging works with the mouse, touch and pen (pointer capture, no system drag and drop), the same on every platform:
+timeline items (move, stretch, change lane), kanban cards (with a placeholder and a copy following the pointer),
+sortable rows (and Alt + ↑ / ↓), dashboard tiles in edit mode (plus move, resize and hide buttons).
+
 ## Controls so far
 
 HelixButton, HelixIcon, HelixBadge, HelixAlert, HelixCard, HelixStat, HelixProgress, HelixSpinner, HelixEmptyState,
 HelixTextField, HelixSwitch, HelixCheckBox, HelixToasts / HelixToastHost, HelixAsyncCommand,
 HelixDataGrid, HelixChart, HelixDonut, HelixGauge, HelixHeatmap, HelixBarList,
 HelixNumberField, HelixSelect, HelixMultiSelect, HelixCalendar, HelixDatePicker, HelixDateTimePicker, HelixDateRangePicker,
-HelixRadioGroup, HelixSlider, HelixRating.
+HelixRadioGroup, HelixSlider, HelixRating,
+HelixTimeline, HelixKanban, HelixSortableList, HelixDashboard (tiles, Rows or Columns layout).
 More are being ported from Helix.Wpf.
 
 Gallery: `dotnet run --project samples/Helix.Avalonia.Demo`
-(`-- --screenshots <folder>` renders every page in light and dark to PNG; `-- --selftest` checks the grid and the pickers).
+(`-- --screenshots <folder>` renders every page in light and dark to PNG; `-- --selftest` checks the grid, the pickers and the drags (24 checks)).

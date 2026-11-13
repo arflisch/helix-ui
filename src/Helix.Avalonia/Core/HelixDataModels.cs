@@ -129,4 +129,80 @@ public sealed record HelixHeatCell(string Row, string Column, double? Value);
 public sealed class HelixEventArgs<T>(RoutedEvent routedEvent, T item) : RoutedEventArgs(routedEvent)
 {
     public T Item { get; } = item;
+
+    /// <summary>Same as <see cref="Item"/> (the name used by Helix for WPF).</summary>
+    public T Value => Item;
+}
+
+public sealed class HelixKanbanColumn
+{
+    public HelixKanbanColumn() { }
+
+    public HelixKanbanColumn(string key, string title, string? color = null, int? limit = null) => (Key, Title, Color, Limit) = (key, title, color, limit);
+
+    public string Key { get; set; } = "";
+    public string Title { get; set; } = "";
+
+    /// <summary>Dot color: "series-1", "success", "#FF8A00"…</summary>
+    public string? Color { get; set; }
+
+    /// <summary>WIP limit: the count turns red above it.</summary>
+    public int? Limit { get; set; }
+}
+
+/// <summary>A card was dropped in a column (possibly the same one) at Index. Set Handled to apply the move yourself.</summary>
+public sealed class HelixKanbanMoveEventArgs(RoutedEvent routedEvent, object item, string from, string to, int index) : RoutedEventArgs(routedEvent)
+{
+    public object Item { get; } = item;
+    public string From { get; } = from;
+    public string To { get; } = to;
+    public int Index { get; } = index;
+}
+
+/// <summary>Position, width and visibility of a dashboard tile (save it to restore the user's layout).</summary>
+/// <param name="Column">Columns layout: first column of the tile (-1 = automatic).</param>
+public sealed record HelixTileState(string Id, int Span = 1, bool Hidden = false, int Column = -1);
+
+/// <summary>How a timeline status is drawn: filled (confirmed), outline (sent), dashed (draft).</summary>
+public enum HelixTimelineAppearance { Filled, Outline, Dashed }
+
+/// <summary>Staircase: one row per item (reads like a schedule). Packed: items share a row when they don't overlap.</summary>
+public enum HelixTimelineLayout { Packed, Staircase }
+
+/// <summary>A status shown in the legend and used to draw items.</summary>
+public sealed class HelixTimelineStatus
+{
+    public HelixTimelineStatus() { }
+
+    public HelixTimelineStatus(string key, string label, string color, HelixTimelineAppearance appearance = HelixTimelineAppearance.Filled) =>
+        (Key, Label, Color, Appearance) = (key, label, color, appearance);
+
+    public string Key { get; set; } = "";
+    public string Label { get; set; } = "";
+
+    /// <summary>"series-1", "danger", "#F15A24"…</summary>
+    public string Color { get; set; } = "primary";
+    public HelixTimelineAppearance Appearance { get; set; }
+}
+
+/// <summary>An item on the timeline.</summary>
+public sealed record HelixTimelineItem(string Id, DateTime Start, DateTime End, string Label)
+{
+    /// <summary>Key of a <see cref="HelixTimelineStatus"/>.</summary>
+    public string? Status { get; init; }
+
+    /// <summary>Row group (e.g. a unit or a person). Items without lane share one group.</summary>
+    public string? Lane { get; init; }
+
+    /// <summary>Overrides the status color.</summary>
+    public string? Color { get; init; }
+
+    /// <summary>Your own object, available in click and change handlers.</summary>
+    public object? Data { get; init; }
+}
+
+/// <summary>A proposed edit from a drag or a key press: apply it with item with { Start = …, End = …, Lane = … }.</summary>
+public sealed record HelixTimelineChange(HelixTimelineItem Item, DateTime Start, DateTime End, string? Lane)
+{
+    public HelixTimelineItem Applied => Item with { Start = Start, End = End, Lane = Lane };
 }

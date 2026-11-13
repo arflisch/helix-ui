@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -134,6 +135,72 @@ internal static class Program
         region.IsDropDownOpen = false;
         Pump(50);
         Check("select search is emptied when the list closes", string.IsNullOrEmpty(region.SearchText));
+
+        // ----- Planning: real mouse drags -----
+        window.ShowPage(MainWindow.IndexOf("Planning"));
+        Pump(300);
+        var planning = window.GetVisualDescendants().OfType<Helix.Avalonia.Demo.Pages.PlanningPage>().First();
+        Point Center(Visual v) => v.TranslatePoint(new Point(v.Bounds.Width / 2, v.Bounds.Height / 2), window)!.Value;
+        void Drag(Point from, Point to)
+        {
+            window.MouseDown(from, MouseButton.Left);
+            Pump(30);
+            for (var i = 1; i <= 8; i++)
+            {
+                window.MouseMove(new Point(from.X + (to.X - from.X) * i / 8, from.Y + (to.Y - from.Y) * i / 8), RawInputModifiers.LeftMouseButton);
+                Pump(20);
+            }
+
+            window.MouseUp(to, MouseButton.Left);
+            Pump(100);
+        }
+
+        var kanban = planning.FindControl<HelixKanban>("Board")!;
+        var cards = (System.Collections.ObjectModel.ObservableCollection<Helix.Avalonia.Demo.Pages.TaskCard>)kanban.ItemsSource!;
+        var import = cards.First(c => c.Title.StartsWith("Import"));
+        var importCard = kanban.GetVisualDescendants().OfType<Border>().First(b => b.Tag == import);
+        var reviewTitle = kanban.GetVisualDescendants().OfType<TextBlock>().First(t => t.Text == "Review");
+        Drag(Center(importCard), Center(reviewTitle) + new Point(0, 120));
+        Check($"kanban: dragging a card to Review moves it there (status {import.Status})", import.Status == "review");
+
+        var sortable = planning.FindControl<HelixSortableList>("Priorities")!;
+        var priorities = (System.Collections.ObjectModel.ObservableCollection<string>)sortable.ItemsSource!;
+        (int From, int To)? reordered = null;
+        sortable.Reordered += (_, e) => reordered = e.Item;
+        Drag(Center(sortable.ContainerFromIndex(0)!), Center(sortable.ContainerFromIndex(2)!));
+        Check($"sortable list: dragging the first row onto the third reorders ({string.Join(", ", priorities.Take(3))}; event {reordered})",
+            priorities[2] == "Safety checks" && reordered == (0, 2));
+
+        var schedule = planning.FindControl<HelixTimeline>("Schedule")!;
+        var startup = schedule.Items!.First(i => i.Label == "Start-up");
+        var startupElement = schedule.GetVisualDescendants().OfType<Panel>().First(p => p.Tag == startup);
+        var slotWidth = startupElement.Bounds.Width / 3; // 1 h 30 = three 30-min slots
+        Drag(Center(startupElement), Center(startupElement) + new Point(slotWidth * 2, 0));
+        var moved = schedule.Items!.First(i => i.Id == startup.Id);
+        Check($"timeline: dragging an item right by two slots moves it one hour ({startup.Start:HH:mm} → {moved.Start:HH:mm})",
+            Math.Abs((moved.Start - startup.Start).TotalMinutes - 60) <= 10 && moved.End - moved.Start == startup.End - startup.Start);
+
+        // ----- Dashboard -----
+        window.ShowPage(MainWindow.IndexOf("Dashboard"));
+        Pump(300);
+        var dashboard = window.GetVisualDescendants().OfType<HelixDashboard>().First();
+        HelixDashboardTile Tile(string id) => dashboard.GetVisualDescendants().OfType<HelixDashboardTile>().First(t => t.TileId == id);
+        dashboard.IsEditing = true;
+        Pump(100);
+        Tile("mix").WiderCommand.Execute(null);
+        Pump(50);
+        Check($"dashboard: Wider makes a tile span 2 (layout {dashboard.Layout?.First(l => l.Id == "mix").Span})", dashboard.Layout?.First(l => l.Id == "mix").Span == 2);
+        Tile("capacity").HideCommand.Execute(null);
+        Pump(50);
+        Check($"dashboard: Hide lists the tile in the hidden tiles ({dashboard.HiddenTiles.Count})", dashboard.HiddenTiles.Count == 1 && !Tile("capacity").IsVisible);
+        dashboard.RestoreCommand.Execute(Tile("capacity"));
+        Pump(50);
+        Check("dashboard: Restore shows it again", dashboard.HiddenTiles.Count == 0 && Tile("capacity").IsVisible);
+        var sitesHeader = Tile("sites").GetVisualDescendants().OfType<DockPanel>().First(d => d.Name == "PART_Handle");
+        var loadTile = Tile("load");
+        Drag(sitesHeader.TranslatePoint(new Point(40, 10), window)!.Value, loadTile.TranslatePoint(new Point(30, 30), window)!.Value);
+        var order = dashboard.Layout!.Select(l => l.Id).ToList();
+        Check($"dashboard: dragging a tile by its header moves it before another ({string.Join(", ", order)})", order.IndexOf("sites") < order.IndexOf("load"));
         return failures;
     }
 

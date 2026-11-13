@@ -65,7 +65,15 @@ public class HelixDonut : TemplatedControl
     private List<(HelixPart Part, IBrush Brush)> _parts = [];
     private int? _hover;
 
-    public HelixDonut() => ActualThemeVariantChanged += (_, _) => Refresh();
+    public HelixDonut()
+    {
+        ActualThemeVariantChanged += (_, _) => Refresh();
+        SizeChanged += (_, _) =>
+        {
+            // The segmented bar is as wide as the control (the donut has its own size).
+            if (_plot is not null && Shape == HelixPartShape.SegmentedBar) _plot.Width = Math.Max(0, Bounds.Width);
+        };
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -119,7 +127,7 @@ public class HelixDonut : TemplatedControl
         _parts = items.Select((p, i) => (p, HelixDraw.Resolve(this, p.Color) ?? HelixDraw.Series(this, i + 1))).ToList();
         if (_plot is not null)
         {
-            _plot.Width = Shape == HelixPartShape.Donut ? DonutSize : double.NaN;
+            _plot.Width = Shape == HelixPartShape.Donut ? DonutSize : Math.Max(0, Bounds.Width);
             _plot.Height = Shape == HelixPartShape.Donut ? DonutSize : Thickness + 8;
             _plot.InvalidateVisual();
         }

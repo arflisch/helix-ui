@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helix="using:Helix.Avalonia"
+             x:Class="Helix.Avalonia.Demo.Pages.DashboardPage">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.h1"><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /></Style>
+        <Style Selector="TextBlock.lead"><Setter Property="FontSize" Value="15" /><Setter Property="Foreground" Value="{DynamicResource Helix.TextMuted}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="Margin" Value="0,6,0,22" /></Style>
+        <Style Selector="TextBlock.h2"><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{DynamicResource Helix.Text}" /><Setter Property="Margin" Value="0,18,0,10" /></Style>
+        <Style Selector="Border.stage"><Setter Property="Background" Value="{DynamicResource Helix.Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource Helix.Border}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="14" /><Setter Property="Padding" Value="24" /></Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <TextBlock Classes="h1">Dashboard</TextBlock>
+        <TextBlock Classes="lead">Tiles the user moves (drag by the header or the arrows), resizes and hides in edit mode; the layout is saved with Layout. Rows or Columns layout.</TextBlock>
+        <helix:HelixDashboard Name="Board" Title="Operations" ColumnCount="3">
+            <helix:HelixDashboardTile TileId="kpi" IsPlain="True" DefaultSpan="3" CanHide="False">
+                <Grid ColumnDefinitions="*,16,*,16,*">
+                    <helix:HelixCard><helix:HelixStat Label="Production" Value="1 840" Unit="MWh" Icon="zap" Delta="6.2" /></helix:HelixCard>
+                    <helix:HelixCard Grid.Column="2"><helix:HelixStat Label="Imbalance" Value="-12" Unit="MW" Delta="-3.1" HigherIsBetter="False" /></helix:HelixCard>
+                    <helix:HelixCard Grid.Column="4"><helix:HelixStat Label="Availability" Value="97.4" Unit="%" Delta="0.8" /></helix:HelixCard>
+                </Grid>
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="load" Title="Load today" DefaultSpan="2">
+                <helix:HelixChart Name="Load" Unit="MW" PlotHeight="200">
+                    <helix:HelixChartSeries Label="Measured" Type="Area" />
+                </helix:HelixChart>
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="mix" Title="Mix">
+                <helix:HelixDonut Name="Mix" DonutSize="140" Thickness="16" Unit="%" />
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="capacity" Title="Capacity">
+                <helix:HelixGauge Value="72" Unit="%" Size="160" HorizontalAlignment="Center" />
+            </helix:HelixDashboardTile>
+            <helix:HelixDashboardTile TileId="sites" Title="Top sites" DefaultSpan="2">
+                <helix:HelixBarList Name="Sites" />
+            </helix:HelixDashboardTile>
+        </helix:HelixDashboard>
+    </StackPanel>
+</UserControl>
