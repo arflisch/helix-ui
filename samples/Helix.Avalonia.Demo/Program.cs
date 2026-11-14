@@ -15,6 +15,13 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        // The gallery is in English whatever the machine's language: numbers, dates and the controls' own texts.
+        var english = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = english;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = english;
+        System.Globalization.CultureInfo.CurrentCulture = english;
+        System.Globalization.CultureInfo.CurrentUICulture = english;
+
         // dotnet run -- --screenshots <folder>: renders every page, light and dark, to PNG (no window).
         if (args.Length >= 1 && args[0] == "--screenshots")
         {

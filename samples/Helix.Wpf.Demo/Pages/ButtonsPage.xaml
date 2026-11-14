@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:helix="https://helix-ui.dev/wpf">
     <StackPanel>
-        <TextBlock Style="{StaticResource PageTitle}" Text="Boutons" />
+        <TextBlock Style="{StaticResource PageTitle}" Text="Buttons" />
         <TextBlock Style="{StaticResource PageLead}"
-                   Text="Quatre variantes, six tons du thème ou n'importe quelle couleur, trois tailles, des icônes et un état de chargement. Chaque partie est une propriété : aucun template à copier." />
+                   Text="Four variants, six theme tones or any color, three sizes, icons and a loading state. Every part is a property: no template to copy." />
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Variantes" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Variants" />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
                 <WrapPanel>
@@ -20,8 +20,8 @@
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Tons et couleur libre" />
-        <TextBlock Style="{StaticResource SectionText}" Text="Tone suit le thème (clair ou sombre). Accent accepte n'importe quelle couleur ; le texte devient noir ou blanc selon le contraste." />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Tones and any color" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Tone follows the theme (light or dark). Accent takes any color; the text turns black or white for contrast." />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
                 <WrapPanel>
@@ -38,28 +38,28 @@
                     <helix:HelixButton Content="Soft #EC4899" Accent="#EC4899" Variant="Soft" Margin="0,0,10,10" />
                     <helix:HelixButton Content="Outline danger" Tone="Danger" Variant="Outline" Margin="0,0,10,10" />
                 </WrapPanel>
-                <TextBox Style="{StaticResource Code}" Text="&lt;helix:HelixButton Content=&quot;Supprimer&quot; Tone=&quot;Danger&quot; /&gt;&#10;&lt;helix:HelixButton Content=&quot;Envoyer&quot; Accent=&quot;#FF8A00&quot; /&gt;" />
+                <TextBox Style="{StaticResource Code}" Text="&lt;helix:HelixButton Content=&quot;Delete&quot; Tone=&quot;Danger&quot; /&gt;&#10;&lt;helix:HelixButton Content=&quot;Send&quot; Accent=&quot;#FF8A00&quot; /&gt;" />
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Tailles, icônes, arrondi" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Sizes, icons, rounding" />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
                 <WrapPanel VerticalAlignment="Center">
                     <helix:HelixButton Content="Sm" Size="Sm" Margin="0,0,10,10" VerticalAlignment="Center" />
                     <helix:HelixButton Content="Md" Margin="0,0,10,10" VerticalAlignment="Center" />
                     <helix:HelixButton Content="Lg" Size="Lg" Margin="0,0,10,10" VerticalAlignment="Center" />
-                    <helix:HelixButton Content="Télécharger" Icon="download" Variant="Outline" Tone="Neutral" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Continuer" IconEnd="arrow-right" Margin="0,0,10,10" />
-                    <helix:HelixButton Icon="settings" Variant="Ghost" Tone="Neutral" Padding="0" Width="38" ToolTip="Réglages" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Pilule" CornerRadius="999" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Carré" CornerRadius="0" Tone="Neutral" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Download" Icon="download" Variant="Outline" Tone="Neutral" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Continue" IconEnd="arrow-right" Margin="0,0,10,10" />
+                    <helix:HelixButton Icon="settings" Variant="Ghost" Tone="Neutral" Padding="0" Width="38" ToolTip="Settings" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Pill" CornerRadius="999" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Square" CornerRadius="0" Tone="Neutral" Margin="0,0,10,10" />
                 </WrapPanel>
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Chargement" />
-        <TextBlock Style="{StaticResource SectionText}" Text="IsLoading garde la largeur du bouton, affiche un spinner et ignore les clics." />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Loading" />
+        <TextBlock Style="{StaticResource SectionText}" Text="IsLoading keeps the button's width, shows a spinner and ignores clicks." />
         <Border Style="{StaticResource Stage}">
             <WrapPanel>
                 <helix:HelixButton x:Name="SaveButton" Content="Enregistrer" Icon="check" Click="OnSave" Margin="0,0,10,0" />

@@ -9,9 +9,9 @@ public partial class ChoicesPage : UserControl
         InitializeComponent();
         Plans.ItemsSource = new[]
         {
-            new HelixRadioOption("Découverte", "Jusqu'à 3 sites, sans engagement.", "star"),
-            new HelixRadioOption("Pro", "Sites illimités et exports.", "zap"),
-            new HelixRadioOption("Entreprise", "SSO, support dédié, SLA.", "lock"),
+            new HelixRadioOption("Starter", "Up to 3 sites, no commitment.", "star"),
+            new HelixRadioOption("Pro", "Unlimited sites and exports.", "zap"),
+            new HelixRadioOption("Enterprise", "SSO, dedicated support, SLA.", "lock"),
         };
     }
 }

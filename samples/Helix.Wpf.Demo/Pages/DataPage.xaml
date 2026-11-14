@@ -5,14 +5,15 @@
     <StackPanel>
         <TextBlock Style="{StaticResource PageTitle}" Text="DataGrid" />
         <TextBlock Style="{StaticResource PageLead}"
-                   Text="Recherche, tri sur toutes les pages, pagination, choix des colonnes, densité et lignes alternées. En mémoire avec Source, ou côté serveur avec ItemsProvider." />
+                   Text="Search, sorting across pages, paging, column chooser, density and striped rows. In memory with Source, or server side with ItemsProvider." />
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="En mémoire" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="In memory" />
         <helix:HelixFilterBar x:Name="Filters" Target="{Binding ElementName=Grid}" Margin="0,0,0,8">
-            <helix:HelixTextFilter Key="q" Placeholder="Nom ou site" Paths="Name,Site" />
-            <helix:HelixChoiceFilter Key="status" Label="Statut" Path="Status" />
+            <helix:HelixTextFilter Key="q" Placeholder="Name or site" Paths="Name,Site" />
+            <helix:HelixChoiceFilter Key="status" Label="Status" Path="Status" />
             <helix:HelixChoiceFilter Key="site" Label="Site" Path="Site" IsSearchable="True" />
-            <helix:HelixDateFilter Key="updated" Label="Mise à jour" Path="Updated" />
+            <helix:HelixDateFilter Key="updated" Label="Updated" Path="Updated" />
+            <helix:HelixToggleFilter x:Name="HighPower" Key="high" Label="100 MW or more" />
         </helix:HelixFilterBar>
         <helix:HelixDataGrid x:Name="Grid" IsSearchable="True" ShowColumnChooser="True" IsStriped="True" PageSize="8" AutoGenerateColumns="False"
                            Height="460" Margin="0,0,0,32" IsReadOnly="True">
@@ -24,30 +25,30 @@
                 </helix:HelixButtonGroup>
             </helix:HelixDataGrid.Toolbar>
             <helix:HelixDataGrid.Columns>
-                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
                 <DataGridTextColumn Header="Site" Binding="{Binding Site}" Width="120" />
-                <DataGridTextColumn Header="Puissance (MW)" Binding="{Binding Power, StringFormat=N0}" Width="130" />
-                <DataGridTemplateColumn Header="Statut" Width="130" SortMemberPath="Status">
+                <DataGridTextColumn Header="Power (MW)" Binding="{Binding Power, StringFormat=N0}" Width="130" />
+                <DataGridTemplateColumn Header="Status" Width="130" SortMemberPath="Status">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <helix:HelixBadge Content="{Binding Status}" Tone="{Binding Tone}" ShowDot="True" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Mise à jour" Binding="{Binding Updated, StringFormat=dd/MM HH:mm}" Width="120" />
+                <DataGridTextColumn Header="Updated" Binding="{Binding Updated, StringFormat=dd/MM HH:mm}" Width="120" />
             </helix:HelixDataGrid.Columns>
         </helix:HelixDataGrid>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Groupes, totaux, détail et export" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Groups, totals, details and export" />
         <TextBlock Style="{StaticResource SectionText}"
-                   Text="GroupBy regroupe les lignes (en-têtes repliables avec nombre et sous-totaux), helix:HelixDataGrid.Aggregate ajoute une ligne de total, HelixDetailsColumn ouvre le détail d'une ligne, HelixBadgeColumn et HelixSignedColumn affichent un statut et une variation. IsExportable ajoute l'export CSV." />
+                   Text="GroupBy groups the rows (collapsible headers with counts and subtotals), helix:HelixDataGrid.Aggregate adds a totals row, HelixDetailsColumn opens a row's details, HelixBadgeColumn and HelixSignedColumn show a status and a change. IsExportable adds the export." />
         <helix:HelixDataGrid x:Name="GroupedGrid" GroupBy="Site" PageSize="0" IsExportable="True" ExportFormats="All" ExportFileName="unites" AutoGenerateColumns="False"
                            Height="480" Margin="0,0,0,32" IsReadOnly="True">
             <helix:HelixDataGrid.Columns>
                 <helix:HelixDetailsColumn />
-                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*" helix:HelixDataGrid.Aggregate="Count" />
-                <helix:HelixBadgeColumn Header="Statut" Binding="{Binding Status}" ToneBinding="{Binding Tone}" Width="130" SortMemberPath="Status" />
-                <DataGridTextColumn Header="Puissance" Binding="{Binding Power, StringFormat=N0}" Width="140"
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" helix:HelixDataGrid.Aggregate="Count" />
+                <helix:HelixBadgeColumn Header="Status" Binding="{Binding Status}" ToneBinding="{Binding Tone}" Width="130" SortMemberPath="Status" />
+                <DataGridTextColumn Header="Power" Binding="{Binding Power, StringFormat=N0}" Width="140"
                                     helix:HelixDataGrid.Aggregate="Sum" helix:HelixDataGrid.Unit="MW" />
                 <helix:HelixSignedColumn Header="Variation" Binding="{Binding Change}" Format="0.0'%'" Width="120" />
             </helix:HelixDataGrid.Columns>
@@ -55,22 +56,22 @@
                 <DataTemplate>
                     <Border Margin="52,0,16,12" Padding="14,12" CornerRadius="10" Background="{DynamicResource Helix.Surface2}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Id, StringFormat=Unité n° {0}}" Margin="0,0,28,0" />
-                            <TextBlock Text="{Binding Updated, StringFormat=Mise à jour le {0:dd/MM à HH:mm}}" Foreground="{DynamicResource Helix.TextMuted}" />
+                            <TextBlock Text="{Binding Id, StringFormat=Unit {0}}" Margin="0,0,28,0" />
+                            <TextBlock Text="{Binding Updated, StringFormat=Updated {0:dd/MM HH:mm}}" Foreground="{DynamicResource Helix.TextMuted}" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>
             </helix:HelixDataGrid.RowDetailsTemplate>
         </helix:HelixDataGrid>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Côté serveur" />
-        <TextBlock Style="{StaticResource SectionText}" Text="ItemsProvider reçoit (recherche, tri, page) et un CancellationToken : la requête précédente est annulée quand on tape vite. Ici, un faux serveur avec 600 ms de latence et 10 000 lignes." />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Server side" />
+        <TextBlock Style="{StaticResource SectionText}" Text="ItemsProvider receives (search, sort, page) and a CancellationToken: the previous request is cancelled when you type fast. Here, a fake server with 600 ms latency and 10,000 rows." />
         <helix:HelixDataGrid x:Name="ServerGrid" IsSearchable="True" PageSize="10" AutoGenerateColumns="False" Height="500" IsReadOnly="True">
             <helix:HelixDataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="80" />
-                <DataGridTextColumn Header="Client" Binding="{Binding Name}" Width="*" />
-                <DataGridTextColumn Header="Ville" Binding="{Binding Site}" Width="140" />
-                <DataGridTextColumn Header="Montant (€)" Binding="{Binding Power, StringFormat=N0}" Width="130" />
+                <DataGridTextColumn Header="Customer" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="City" Binding="{Binding Site}" Width="140" />
+                <DataGridTextColumn Header="Amount (€)" Binding="{Binding Power, StringFormat=N0}" Width="130" />
             </helix:HelixDataGrid.Columns>
         </helix:HelixDataGrid>
     </StackPanel>

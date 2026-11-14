@@ -34,27 +34,27 @@ public partial class BoardPage : UserControl
         InitializeComponent();
         Board.Columns =
         [
-            new HelixKanbanColumn("todo", "À faire", "subtle"),
-            new HelixKanbanColumn("doing", "En cours", "series-1"),
-            new HelixKanbanColumn("review", "En revue", "series-4", limit: 2),
-            new HelixKanbanColumn("done", "Terminé", "series-3"),
+            new HelixKanbanColumn("todo", "To do", "subtle"),
+            new HelixKanbanColumn("doing", "In progress", "series-1"),
+            new HelixKanbanColumn("review", "In review", "series-4", limit: 2),
+            new HelixKanbanColumn("done", "Done", "series-3"),
         ];
         Board.ItemsSource = new ObservableCollection<TaskCard>
         {
-            new() { Title = "Brancher l'API de facturation", Owner = "Camille Martin", Tag = "Back", Tone = HelixTone.Info, Column = "todo" },
-            new() { Title = "Écran de connexion", Owner = "Léo Bernard", Tag = "Front", Tone = HelixTone.Primary, Column = "doing" },
-            new() { Title = "Export Excel des rapports", Owner = "Inès Petit", Tag = "Data", Tone = HelixTone.Success, Column = "doing" },
-            new() { Title = "Corriger le fuseau horaire", Owner = "Hugo Robert", Tag = "Bug", Tone = HelixTone.Danger, Column = "review" },
-            new() { Title = "Mode sombre", Owner = "Chloé Richard", Tag = "Front", Tone = HelixTone.Primary, Column = "review" },
-            new() { Title = "Tests de charge", Owner = "Nathan Durand", Tag = "Ops", Tone = HelixTone.Warning, Column = "done" },
+            new() { Title = "Connect the billing API", Owner = "Camille Martin", Tag = "Back", Tone = HelixTone.Info, Column = "todo" },
+            new() { Title = "Sign-in screen", Owner = "Léo Bernard", Tag = "Front", Tone = HelixTone.Primary, Column = "doing" },
+            new() { Title = "Excel export of reports", Owner = "Inès Petit", Tag = "Data", Tone = HelixTone.Success, Column = "doing" },
+            new() { Title = "Fix the time zone", Owner = "Hugo Robert", Tag = "Bug", Tone = HelixTone.Danger, Column = "review" },
+            new() { Title = "Dark mode", Owner = "Chloé Richard", Tag = "Front", Tone = HelixTone.Primary, Column = "review" },
+            new() { Title = "Load tests", Owner = "Nathan Durand", Tag = "Ops", Tone = HelixTone.Warning, Column = "done" },
         };
-        Board.AddRequested += (_, e) => HelixToasts.Info($"Nouvelle carte dans « {((HelixEventArgs<string>)e).Value} »");
+        Board.AddRequested += (_, e) => HelixToasts.Info($"New card in “{((HelixEventArgs<string>)e).Value}”");
 
-        Priorities.ItemsSource = new ObservableCollection<string> { "Sécurité des accès", "Performance des rapports", "Mode hors ligne", "Notifications", "Export PDF" };
+        Priorities.ItemsSource = new ObservableCollection<string> { "Access security", "Report performance", "Offline mode", "Notifications", "Export PDF" };
         Priorities.Reordered += (_, e) =>
         {
             var (from, to) = ((HelixEventArgs<(int From, int To)>)e).Value;
-            HelixToasts.Info($"Déplacé de {from + 1} à {to + 1}");
+            HelixToasts.Info($"Moved from {from + 1} to {to + 1}");
         };
 
         Files.ItemsSource = new[]
@@ -67,9 +67,9 @@ public partial class BoardPage : UserControl
 
         Org.ItemsSource = new[]
         {
-            new Node("Claire Dubois", null, "Directrice",
-                new Node("Marc Leroy", null, "Production", new Node("Équipe A", null, "8 personnes"), new Node("Équipe B", null, "6 personnes")),
-                new Node("Sofia Moreau", null, "Maintenance", new Node("Astreinte", null, "4 personnes")),
+            new Node("Claire Dubois", null, "Director",
+                new Node("Marc Leroy", null, "Production", new Node("Team A", null, "8 people"), new Node("Team B", null, "6 people")),
+                new Node("Sofia Moreau", null, "Maintenance", new Node("On call", null, "4 people")),
                 new Node("Paul Girard", null, "Finance")),
         };
     }

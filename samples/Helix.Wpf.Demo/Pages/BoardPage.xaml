@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:helix="https://helix-ui.dev/wpf">
     <StackPanel>
-        <TextBlock Style="{StaticResource PageTitle}" Text="Organisation" />
-        <TextBlock Style="{StaticResource PageLead}" Text="Kanban, liste à réordonner, tableau de bord personnalisable et arbres (liste ou organigramme)." />
+        <TextBlock Style="{StaticResource PageTitle}" Text="Dashboard &amp; boards" />
+        <TextBlock Style="{StaticResource PageLead}" Text="Kanban, reorderable list, customizable dashboard and trees (list or org chart)." />
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Kanban" />
-        <TextBlock Style="{StaticResource SectionText}" Text="Glissez les cartes entre colonnes. La colonne « En revue » est limitée à 2 cartes (le compteur passe en rouge au-delà)." />
+        <TextBlock Style="{StaticResource SectionText}" Text="Drag the cards between columns. The “In review” column is limited to 2 cards (its counter turns red beyond)." />
         <helix:HelixKanban x:Name="Board" ColumnPath="Column" ShowAddButton="True" Height="360" Margin="0,0,0,32">
             <helix:HelixKanban.CardTemplate>
                 <DataTemplate>
@@ -23,31 +23,31 @@
         </helix:HelixKanban>
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="SortableList" />
-        <TextBlock Style="{StaticResource SectionText}" Text="Glissez une ligne, ou Alt + ↑ / ↓ sur la ligne sélectionnée." />
+        <TextBlock Style="{StaticResource SectionText}" Text="Drag a row, or Alt + ↑ / ↓ on the selected row." />
         <Border Style="{StaticResource Stage}">
             <helix:HelixSortableList x:Name="Priorities" MaxWidth="420" HorizontalAlignment="Left" />
         </Border>
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Dashboard" />
-        <TextBlock Style="{StaticResource SectionText}" Text="« Modifier la disposition » : déplacer, élargir ou masquer les tuiles. Layout garde la disposition (à enregistrer)." />
-        <helix:HelixDashboard x:Name="Dash" Title="Exploitation" ColumnCount="3" Margin="0,0,0,32">
+        <TextBlock Style="{StaticResource SectionText}" Text="“Edit layout”: move, widen or hide tiles. Layout keeps the arrangement (save it)." />
+        <helix:HelixDashboard x:Name="Dash" Title="Operations" ColumnCount="3" Margin="0,0,0,32">
             <helix:HelixDashboardTile TileId="kpi" IsPlain="True" DefaultSpan="3" CanHide="False">
                 <UniformGrid Columns="3">
                     <Border Style="{StaticResource Stage}" Margin="0,0,8,0">
                         <helix:HelixStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" />
                     </Border>
                     <Border Style="{StaticResource Stage}" Margin="8,0">
-                        <helix:HelixStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0.8" />
+                        <helix:HelixStat Label="Availability" Value="96,4" Unit="%" Delta="0.8" />
                     </Border>
                     <Border Style="{StaticResource Stage}" Margin="8,0,0,0">
                         <helix:HelixStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" />
                     </Border>
                 </UniformGrid>
             </helix:HelixDashboardTile>
-            <helix:HelixDashboardTile TileId="chart" Title="Charge" DefaultSpan="2">
-                <helix:HelixProgress Label="Réseau" ShowValue="True" Value="72" />
+            <helix:HelixDashboardTile TileId="chart" Title="Load" DefaultSpan="2">
+                <helix:HelixProgress Label="Grid" ShowValue="True" Value="72" />
             </helix:HelixDashboardTile>
-            <helix:HelixDashboardTile TileId="team" Title="Équipe">
+            <helix:HelixDashboardTile TileId="team" Title="Team">
                 <helix:HelixAvatarGroup Max="4">
                     <helix:HelixAvatar DisplayName="Camille Martin" Status="Online" />
                     <helix:HelixAvatar DisplayName="Léo Bernard" />
@@ -57,49 +57,49 @@
                     <helix:HelixAvatar DisplayName="Nathan Durand" />
                 </helix:HelixAvatarGroup>
             </helix:HelixDashboardTile>
-            <helix:HelixDashboardTile TileId="alerts" Title="Alertes" DefaultSpan="3">
-                <helix:HelixAlert Severity="Warning" Title="Maintenance" Content="Turbine 3 à l'arrêt de 14 h à 16 h." />
+            <helix:HelixDashboardTile TileId="alerts" Title="Alerts" DefaultSpan="3">
+                <helix:HelixAlert Severity="Warning" Title="Maintenance" Content="Turbine 3 stopped from 2 pm to 4 pm." />
             </helix:HelixDashboardTile>
         </helix:HelixDashboard>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Dashboard en colonnes" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Dashboard in columns" />
         <TextBlock Style="{StaticResource SectionText}"
-                   Text="LayoutMode=&quot;Columns&quot; : chaque carte reste dans sa colonne et s'empile sans trou. En mode édition, glissez une carte par son en-tête (ou utilisez les flèches) vers une autre colonne ou une autre place." />
+                   Text="LayoutMode=&quot;Columns&quot;: each card stays in its column and stacks without gaps. In edit mode, drag a card by its header (or use the arrows) to another column or place." />
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,32">
             <helix:HelixDashboard x:Name="Zones" LayoutMode="Columns" ColumnCount="4" ColumnMinWidth="220" StretchColumns="True" Gap="12">
-                <helix:HelixDashboardTile TileId="north" Title="Nord" Column="0" CanHide="False">
+                <helix:HelixDashboardTile TileId="north" Title="North" Column="0" CanHide="False">
                     <StackPanel>
-                        <helix:HelixCheckBox Content="Centrale A1" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Centrale A2" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Centrale A3" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Centrale B1" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Centrale B2" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Centrale C1" />
+                        <helix:HelixCheckBox Content="Plant A1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Plant A2" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Plant A3" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Plant B1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Plant B2" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Plant C1" />
                     </StackPanel>
                 </helix:HelixDashboardTile>
-                <helix:HelixDashboardTile TileId="coast" Title="Littoral" Column="1" CanHide="False">
+                <helix:HelixDashboardTile TileId="coast" Title="Coast" Column="1" CanHide="False">
                     <StackPanel>
-                        <helix:HelixCheckBox Content="Parc éolien 1" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Parc éolien 2" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Parc éolien 3" />
+                        <helix:HelixCheckBox Content="Wind farm 1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Wind farm 2" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Wind farm 3" />
                     </StackPanel>
                 </helix:HelixDashboardTile>
-                <helix:HelixDashboardTile TileId="valley" Title="Vallée" Column="1" CanHide="False">
-                    <helix:HelixCheckBox Content="Barrage 1" />
+                <helix:HelixDashboardTile TileId="valley" Title="Valley" Column="1" CanHide="False">
+                    <helix:HelixCheckBox Content="Dam 1" />
                 </helix:HelixDashboardTile>
-                <helix:HelixDashboardTile TileId="east" Title="Est" Column="2" CanHide="False">
+                <helix:HelixDashboardTile TileId="east" Title="East" Column="2" CanHide="False">
                     <StackPanel>
-                        <helix:HelixCheckBox Content="Éolienne 4" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Biomasse 2" />
+                        <helix:HelixCheckBox Content="Wind turbine 4" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Biomass 2" />
                     </StackPanel>
                 </helix:HelixDashboardTile>
                 <helix:HelixDashboardTile TileId="port" Title="Port" Column="3" CanHide="False">
-                    <helix:HelixCheckBox Content="Cogénération 1" />
+                    <helix:HelixCheckBox Content="Cogeneration 1" />
                 </helix:HelixDashboardTile>
-                <helix:HelixDashboardTile TileId="south" Title="Sud" Column="3" CanHide="False">
+                <helix:HelixDashboardTile TileId="south" Title="South" Column="3" CanHide="False">
                     <StackPanel>
-                        <helix:HelixCheckBox Content="Turbine gaz 1" Margin="0,0,0,8" />
-                        <helix:HelixCheckBox Content="Solaire 3" />
+                        <helix:HelixCheckBox Content="Gas turbine 1" Margin="0,0,0,8" />
+                        <helix:HelixCheckBox Content="Solar 3" />
                     </StackPanel>
                 </helix:HelixDashboardTile>
             </helix:HelixDashboard>
@@ -112,7 +112,7 @@
             </Border>
             <Border Style="{StaticResource Stage}" Margin="12,0,0,0">
                 <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}"
-                           Text="Le même contrôle avec Layout=&quot;Diagram&quot; dessine un organigramme (ci-dessous). Les + / − déplient les branches." />
+                           Text="The same control with Layout=&quot;Diagram&quot; draws an org chart (below). The + / − expand the branches." />
             </Border>
         </UniformGrid>
         <Border Style="{StaticResource Stage}">

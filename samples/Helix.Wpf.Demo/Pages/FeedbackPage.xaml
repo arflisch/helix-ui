@@ -3,17 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:helix="https://helix-ui.dev/wpf">
     <StackPanel>
-        <TextBlock Style="{StaticResource PageTitle}" Text="Retours" />
+        <TextBlock Style="{StaticResource PageTitle}" Text="Feedback" />
         <TextBlock Style="{StaticResource PageLead}"
-                   Text="Alertes, badges, progression, notifications, boîtes de dialogue et confirmations. Les notifications et dialogues s'affichent dans le HelixHost de la fenêtre." />
+                   Text="Alerts, badges, progress, notifications, dialogs and confirmations. Notifications and dialogs show in the window's HelixHost." />
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Alert" />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
-                <helix:HelixAlert Severity="Info" Title="Nouvelle version" Content="Helix 1.2 apporte les champs unifiés." Margin="0,0,0,10" />
-                <helix:HelixAlert Severity="Success" Title="Enregistré" Content="Vos réglages ont été appliqués." Margin="0,0,0,10" />
-                <helix:HelixAlert Severity="Warning" Title="Quota presque atteint" Content="Il reste 8 % de l'espace disponible." IsClosable="True" Margin="0,0,0,10" />
-                <helix:HelixAlert Severity="Danger" Content="La connexion au serveur a été perdue." />
+                <helix:HelixAlert Severity="Info" Title="New version" Content="Helix 1.2 brings unified fields." Margin="0,0,0,10" />
+                <helix:HelixAlert Severity="Success" Title="Saved" Content="Your settings were applied." Margin="0,0,0,10" />
+                <helix:HelixAlert Severity="Warning" Title="Quota almost reached" Content="8% of the space is left." IsClosable="True" Margin="0,0,0,10" />
+                <helix:HelixAlert Severity="Danger" Content="The connection to the server was lost." />
             </StackPanel>
         </Border>
 
@@ -23,65 +23,65 @@
                 <WrapPanel Margin="0,0,0,10">
                     <helix:HelixBadge Content="Primary" Margin="0,0,8,0" />
                     <helix:HelixBadge Content="Neutral" Tone="Neutral" Margin="0,0,8,0" />
-                    <helix:HelixBadge Content="En ligne" Tone="Success" ShowDot="True" Margin="0,0,8,0" />
-                    <helix:HelixBadge Content="Attention" Tone="Warning" Icon="warning" Margin="0,0,8,0" />
-                    <helix:HelixBadge Content="Erreur" Tone="Danger" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Online" Tone="Success" ShowDot="True" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Caution" Tone="Warning" Icon="warning" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Error" Tone="Danger" Margin="0,0,8,0" />
                     <helix:HelixBadge Content="#FF8A00" Accent="#FF8A00" Margin="0,0,8,0" />
                 </WrapPanel>
                 <WrapPanel>
                     <helix:HelixBadge Content="Solid" Variant="Solid" Margin="0,0,8,0" />
                     <helix:HelixBadge Content="Solid danger" Variant="Solid" Tone="Danger" Margin="0,0,8,0" />
                     <helix:HelixBadge Content="Outline" Variant="Outline" Margin="0,0,8,0" />
-                    <helix:HelixBadge Content="Carré" CornerRadius="4" Tone="Info" Margin="0,0,8,0" />
+                    <helix:HelixBadge Content="Square" CornerRadius="4" Tone="Info" Margin="0,0,8,0" />
                 </WrapPanel>
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Saisie et vue dans un dialogue" />
-        <TextBlock Style="{StaticResource SectionText}" Text="HelixConfirm.PromptAsync demande un texte avec validation ; HelixDialogs.ShowAsync ouvre n'importe quelle vue et attend son résultat." />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Input and a view in a dialog" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HelixConfirm.PromptAsync asks for a text with validation; HelixDialogs.ShowAsync opens any view and waits for its result." />
         <Border Style="{StaticResource Stage}">
             <StackPanel Orientation="Horizontal">
-                <helix:HelixButton Content="Enregistrer la vue…" Icon="plus" Variant="Outline" Tone="Neutral" Click="OnPrompt" Margin="0,0,10,0" />
-                <helix:HelixButton Content="Modifier le site…" Icon="settings" Variant="Outline" Tone="Neutral" Click="OnShowView" Margin="0,0,14,0" />
+                <helix:HelixButton Content="Save the view…" Icon="plus" Variant="Outline" Tone="Neutral" Click="OnPrompt" Margin="0,0,10,0" />
+                <helix:HelixButton Content="Edit the site…" Icon="settings" Variant="Outline" Tone="Neutral" Click="OnShowView" Margin="0,0,14,0" />
                 <TextBlock x:Name="DialogResult" VerticalAlignment="Center" Foreground="{DynamicResource Helix.TextMuted}" />
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Busy, cible et détail" />
-        <TextBlock Style="{StaticResource SectionText}" Text="HelixBusy voile une zone pendant un chargement ; HelixTargetBar compare une valeur à sa cible ; HelixDescriptionList aligne des paires libellé / valeur." />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Busy, target and details" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HelixBusy veils an area while loading; HelixTargetBar compares a value with its target; HelixDescriptionList lines up label / value pairs." />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
-                <helix:HelixButton x:Name="BusyButton" Content="Recharger" Icon="download" HorizontalAlignment="Left" Click="OnBusy" Margin="0,0,0,12" />
-                <helix:HelixBusy x:Name="Busy" Text="Chargement…">
+                <helix:HelixButton x:Name="BusyButton" Content="Reload" Icon="download" HorizontalAlignment="Left" Click="OnBusy" Margin="0,0,0,12" />
+                <helix:HelixBusy x:Name="Busy" Text="Loading…">
                     <helix:HelixDescriptionList Columns="3">
-                        <helix:HelixDescription Label="Demande" Content="DR-2026-11-0042" Icon="copy" />
-                        <helix:HelixDescription Label="Statut">
-                            <helix:HelixBadge Content="Confirmée" Tone="Success" ShowDot="True" />
+                        <helix:HelixDescription Label="Request" Content="DR-2026-11-0042" Icon="copy" />
+                        <helix:HelixDescription Label="Status">
+                            <helix:HelixBadge Content="Confirmed" Tone="Success" ShowDot="True" />
                         </helix:HelixDescription>
                         <helix:HelixDescription Label="Volume" Content="120 MW" />
-                        <helix:HelixDescription Label="Motif" Content="Prévision de déséquilibre au-dessus de 300 MW sur la pointe du soir." Span="2" />
-                        <helix:HelixDescription Label="Commentaire" Content="—" />
+                        <helix:HelixDescription Label="Reason" Content="Imbalance forecast above 300 MW at the evening peak." Span="2" />
+                        <helix:HelixDescription Label="Comment" Content="—" />
                     </helix:HelixDescriptionList>
                 </helix:HelixBusy>
                 <StackPanel Margin="0,20,0,0" MaxWidth="520" HorizontalAlignment="Left">
-                    <helix:HelixTargetBar Label="Unité A" Value="118" Target="120" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
-                    <helix:HelixTargetBar Label="Unité B" Value="64" Target="80" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
-                    <helix:HelixTargetBar Label="Unité C" Value="152" Target="110" Maximum="200" Unit="MW" Tolerance="10" />
+                    <helix:HelixTargetBar Label="Unit A" Value="118" Target="120" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
+                    <helix:HelixTargetBar Label="Unit B" Value="64" Target="80" Maximum="200" Unit="MW" Tolerance="10" Margin="0,0,0,14" />
+                    <helix:HelixTargetBar Label="Unit C" Value="152" Target="110" Maximum="200" Unit="MW" Tolerance="10" />
                 </StackPanel>
-                <helix:HelixTimeBar x:Name="SubmissionBar" Label="Temps avant soumission" Step="0:15:00" Warning="0:05:00" Critical="0:01:00"
-                                    Hint="Fenêtre d'activation : quart suivant" MaxWidth="520" HorizontalAlignment="Left" Margin="0,24,0,0" />
+                <helix:HelixTimeBar x:Name="SubmissionBar" Label="Time before submission" Step="0:15:00" Warning="0:05:00" Critical="0:01:00"
+                                    Hint="Activation window: next quarter hour" MaxWidth="520" HorizontalAlignment="Left" Margin="0,24,0,0" />
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Journal" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Log" />
         <helix:HelixLogViewer x:Name="Log" Height="300" Margin="0,0,0,32" />
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Progress et Spinner" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Progress and Spinner" />
         <Border Style="{StaticResource Stage}">
             <StackPanel MaxWidth="520" HorizontalAlignment="Left">
-                <helix:HelixProgress Label="Import des données" ShowValue="True" Value="{Binding Value, ElementName=ProgressValue}" Margin="0,0,0,12" />
+                <helix:HelixProgress Label="Data import" ShowValue="True" Value="{Binding Value, ElementName=ProgressValue}" Margin="0,0,0,12" />
                 <helix:HelixSlider x:Name="ProgressValue" Minimum="0" Maximum="100" Value="64" Margin="0,0,0,20" />
-                <helix:HelixProgress Label="Synchronisation" IsIndeterminate="True" Tone="Success" BarHeight="6" Margin="0,0,0,20" />
+                <helix:HelixProgress Label="Sync" IsIndeterminate="True" Tone="Success" BarHeight="6" Margin="0,0,0,20" />
                 <StackPanel Orientation="Horizontal">
                     <helix:HelixSpinner Margin="0,0,16,0" />
                     <helix:HelixSpinner Size="28" Tone="Success" Margin="0,0,16,0" />
@@ -90,34 +90,34 @@
             </StackPanel>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Notifications, dialogue et confirmation" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Notifications, dialog and confirmation" />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
                 <WrapPanel>
-                    <helix:HelixButton Content="Succès" Tone="Success" Variant="Soft" Click="OnToastSuccess" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Avertissement" Tone="Warning" Variant="Soft" Click="OnToastWarning" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Erreur" Tone="Danger" Variant="Soft" Click="OnToastError" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Ouvrir un dialogue" Variant="Outline" Tone="Neutral" Click="OnOpenDialog" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Supprimer…" Tone="Danger" Icon="trash" Click="OnDelete" Margin="0,0,10,10" />
-                    <helix:HelixButton Content="Envoyer une notification" Icon="bell" Variant="Outline" Tone="Neutral" Click="OnNotify" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Success" Tone="Success" Variant="Soft" Click="OnToastSuccess" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Warning" Tone="Warning" Variant="Soft" Click="OnToastWarning" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Error" Tone="Danger" Variant="Soft" Click="OnToastError" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Open a dialog" Variant="Outline" Tone="Neutral" Click="OnOpenDialog" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Delete…" Tone="Danger" Icon="trash" Click="OnDelete" Margin="0,0,10,10" />
+                    <helix:HelixButton Content="Send a notification" Icon="bell" Variant="Outline" Tone="Neutral" Click="OnNotify" Margin="0,0,10,10" />
                 </WrapPanel>
-                <TextBox Style="{StaticResource Code}" Text="HelixToasts.Success(&quot;Enregistré&quot;);&#10;if (await HelixConfirm.AskAsync(&quot;Supprimer ?&quot;, &quot;Action définitive.&quot;, danger: true)) { … }" />
+                <TextBox Style="{StaticResource Code}" Text="HelixToasts.Success(&quot;Saved&quot;);&#10;if (await HelixConfirm.AskAsync(&quot;Delete?&quot;, &quot;This cannot be undone.&quot;, danger: true)) { … }" />
             </StackPanel>
         </Border>
 
-        <helix:HelixDialog x:Name="Dialog" Title="Inviter un membre" Description="Il recevra un e-mail pour rejoindre l'équipe.">
+        <helix:HelixDialog x:Name="Dialog" Title="Invite a member" Description="They will get an email to join the team.">
             <StackPanel>
-                <helix:HelixTextField Label="E-mail" Icon="mail" Placeholder="prenom@exemple.fr" Margin="0,0,0,16" />
-                <helix:HelixSelect Label="Rôle" SelectedIndex="0">
-                    <ComboBoxItem Content="Lecteur" />
-                    <ComboBoxItem Content="Éditeur" />
-                    <ComboBoxItem Content="Administrateur" />
+                <helix:HelixTextField Label="Email" Icon="mail" Placeholder="name@example.com" Margin="0,0,0,16" />
+                <helix:HelixSelect Label="Role" SelectedIndex="0">
+                    <ComboBoxItem Content="Reader" />
+                    <ComboBoxItem Content="Editor" />
+                    <ComboBoxItem Content="Administrator" />
                 </helix:HelixSelect>
             </StackPanel>
             <helix:HelixDialog.Footer>
                 <StackPanel Orientation="Horizontal">
-                    <helix:HelixButton Content="Annuler" Variant="Ghost" Tone="Neutral" Click="OnCloseDialog" />
-                    <helix:HelixButton Content="Inviter" Icon="mail" Margin="8,0,0,0" Click="OnInvite" />
+                    <helix:HelixButton Content="Cancel" Variant="Ghost" Tone="Neutral" Click="OnCloseDialog" />
+                    <helix:HelixButton Content="Invite" Icon="mail" Margin="8,0,0,0" Click="OnInvite" />
                 </StackPanel>
             </helix:HelixDialog.Footer>
         </helix:HelixDialog>

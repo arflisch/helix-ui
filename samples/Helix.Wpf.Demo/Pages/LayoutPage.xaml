@@ -3,53 +3,53 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:helix="https://helix-ui.dev/wpf">
     <StackPanel>
-        <TextBlock Style="{StaticResource PageTitle}" Text="Mise en page" />
-        <TextBlock Style="{StaticResource PageLead}" Text="Cartes, chiffres clés et états vides pour composer des écrans propres sans effort." />
+        <TextBlock Style="{StaticResource PageTitle}" Text="Layout" />
+        <TextBlock Style="{StaticResource PageLead}" Text="Cards, key figures and empty states to build clean screens with no effort." />
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Card" />
         <UniformGrid Columns="2" Margin="0,0,0,32">
-            <helix:HelixCard Title="Production du jour" Subtitle="Mise à jour il y a 2 min" Margin="0,0,12,0">
+            <helix:HelixCard Title="Today's production" Subtitle="Updated 2 min ago" Margin="0,0,12,0">
                 <helix:HelixCard.Actions>
-                    <helix:HelixButton Icon="refresh" Variant="Ghost" Tone="Neutral" Padding="0" Width="32" Height="32" ToolTip="Actualiser" />
+                    <helix:HelixButton Icon="refresh" Variant="Ghost" Tone="Neutral" Padding="0" Width="32" Height="32" ToolTip="Refresh" />
                 </helix:HelixCard.Actions>
                 <StackPanel>
-                    <helix:HelixProgress Label="Objectif" ShowValue="True" Value="72" Margin="0,0,0,14" />
-                    <helix:HelixProgress Label="Disponibilité" ShowValue="True" Value="96" Tone="Success" />
+                    <helix:HelixProgress Label="Target" ShowValue="True" Value="72" Margin="0,0,0,14" />
+                    <helix:HelixProgress Label="Availability" ShowValue="True" Value="96" Tone="Success" />
                 </StackPanel>
                 <helix:HelixCard.Footer>
                     <StackPanel Orientation="Horizontal">
-                        <helix:HelixButton Content="Détails" Variant="Ghost" Tone="Neutral" Size="Sm" />
-                        <helix:HelixButton Content="Exporter" Icon="download" Size="Sm" Margin="8,0,0,0" />
+                        <helix:HelixButton Content="Details" Variant="Ghost" Tone="Neutral" Size="Sm" />
+                        <helix:HelixButton Content="Export" Icon="download" Size="Sm" Margin="8,0,0,0" />
                     </StackPanel>
                 </helix:HelixCard.Footer>
             </helix:HelixCard>
-            <helix:HelixCard Title="Carte en relief" Subtitle="IsElevated : ombre douce, sans bordure." IsElevated="True" Margin="12,0,0,0">
+            <helix:HelixCard Title="Elevated card" Subtitle="IsElevated: soft shadow, no border." IsElevated="True" Margin="12,0,0,0">
                 <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}"
-                           Text="Padding, CornerRadius, Background et BorderBrush se règlent directement sur la carte." />
+                           Text="Padding, CornerRadius, Background and BorderBrush are set directly on the card." />
             </helix:HelixCard>
         </UniformGrid>
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Stat" />
-        <TextBlock Style="{StaticResource SectionText}" Text="HigherIsBetter=False pour un coût ou un délai : une hausse s'affiche alors en rouge." />
+        <TextBlock Style="{StaticResource SectionText}" Text="HigherIsBetter=False for a cost or a delay: an increase then shows in red." />
         <Border Style="{StaticResource Stage}">
             <UniformGrid Columns="4">
                 <helix:HelixStat Label="Production" Value="1 284" Unit="MWh" Delta="12.5" Icon="zap" Margin="0,0,16,0" />
-                <helix:HelixStat Label="Disponibilité" Value="96,4" Unit="%" Delta="0" Margin="0,0,16,0" />
-                <helix:HelixStat Label="Coût moyen" Value="82" Unit="€/MWh" Delta="4.2" HigherIsBetter="False" Margin="0,0,16,0" />
+                <helix:HelixStat Label="Availability" Value="96,4" Unit="%" Delta="0" Margin="0,0,16,0" />
+                <helix:HelixStat Label="Average cost" Value="82" Unit="€/MWh" Delta="4.2" HigherIsBetter="False" Margin="0,0,16,0" />
                 <helix:HelixStat Label="Incidents" Value="3" Delta="-40" HigherIsBetter="False" />
             </UniformGrid>
         </Border>
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="EmptyState" />
         <Border Style="{StaticResource Stage}">
-            <helix:HelixEmptyState Icon="search" Title="Aucun résultat" Description="Aucun rapport ne correspond à ces filtres. Essayez une autre période.">
+            <helix:HelixEmptyState Icon="search" Title="No results" Description="No report matches these filters. Try another period.">
                 <helix:HelixEmptyState.Actions>
-                    <helix:HelixButton Content="Effacer les filtres" Variant="Soft" />
+                    <helix:HelixButton Content="Clear filters" Variant="Soft" />
                 </helix:HelixEmptyState.Actions>
             </helix:HelixEmptyState>
         </Border>
 
-        <TextBlock Style="{StaticResource SectionTitle}" Text="Avatar et Skeleton" />
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Avatar and Skeleton" />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
                 <WrapPanel Margin="0,0,0,20">
@@ -80,9 +80,9 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" MinWidth="120" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Panneau gauche" Margin="20" Foreground="{DynamicResource Helix.TextMuted}" />
+                <TextBlock Text="Left panel" Margin="20" Foreground="{DynamicResource Helix.TextMuted}" />
                 <helix:HelixSplitter Grid.Column="1" />
-                <TextBlock Grid.Column="2" Text="Panneau droit : glissez la poignée." Margin="20" Foreground="{DynamicResource Helix.TextMuted}" />
+                <TextBlock Grid.Column="2" Text="Right panel: drag the handle." Margin="20" Foreground="{DynamicResource Helix.TextMuted}" />
             </Grid>
         </Border>
 
@@ -107,25 +107,25 @@
         <TextBlock Style="{StaticResource SectionTitle}" Text="Drawer" />
         <Border Style="{StaticResource Stage}">
             <WrapPanel>
-                <helix:HelixButton Content="Ouvrir à droite" Variant="Outline" Tone="Neutral" Click="OnOpenRight" Margin="0,0,10,0" />
-                <helix:HelixButton Content="Ouvrir en bas" Variant="Outline" Tone="Neutral" Click="OnOpenBottom" />
+                <helix:HelixButton Content="Open on the right" Variant="Outline" Tone="Neutral" Click="OnOpenRight" Margin="0,0,10,0" />
+                <helix:HelixButton Content="Open at the bottom" Variant="Outline" Tone="Neutral" Click="OnOpenBottom" />
             </WrapPanel>
         </Border>
 
-        <helix:HelixDrawer x:Name="Filters" Title="Filtres" Description="Affinez la liste des sites.">
+        <helix:HelixDrawer x:Name="Filters" Title="Filters" Description="Narrow down the list of sites.">
             <StackPanel>
-                <helix:HelixSelect Label="Région" SelectedIndex="0" Margin="0,0,0,16">
-                    <ComboBoxItem Content="Toutes" />
+                <helix:HelixSelect Label="Region" SelectedIndex="0" Margin="0,0,0,16">
+                    <ComboBoxItem Content="All" />
                     <ComboBoxItem Content="Auvergne-Rhône-Alpes" />
                     <ComboBoxItem Content="Occitanie" />
                 </helix:HelixSelect>
-                <helix:HelixSwitch Content="Seulement les sites actifs" IsChecked="True" Margin="0,0,0,16" />
+                <helix:HelixSwitch Content="Only active sites" IsChecked="True" Margin="0,0,0,16" />
                 <helix:HelixSlider Minimum="0" Maximum="500" Value="120" />
             </StackPanel>
             <helix:HelixDrawer.Footer>
                 <StackPanel Orientation="Horizontal">
-                    <helix:HelixButton Content="Réinitialiser" Variant="Ghost" Tone="Neutral" />
-                    <helix:HelixButton Content="Appliquer" Margin="8,0,0,0" Click="OnApply" />
+                    <helix:HelixButton Content="Reset" Variant="Ghost" Tone="Neutral" />
+                    <helix:HelixButton Content="Apply" Margin="8,0,0,0" Click="OnApply" />
                 </StackPanel>
             </helix:HelixDrawer.Footer>
         </helix:HelixDrawer>

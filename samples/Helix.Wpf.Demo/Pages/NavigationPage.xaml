@@ -4,29 +4,29 @@
              xmlns:helix="https://helix-ui.dev/wpf">
     <StackPanel>
         <TextBlock Style="{StaticResource PageTitle}" Text="Navigation" />
-        <TextBlock Style="{StaticResource PageLead}" Text="Onglets, sections dépliables, fil d'Ariane, boutons segmentés, pagination, étapes et menus." />
+        <TextBlock Style="{StaticResource PageLead}" Text="Tabs, collapsible sections, breadcrumb, segmented buttons, pagination, steps and menus." />
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Tabs" />
         <Border Style="{StaticResource Stage}">
             <StackPanel>
                 <helix:HelixTabs Margin="0,0,0,24">
-                    <helix:HelixTab Header="Aperçu" Icon="layout">
-                        <TextBlock Text="Underline : le style par défaut." Foreground="{DynamicResource Helix.TextMuted}" />
+                    <helix:HelixTab Header="Preview" Icon="layout">
+                        <TextBlock Text="Underline: the default style." Foreground="{DynamicResource Helix.TextMuted}" />
                     </helix:HelixTab>
-                    <helix:HelixTab Header="Activité" Icon="bell">
-                        <TextBlock Text="Deuxième onglet." Foreground="{DynamicResource Helix.TextMuted}" />
+                    <helix:HelixTab Header="Activity" Icon="bell">
+                        <TextBlock Text="Second tab." Foreground="{DynamicResource Helix.TextMuted}" />
                     </helix:HelixTab>
-                    <helix:HelixTab Header="Réglages" Icon="settings" />
+                    <helix:HelixTab Header="Settings" Icon="settings" />
                 </helix:HelixTabs>
                 <helix:HelixTabs Variant="Pills" Margin="0,0,0,24">
-                    <helix:HelixTab Header="Jour" />
-                    <helix:HelixTab Header="Semaine" />
-                    <helix:HelixTab Header="Mois" />
+                    <helix:HelixTab Header="Day" />
+                    <helix:HelixTab Header="Week" />
+                    <helix:HelixTab Header="Month" />
                 </helix:HelixTabs>
                 <helix:HelixTabs Variant="Segmented">
-                    <helix:HelixTab Header="Liste" Icon="menu" />
-                    <helix:HelixTab Header="Tableau" Icon="columns" />
-                    <helix:HelixTab Header="Calendrier" Icon="calendar" />
+                    <helix:HelixTab Header="List" Icon="menu" />
+                    <helix:HelixTab Header="Table" Icon="columns" />
+                    <helix:HelixTab Header="Calendar" Icon="calendar" />
                 </helix:HelixTabs>
             </StackPanel>
         </Border>
@@ -34,17 +34,17 @@
         <TextBlock Style="{StaticResource SectionTitle}" Text="Accordion" />
         <Border Style="{StaticResource Stage}">
             <helix:HelixAccordion MaxWidth="560" HorizontalAlignment="Left">
-                <helix:HelixAccordionItem Header="Livraison" Subtitle="Délais et zones" Icon="download" IsExpanded="True">
-                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" Text="Livraison en 48 h partout en France métropolitaine." />
+                <helix:HelixAccordionItem Header="Delivery" Subtitle="Times and areas" Icon="download" IsExpanded="True">
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" Text="Delivery in 48 h everywhere in mainland France." />
                 </helix:HelixAccordionItem>
-                <helix:HelixAccordionItem Header="Retours" Icon="refresh">
-                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" Text="30 jours pour changer d'avis." />
+                <helix:HelixAccordionItem Header="Feedback" Icon="refresh">
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" Text="30 days to change your mind." />
                 </helix:HelixAccordionItem>
-                <helix:HelixAccordionItem Header="Paiement" Icon="lock">
+                <helix:HelixAccordionItem Header="Payment" Icon="lock">
                     <helix:HelixAccordionItem.Extra>
-                        <helix:HelixBadge Content="Sécurisé" Tone="Success" />
+                        <helix:HelixBadge Content="Secure" Tone="Success" />
                     </helix:HelixAccordionItem.Extra>
-                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" Text="Carte, virement ou prélèvement." />
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Helix.TextMuted}" Text="Card, transfer or direct debit." />
                 </helix:HelixAccordionItem>
             </helix:HelixAccordion>
         </Border>
@@ -54,10 +54,10 @@
             <StackPanel>
                 <helix:HelixBreadcrumb x:Name="Crumbs" MaxItems="4" Margin="0,0,0,20" />
                 <helix:HelixButtonGroup SelectedIndex="1" Margin="0,0,0,20">
-                    <ListBoxItem Content="Jour" />
-                    <ListBoxItem Content="Semaine" />
-                    <ListBoxItem Content="Mois" />
-                    <ListBoxItem Content="Année" />
+                    <ListBoxItem Content="Day" />
+                    <ListBoxItem Content="Week" />
+                    <ListBoxItem Content="Month" />
+                    <ListBoxItem Content="Year" />
                 </helix:HelixButtonGroup>
                 <helix:HelixPagination TotalItems="87" PageSize="10" Page="2" ShowInfo="True" ShowLabels="True" />
             </StackPanel>
@@ -78,22 +78,22 @@
                     <helix:HelixMenuButton.Menu>
                         <helix:HelixContextMenu>
                             <helix:HelixMenuLabel Text="DOCUMENT" />
-                            <helix:HelixMenuItem Header="Modifier" IconName="edit" Shortcut="Ctrl+E" />
-                            <helix:HelixMenuItem Header="Dupliquer" IconName="copy" Shortcut="Ctrl+D" />
-                            <helix:HelixMenuItem Header="Exporter" IconName="download" Description="PDF ou Excel" />
+                            <helix:HelixMenuItem Header="Edit" IconName="edit" Shortcut="Ctrl+E" />
+                            <helix:HelixMenuItem Header="Duplicate" IconName="copy" Shortcut="Ctrl+D" />
+                            <helix:HelixMenuItem Header="Export" IconName="download" Description="PDF or Excel" />
                             <helix:HelixMenuSeparator />
-                            <helix:HelixMenuItem Header="Supprimer" IconName="trash" IsDanger="True" />
+                            <helix:HelixMenuItem Header="Delete" IconName="trash" IsDanger="True" />
                         </helix:HelixContextMenu>
                     </helix:HelixMenuButton.Menu>
                 </helix:HelixMenuButton>
                 <Border Padding="16,10" CornerRadius="10" Background="{DynamicResource Helix.Surface2}">
                     <Border.ContextMenu>
                         <helix:HelixContextMenu>
-                            <helix:HelixMenuItem Header="Copier" IconName="copy" />
-                            <helix:HelixMenuItem Header="Épingler" IconName="star" IsCheckable="True" IsChecked="True" />
+                            <helix:HelixMenuItem Header="Copy" IconName="copy" />
+                            <helix:HelixMenuItem Header="Pin" IconName="star" IsCheckable="True" IsChecked="True" />
                         </helix:HelixContextMenu>
                     </Border.ContextMenu>
-                    <TextBlock Text="Clic droit ici" Foreground="{DynamicResource Helix.TextMuted}" />
+                    <TextBlock Text="Right-click here" Foreground="{DynamicResource Helix.TextMuted}" />
                 </Border>
             </WrapPanel>
         </Border>

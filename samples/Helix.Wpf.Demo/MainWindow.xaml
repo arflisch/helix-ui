@@ -58,27 +58,93 @@
                     </StackPanel>
 
                     <StackPanel DockPanel.Dock="Bottom">
-                        <TextBlock Text="THÈME" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,8" Foreground="{DynamicResource Helix.TextSubtle}" />
+                        <TextBlock Text="THEME" FontSize="11" FontWeight="SemiBold" Margin="8,0,0,8" Foreground="{DynamicResource Helix.TextSubtle}" />
                         <helix:HelixSelect x:Name="ThemePicker" SelectionChanged="OnThemeModeChanged">
-                            <ComboBoxItem Content="Système" Tag="System" />
-                            <ComboBoxItem Content="Clair" Tag="Light" />
-                            <ComboBoxItem Content="Sombre" Tag="Dark" />
+                            <ComboBoxItem Content="System" Tag="System" />
+                            <ComboBoxItem Content="Light" Tag="Light" />
+                            <ComboBoxItem Content="Dark" Tag="Dark" />
                         </helix:HelixSelect>
                     </StackPanel>
 
                     <ListBox x:Name="Nav" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource NavItem}"
                              SelectionChanged="OnNavigate" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBoxItem Content="Boutons" Tag="Buttons" />
-                        <ListBoxItem Content="Champs" Tag="Fields" />
-                        <ListBoxItem Content="Choix" Tag="Choices" />
-                        <ListBoxItem Content="Retours" Tag="Feedback" />
-                        <ListBoxItem Content="Mise en page" Tag="Layout" />
-                        <ListBoxItem Content="Navigation" Tag="Navigation" />
-                        <ListBoxItem Content="Données" Tag="Data" />
-                        <ListBoxItem Content="Graphiques" Tag="Charts" />
-                        <ListBoxItem Content="Planning" Tag="Planning" />
-                        <ListBoxItem Content="Organisation" Tag="Board" />
-                        <ListBoxItem Content="Personnalisation" Tag="Customization" />
+                        <ListBoxItem Tag="Buttons" AutomationProperties.Name="Buttons">
+                            <StackPanel>
+                                <TextBlock Text="Buttons" />
+                                <TextBlock Text="Button, async command" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Fields" AutomationProperties.Name="Fields">
+                            <StackPanel>
+                                <TextBlock Text="Fields" />
+                                <TextBlock Text="Text, number, select, dates, auto form, color, files" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Choices" AutomationProperties.Name="Choices">
+                            <StackPanel>
+                                <TextBlock Text="Choices" />
+                                <TextBlock Text="Switch, check box, radio group, slider, rating" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Feedback" AutomationProperties.Name="Feedback">
+                            <StackPanel>
+                                <TextBlock Text="Feedback" />
+                                <TextBlock Text="Alerts, toasts, dialogs, time bar, log, busy" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Layout" AutomationProperties.Name="Layout">
+                            <StackPanel>
+                                <TextBlock Text="Layout" />
+                                <TextBlock Text="Card, stat, empty state, avatar, carousel, drawer" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Navigation" AutomationProperties.Name="Navigation">
+                            <StackPanel>
+                                <TextBlock Text="Navigation" />
+                                <TextBlock Text="Tabs, accordion, breadcrumb, pagination, stepper, menus" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Data" AutomationProperties.Name="Data">
+                            <StackPanel>
+                                <TextBlock Text="Data" />
+                                <TextBlock Text="Data grid, filter bar, grouping, export" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Charts" AutomationProperties.Name="Charts">
+                            <StackPanel>
+                                <TextBlock Text="Charts" />
+                                <TextBlock Text="Chart, donut, gauge, heatmap, bar list" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Planning" AutomationProperties.Name="Planning">
+                            <StackPanel>
+                                <TextBlock Text="Planning" />
+                                <TextBlock Text="Timeline" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Board" AutomationProperties.Name="Dashboard &amp; boards">
+                            <StackPanel>
+                                <TextBlock Text="Dashboard &amp; boards" />
+                                <TextBlock Text="Dashboard, kanban, sortable list, tree view" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
+                        <ListBoxItem Tag="Customization" AutomationProperties.Name="Customization">
+                            <StackPanel>
+                                <TextBlock Text="Customization" />
+                                <TextBlock Text="Theme, palette, defaults, texts" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                            </StackPanel>
+                        </ListBoxItem>
                     </ListBox>
                 </DockPanel>
             </Border>

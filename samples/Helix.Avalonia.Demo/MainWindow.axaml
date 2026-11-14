@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:helix="using:Helix.Avalonia"
+        xmlns:local="using:Helix.Avalonia.Demo"
         x:Class="Helix.Avalonia.Demo.MainWindow"
         Title="Helix UI · Avalonia" Width="1180" Height="860" MinWidth="720"
         Background="{DynamicResource Helix.Background}" FontFamily="{DynamicResource Helix.FontFamily}">
@@ -18,9 +19,18 @@
                     <helix:HelixButton DockPanel.Dock="Bottom" Name="ThemeButton" Variant="Outline" Tone="Neutral" Icon="moon" Content="Dark mode"
                                        HorizontalAlignment="Stretch" Click="OnToggleTheme" />
                     <ListBox Name="Nav" Background="Transparent" SelectionChanged="OnNavigate">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:MainWindow+NavEntry">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock Text="{Binding Caption}" FontSize="11.5" FontWeight="Normal" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource Helix.TextSubtle}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                         <ListBox.Styles>
                             <Style Selector="ListBoxItem">
-                                <Setter Property="Padding" Value="12,8" />
+                                <Setter Property="Padding" Value="12,6" />
                                 <Setter Property="Margin" Value="0,1" />
                                 <Setter Property="CornerRadius" Value="8" />
                                 <Setter Property="FontSize" Value="14" />

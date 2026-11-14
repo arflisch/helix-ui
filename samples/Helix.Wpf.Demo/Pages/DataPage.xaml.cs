@@ -12,7 +12,7 @@ public partial class DataPage : UserControl
     public sealed record Plant(int Id, string Name, string Site, double Power, string Status, HelixTone Tone, DateTime Updated, double Change = 0);
 
     private static readonly string[] Sites = ["Lyon", "Grenoble", "Marseille", "Bordeaux", "Lille", "Nantes", "Toulouse"];
-    private static readonly (string Status, HelixTone Tone)[] Statuses = [("En service", HelixTone.Success), ("Maintenance", HelixTone.Warning), ("Arrêt", HelixTone.Danger), ("Planifié", HelixTone.Info)];
+    private static readonly (string Status, HelixTone Tone)[] Statuses = [("Running", HelixTone.Success), ("Maintenance", HelixTone.Warning), ("Stopped", HelixTone.Danger), ("Planned", HelixTone.Info)];
 
     // A "server" with 10 000 rows.
     private static readonly List<Plant> Database = Enumerable.Range(1, 10_000).Select(Make).ToList();
@@ -20,11 +20,13 @@ public partial class DataPage : UserControl
     public DataPage()
     {
         InitializeComponent();
+        // A toggle filter with its own rule (Path works too for a bool property).
+        HighPower.Rule = row => row is Plant { Power: >= 100 };
         Grid.Source = Enumerable.Range(1, 46).Select(Make).ToList();
         GroupedGrid.Source = Enumerable.Range(1, 18).Select(Make).ToList();
         Filters.Presets = new System.Collections.ObjectModel.ObservableCollection<HelixFilterPreset>
         {
-            new("En maintenance", new Dictionary<string, string> { ["status"] = "[\"Maintenance\"]" }),
+            new("In maintenance", new Dictionary<string, string> { ["status"] = "[\"Maintenance\"]" }),
         };
         ServerGrid.ItemsProvider = QueryAsync;
     }
@@ -32,7 +34,7 @@ public partial class DataPage : UserControl
     private static Plant Make(int i)
     {
         var (status, tone) = Statuses[i * 7 % Statuses.Length];
-        return new Plant(i, $"Unité {i:000}", Sites[i * 3 % Sites.Length], 20 + i * 37 % 480, status, tone, DateTime.Today.AddHours(-i * 5 % 96), Math.Round((i * 13 % 21 - 10) * 0.7, 1));
+        return new Plant(i, $"Unit {i:000}", Sites[i * 3 % Sites.Length], 20 + i * 37 % 480, status, tone, DateTime.Today.AddHours(-i * 5 % 96), Math.Round((i * 13 % 21 - 10) * 0.7, 1));
     }
 
     private static async Task<HelixGridPage> QueryAsync(HelixGridRequest request, CancellationToken cancellationToken)

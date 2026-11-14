@@ -24,6 +24,6 @@ public partial class LayoutPage : UserControl
     private void OnApply(object sender, RoutedEventArgs e)
     {
         Filters.IsOpen = false;
-        HelixToasts.Success("Filtres appliqués.");
+        HelixToasts.Success("Filters applied.");
     }
 }

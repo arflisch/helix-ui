@@ -5,9 +5,9 @@
     <StackPanel>
         <TextBlock Style="{StaticResource PageTitle}" Text="Timeline" />
         <TextBlock Style="{StaticResource PageLead}"
-                   Text="Des éléments sur un axe du temps, par couloir, avec la ligne « maintenant » en direct. En mode édition : glisser pour déplacer, tirer un bord pour allonger, flèches pour décaler (Maj + flèches pour la fin)." />
+                   Text="Items on a time axis, by lane, with a live “now” line. In edit mode: drag to move, pull an edge to resize, arrows to shift (Shift + arrows for the end)." />
 
-        <helix:HelixTimeline x:Name="Schedule" Title="Planning des équipes" SlotDuration="1:00:00" LaneHeader="ÉQUIPE" IsEditable="True" AllowLaneChange="True"
+        <helix:HelixTimeline x:Name="Schedule" Title="Team planning" SlotDuration="1:00:00" LaneHeader="TEAM" IsEditable="True" AllowLaneChange="True"
                            IsCollapsible="True" SnapTo="0:15:00" Margin="0,0,0,32" />
 
         <helix:HelixTimeline x:Name="Demand" Title="Time schedule" SlotDuration="0:15:00" Layout="Staircase" SlotMinWidth="150"

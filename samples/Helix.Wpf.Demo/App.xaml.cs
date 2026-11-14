@@ -16,6 +16,19 @@ public partial class App : Application
         };
     }
 
+    // The gallery is in English whatever the machine's language: numbers, dates and the controls' own texts.
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        var english = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = english;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = english;
+        System.Threading.Thread.CurrentThread.CurrentCulture = english;
+        System.Threading.Thread.CurrentThread.CurrentUICulture = english;
+        FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement),
+            new FrameworkPropertyMetadata(System.Windows.Markup.XmlLanguage.GetLanguage(english.IetfLanguageTag)));
+        base.OnStartup(e);
+    }
+
     private static void Report(Exception? ex)
     {
         var text = ex?.ToString() ?? "Unknown error";

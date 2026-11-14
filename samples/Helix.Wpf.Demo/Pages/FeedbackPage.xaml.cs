@@ -8,11 +8,11 @@ public partial class FeedbackPage : UserControl
 {
     private static readonly (HelixLogLevel Level, string Source, string Message)[] Samples =
     [
-        (HelixLogLevel.Info, "dispatch", "Demande DR-0042 envoyée au gestionnaire de réseau"),
-        (HelixLogLevel.Debug, "forecast", "Prévision recalculée en 412 ms"),
-        (HelixLogLevel.Warning, "telemetry", "Unité B : pas de mesure depuis 45 s"),
-        (HelixLogLevel.Error, "telemetry", "Unité C : connexion perdue, nouvel essai dans 5 s"),
-        (HelixLogLevel.Info, "telemetry", "Unité C : connexion rétablie"),
+        (HelixLogLevel.Info, "dispatch", "Request DR-0042 sent to the grid operator"),
+        (HelixLogLevel.Debug, "forecast", "Forecast recomputed in 412 ms"),
+        (HelixLogLevel.Warning, "telemetry", "Unit B: no measurement for 45 s"),
+        (HelixLogLevel.Error, "telemetry", "Unit C: connection lost, retrying in 5 s"),
+        (HelixLogLevel.Info, "telemetry", "Unit C: connection restored"),
     ];
 
     private readonly System.Collections.ObjectModel.ObservableCollection<HelixLogEntry> _log = [];
@@ -22,7 +22,7 @@ public partial class FeedbackPage : UserControl
     {
         InitializeComponent();
         SubmissionBar.SlotColor = slot => slot.Offset < 0 ? "success" : slot.Offset == 2 ? "danger" : null;
-        SubmissionBar.SlotText = slot => slot.Offset switch { < 0 => "Envoyé", 0 => "En cours", 2 => "Indisponible", _ => "À envoyer" };
+        SubmissionBar.SlotText = slot => slot.Offset switch { < 0 => "Sent", 0 => "In progress", 2 => "Unavailable", _ => "To send" };
         for (var i = 0; i < 200; i++) AddLine(DateTime.Now.AddSeconds(-(200 - i) * 6));
         Log.ItemsSource = _log;
         var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(900) };
@@ -39,24 +39,24 @@ public partial class FeedbackPage : UserControl
 
     private async void OnPrompt(object sender, RoutedEventArgs e)
     {
-        var name = await HelixConfirm.PromptAsync("Enregistrer la vue", "Donnez-lui un nom pour la retrouver.", placeholder: "ex. En attente à Lyon",
-            confirmText: "Enregistrer", validate: text => text.Trim().Length < 3 ? "Au moins 3 caractères." : null);
-        if (name is not null) DialogResult.Text = $"Vue « {name} » enregistrée";
+        var name = await HelixConfirm.PromptAsync("Save the view", "Give it a name to find it again.", placeholder: "e.g. Pending in Lyon",
+            confirmText: "Enregistrer", validate: text => text.Trim().Length < 3 ? "At least 3 characters." : null);
+        if (name is not null) DialogResult.Text = $"View “{name}” saved";
     }
 
     private async void OnShowView(object sender, RoutedEventArgs e)
     {
         var name = await HelixDialogs.ShowAsync<string>(dialog =>
         {
-            var field = new HelixTextField { Label = "Nom", Text = "Usine de Lyon" };
+            var field = new HelixTextField { Label = "Name", Text = "Lyon plant" };
             var save = new HelixButton { Content = "Enregistrer", Icon = "check", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
             save.Click += (_, _) => dialog.Close(field.Text);
             var panel = new StackPanel();
             panel.Children.Add(field);
             panel.Children.Add(save);
             return panel;
-        }, "Modifier le site", width: 420);
-        if (name is not null) DialogResult.Text = $"Site renommé : {name}";
+        }, "Edit the site", width: 420);
+        if (name is not null) DialogResult.Text = $"Site renamed: {name}";
     }
 
     private async void OnBusy(object sender, RoutedEventArgs e)
@@ -68,17 +68,17 @@ public partial class FeedbackPage : UserControl
         BusyButton.IsLoading = false;
     }
 
-    private void OnToastSuccess(object sender, RoutedEventArgs e) => HelixToasts.Success("Les modifications sont enregistrées.", "Enregistré");
-    private void OnToastWarning(object sender, RoutedEventArgs e) => HelixToasts.Warning("Il reste 8 % de l'espace disponible.");
-    private void OnToastError(object sender, RoutedEventArgs e) => HelixToasts.Error("Le serveur ne répond pas. Réessayez dans un instant.", "Erreur réseau");
+    private void OnToastSuccess(object sender, RoutedEventArgs e) => HelixToasts.Success("Your changes were saved.", "Saved");
+    private void OnToastWarning(object sender, RoutedEventArgs e) => HelixToasts.Warning("8% of the space is left.");
+    private void OnToastError(object sender, RoutedEventArgs e) => HelixToasts.Error("The server does not answer. Try again in a moment.", "Network error");
 
     private int _notified;
 
     private void OnNotify(object sender, RoutedEventArgs e) => _ = (++_notified % 3) switch
     {
-        1 => HelixNotifications.Warning("Échéance dans 5 minutes", "Soumission pour le quart d'heure suivant", actionText: "Voir"),
-        2 => HelixNotifications.Error("Soumission refusée", "Créneau 14:15–14:30 : valeur au-dessus de la limite."),
-        _ => HelixNotifications.Success("Rapport exporté", "rapport-equipe.docx"),
+        1 => HelixNotifications.Warning("Deadline in 5 minutes", "Submission for the next quarter hour", actionText: "View"),
+        2 => HelixNotifications.Error("Submission rejected", "Slot 14:15–14:30: value above the limit."),
+        _ => HelixNotifications.Success("Report exported", "team-report.docx"),
     };
     private void OnOpenDialog(object sender, RoutedEventArgs e) => Dialog.IsOpen = true;
     private void OnCloseDialog(object sender, RoutedEventArgs e) => Dialog.IsOpen = false;
@@ -86,14 +86,14 @@ public partial class FeedbackPage : UserControl
     private void OnInvite(object sender, RoutedEventArgs e)
     {
         Dialog.IsOpen = false;
-        HelixToasts.Success("L'invitation est partie.");
+        HelixToasts.Success("The invitation was sent.");
     }
 
     private async void OnDelete(object sender, RoutedEventArgs e)
     {
-        if (await HelixConfirm.AskAsync("Supprimer le rapport ?", "Cette action est définitive.", danger: true, confirmText: "Supprimer"))
+        if (await HelixConfirm.AskAsync("Delete the report?", "This cannot be undone.", danger: true, confirmText: "Delete"))
         {
-            HelixToasts.Success("Rapport supprimé.");
+            HelixToasts.Success("Report deleted.");
         }
     }
 }

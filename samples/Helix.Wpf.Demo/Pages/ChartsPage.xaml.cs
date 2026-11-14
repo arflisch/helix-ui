@@ -16,20 +16,20 @@ public partial class ChartsPage : UserControl
         Power.From = today;
         Power.To = today.AddDays(1);
 
-        string[] months = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+        string[] months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         Y2025.Points = Enumerable.Range(0, 12).Select(m => new HelixPoint(m, 80 + m * 6 + m % 3 * 14)).ToList();
         Y2026.Points = Enumerable.Range(0, 10).Select(m => new HelixPoint(m, 95 + m * 7 + m % 4 * 10)).ToList();
         Monthly.XFormat = x => months[Math.Clamp((int)Math.Round(x), 0, 11)];
 
         Mix.Items =
         [
-            new HelixPart("Nucléaire", 312), new HelixPart("Hydraulique", 64), new HelixPart("Éolien", 48),
-            new HelixPart("Solaire", 22), new HelixPart("Gaz", 31), new HelixPart("Bioénergies", 9), new HelixPart("Charbon", 2),
+            new HelixPart("Nuclear", 312), new HelixPart("Hydro", 64), new HelixPart("Wind", 48),
+            new HelixPart("Solar", 22), new HelixPart("Gas", 31), new HelixPart("Bioenergy", 9), new HelixPart("Coal", 2),
         ];
-        Share.Items = [new HelixPart("Renouvelable", 42), new HelixPart("Nucléaire", 46), new HelixPart("Fossile", 12)];
-        Load.Thresholds = [new HelixGaugeThreshold(70, "warning", "Élevée"), new HelixGaugeThreshold(90, "danger", "Critique")];
+        Share.Items = [new HelixPart("Renewable", 42), new HelixPart("Nuclear", 46), new HelixPart("Fossil", 12)];
+        Load.Thresholds = [new HelixGaugeThreshold(70, "warning", "High"), new HelixGaugeThreshold(90, "danger", "Critical")];
 
-        string[] days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+        string[] days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         var cols = Enumerable.Range(0, 24).Select(h => $"{h}h").ToList();
         Heat.Rows = days;
         Heat.Columns = cols;
@@ -44,8 +44,8 @@ public partial class ChartsPage : UserControl
 
         Pages.Items =
         [
-            new HelixBarItem("/accueil", 12840), new HelixBarItem("/tarifs", 8210), new HelixBarItem("/documentation", 6455),
-            new HelixBarItem("/blog/helix-1-2", 3120), new HelixBarItem("/contact", 2290), new HelixBarItem("/carrieres", 1210), new HelixBarItem("/presse", 540),
+            new HelixBarItem("/home", 12840), new HelixBarItem("/pricing", 8210), new HelixBarItem("/documentation", 6455),
+            new HelixBarItem("/blog/helix-1-2", 3120), new HelixBarItem("/contact", 2290), new HelixBarItem("/careers", 1210), new HelixBarItem("/press", 540),
         ];
     }
 }

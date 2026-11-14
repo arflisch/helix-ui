@@ -219,7 +219,7 @@ public class HelixDataGrid : TemplatedControl
         _next = e.NameScope.Find<Button>("PART_Next");
         if (_grid is not null)
         {
-            foreach (var column in Columns) _grid.Columns.Add(column);
+            foreach (var column in Columns) _grid.Columns.Add(DisplayOnly(column));
             // With a details column, details open only with its chevron, not on selection.
             if (Columns.OfType<HelixDetailsColumn>().Any()) _grid.RowDetailsVisibilityMode = DataGridRowDetailsVisibilityMode.Collapsed;
             _grid.Sorting += OnSorting;
@@ -293,7 +293,7 @@ public class HelixDataGrid : TemplatedControl
     {
         if (_grid is null) return;
         foreach (var c in e.OldItems?.OfType<DataGridColumn>() ?? []) _grid.Columns.Remove(c);
-        foreach (var c in e.NewItems?.OfType<DataGridColumn>() ?? []) _grid.Columns.Add(c);
+        foreach (var c in e.NewItems?.OfType<DataGridColumn>() ?? []) _grid.Columns.Add(DisplayOnly(c));
         UpdateTotals();
     }
 
@@ -468,6 +468,26 @@ public class HelixDataGrid : TemplatedControl
     // ----- Values, formats and totals ----------------------------------------------------------
 
     /// <summary>The property path of a column: SortMemberPath, else the path of its binding.</summary>
+    /// <summary>
+    /// The grid only displays: its bound columns read their value one way. A text column binds two-way by default, so a
+    /// StringFormat (e.g. {0:dd/MM/yyyy}) would write its text back into the row, and in a culture that reads the text as
+    /// another value (month first) the value and the text would chase each other forever.
+    /// </summary>
+    private static DataGridColumn DisplayOnly(DataGridColumn column)
+    {
+        switch (column)
+        {
+            case DataGridBoundColumn { Binding: CompiledBinding { Mode: BindingMode.Default or BindingMode.TwoWay } compiled }:
+                compiled.Mode = BindingMode.OneWay;
+                break;
+            case DataGridBoundColumn { Binding: ReflectionBinding { Mode: BindingMode.Default or BindingMode.TwoWay } reflection }:
+                reflection.Mode = BindingMode.OneWay;
+                break;
+        }
+
+        return column;
+    }
+
     internal static string? PathOf(DataGridColumn column)
     {
         if (column.SortMemberPath is { Length: > 0 } sort) return sort;

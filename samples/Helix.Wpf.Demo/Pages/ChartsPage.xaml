@@ -3,22 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:helix="https://helix-ui.dev/wpf">
     <StackPanel>
-        <TextBlock Style="{StaticResource PageTitle}" Text="Graphiques" />
+        <TextBlock Style="{StaticResource PageTitle}" Text="Charts" />
         <TextBlock Style="{StaticResource PageLead}"
-                   Text="Un seul axe Y, des couleurs de séries dans un ordre fixe, une légende qui masque les séries, et un survol avec les valeurs exactes. Les couleurs suivent le thème clair ou sombre." />
+                   Text="One Y axis, series colors in a fixed order, a legend that hides series, and a hover with the exact values. Colors follow the light or dark theme." />
 
         <Border Style="{StaticResource Stage}">
-            <helix:HelixChart x:Name="Power" Title="Production et prévision" Subtitle="Aujourd'hui, par heure" Unit="MW" ShowNow="True" PlotHeight="280">
+            <helix:HelixChart x:Name="Power" Title="Production and forecast" Subtitle="Today, by hour" Unit="MW" ShowNow="True" PlotHeight="280">
                 <helix:HelixChartSeries x:Name="Actual" Name="Production" Type="Area" />
-                <helix:HelixChartSeries x:Name="Forecast" Name="Prévision" IsDashed="True" />
+                <helix:HelixChartSeries x:Name="Forecast" Name="Forecast" IsDashed="True" />
                 <helix:HelixChart.Lines>
-                    <helix:HelixChartLine Y="400" Label="Contrat" Color="danger" />
+                    <helix:HelixChartLine Y="400" Label="Contract" Color="danger" />
                 </helix:HelixChart.Lines>
             </helix:HelixChart>
         </Border>
 
         <Border Style="{StaticResource Stage}">
-            <helix:HelixChart x:Name="Monthly" Title="Ventes par mois" Subtitle="Barres groupées, un ton par année" Unit="k€" PlotHeight="240">
+            <helix:HelixChart x:Name="Monthly" Title="Sales by month" Subtitle="Grouped bars, one tone per year" Unit="k€" PlotHeight="240">
                 <helix:HelixChartSeries x:Name="Y2025" Name="2025" Type="Bar" />
                 <helix:HelixChartSeries x:Name="Y2026" Name="2026" Type="Bar" />
             </helix:HelixChart>
@@ -26,14 +26,14 @@
 
         <UniformGrid Columns="2" Margin="0,0,0,32">
             <Border Style="{StaticResource Stage}" Margin="0,0,12,0">
-                <helix:HelixDonut x:Name="Mix" Title="Mix énergétique" Unit="GWh" />
+                <helix:HelixDonut x:Name="Mix" Title="Energy mix" Unit="GWh" />
             </Border>
             <Border Style="{StaticResource Stage}" Margin="12,0,0,0">
                 <StackPanel>
-                    <TextBlock Text="Charge du réseau" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" Margin="0,0,0,12" />
+                    <TextBlock Text="Grid load" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <helix:HelixGauge x:Name="Load" Value="72" Unit="%" Label="Charge" Size="170" Margin="0,0,16,0" />
-                        <helix:HelixGauge Value="38" Unit="°C" Label="Température" Maximum="60" Size="170" Accent="#0EA5E9" />
+                        <helix:HelixGauge x:Name="Load" Value="72" Unit="%" Label="Load" Size="170" Margin="0,0,16,0" />
+                        <helix:HelixGauge Value="38" Unit="°C" Label="Temperature" Maximum="60" Size="170" Accent="#0EA5E9" />
                     </StackPanel>
                     <helix:HelixSlider Minimum="0" Maximum="100" Value="{Binding Value, ElementName=Load, Mode=TwoWay}" Margin="0,12,0,0" />
                 </StackPanel>
@@ -41,20 +41,20 @@
         </UniformGrid>
 
         <Border Style="{StaticResource Stage}">
-            <helix:HelixDonut x:Name="Share" Title="Part des sources" Shape="SegmentedBar" Unit="%" ValueFormat="0" Thickness="16" />
+            <helix:HelixDonut x:Name="Share" Title="Share of sources" Shape="SegmentedBar" Unit="%" ValueFormat="0" Thickness="16" />
         </Border>
 
         <Border Style="{StaticResource Stage}">
-            <helix:HelixHeatmap x:Name="Heat" Title="Consommation par heure" Unit="MW" ColumnLabelEvery="3" />
+            <helix:HelixHeatmap x:Name="Heat" Title="Consumption by hour" Unit="MW" ColumnLabelEvery="3" />
         </Border>
 
         <Border Style="{StaticResource Stage}">
-            <helix:HelixHeatmap x:Name="Delta" Title="Écart à l'objectif (diverging)" Unit="%" IsDiverging="True" ShowValues="True" />
+            <helix:HelixHeatmap x:Name="Delta" Title="Gap to target (diverging)" Unit="%" IsDiverging="True" ShowValues="True" />
         </Border>
 
         <Border Style="{StaticResource Stage}">
             <StackPanel MaxWidth="560" HorizontalAlignment="Left">
-                <TextBlock Text="Pages les plus vues" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" Margin="0,0,0,12" />
+                <TextBlock Text="Most viewed pages" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Helix.Text}" Margin="0,0,0,12" />
                 <helix:HelixBarList x:Name="Pages" Limit="5" LabelHeader="Page" ValueHeader="Vues" />
             </StackPanel>
         </Border>

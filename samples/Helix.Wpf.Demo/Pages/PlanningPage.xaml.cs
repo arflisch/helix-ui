@@ -17,22 +17,22 @@ public partial class PlanningPage : UserControl
         Schedule.End = day.AddHours(20);
         Schedule.Statuses =
         [
-            new HelixTimelineStatus("done", "Terminé", "series-3"),
-            new HelixTimelineStatus("live", "En cours", "series-1"),
-            new HelixTimelineStatus("planned", "Planifié", "series-1", HelixTimelineAppearance.Outline),
-            new HelixTimelineStatus("draft", "Brouillon", "subtle", HelixTimelineAppearance.Dashed),
+            new HelixTimelineStatus("done", "Done", "series-3"),
+            new HelixTimelineStatus("live", "In progress", "series-1"),
+            new HelixTimelineStatus("planned", "Planned", "series-1", HelixTimelineAppearance.Outline),
+            new HelixTimelineStatus("draft", "Draft", "subtle", HelixTimelineAppearance.Dashed),
             new HelixTimelineStatus("issue", "Incident", "danger"),
         ];
         _items =
         [
-            new("1", day.AddHours(7), day.AddHours(10), "Inspection") { Lane = "Équipe A", Status = "done" },
-            new("2", day.AddHours(10.5), day.AddHours(13), "Révision turbine") { Lane = "Équipe A", Status = "live" },
-            new("3", day.AddHours(14), day.AddHours(17), "Essais") { Lane = "Équipe A", Status = "planned" },
-            new("4", day.AddHours(8), day.AddHours(12), "Câblage") { Lane = "Équipe B", Status = "issue" },
-            new("5", day.AddHours(9), day.AddHours(11), "Livraison") { Lane = "Équipe B", Status = "done" },
-            new("6", day.AddHours(13), day.AddHours(18), "Mise en service") { Lane = "Équipe B", Status = "draft" },
-            new("7", day.AddHours(6.5), day.AddHours(9.5), "Formation") { Lane = "Équipe C", Status = "done" },
-            new("8", day.AddHours(15), day.AddHours(19), "Astreinte") { Lane = "Équipe C", Status = "planned" },
+            new("1", day.AddHours(7), day.AddHours(10), "Inspection") { Lane = "Team A", Status = "done" },
+            new("2", day.AddHours(10.5), day.AddHours(13), "Turbine overhaul") { Lane = "Team A", Status = "live" },
+            new("3", day.AddHours(14), day.AddHours(17), "Tests") { Lane = "Team A", Status = "planned" },
+            new("4", day.AddHours(8), day.AddHours(12), "Wiring") { Lane = "Team B", Status = "issue" },
+            new("5", day.AddHours(9), day.AddHours(11), "Delivery") { Lane = "Team B", Status = "done" },
+            new("6", day.AddHours(13), day.AddHours(18), "Commissioning") { Lane = "Team B", Status = "draft" },
+            new("7", day.AddHours(6.5), day.AddHours(9.5), "Training") { Lane = "Team C", Status = "done" },
+            new("8", day.AddHours(15), day.AddHours(19), "On call") { Lane = "Team C", Status = "planned" },
         ];
         Schedule.Items = _items;
         Schedule.ItemChanged += (_, e) =>
@@ -43,7 +43,6 @@ public partial class PlanningPage : UserControl
         };
         Schedule.ItemClick += (_, e) => HelixToasts.Info(((HelixEventArgs<HelixTimelineItem>)e).Value.Label);
 
-        // Same statuses as the MARI demand page.
         var quarter = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute / 15 * 15, 0);
         Demand.Start = quarter.AddMinutes(-15);
         Demand.End = quarter.AddMinutes(45);

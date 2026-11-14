@@ -16,7 +16,7 @@ public partial class ButtonsPage : UserControl
         try
         {
             await Task.Delay(TimeSpan.FromSeconds(1.5));
-            HelixToasts.Success("Les modifications sont enregistrées.", "Enregistré");
+            HelixToasts.Success("Your changes were saved.", "Saved");
         }
         finally
         {

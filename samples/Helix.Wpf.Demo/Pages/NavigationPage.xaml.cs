@@ -9,20 +9,20 @@ public partial class NavigationPage : UserControl
         InitializeComponent();
         Crumbs.ItemsSource = new[]
         {
-            new HelixBreadcrumbItem("Accueil", "home"),
-            new HelixBreadcrumbItem("Projets"),
-            new HelixBreadcrumbItem("Énergie"),
+            new HelixBreadcrumbItem("Home", "home"),
+            new HelixBreadcrumbItem("Projects"),
+            new HelixBreadcrumbItem("Energy"),
             new HelixBreadcrumbItem("Lyon"),
-            new HelixBreadcrumbItem("Rapport de mars"),
+            new HelixBreadcrumbItem("March report"),
         };
         Crumbs.ItemClick += (_, e) => HelixToasts.Info(((HelixEventArgs<HelixBreadcrumbItem>)e).Value.Text);
 
         var steps = new[]
         {
-            new HelixStep("Compte", "E-mail et mot de passe"),
-            new HelixStep("Profil", "Nom et photo"),
-            new HelixStep("Équipe", "Inviter des membres"),
-            new HelixStep("Terminé"),
+            new HelixStep("Account", "Email and password"),
+            new HelixStep("Profile", "Name and photo"),
+            new HelixStep("Team", "Invite members"),
+            new HelixStep("Done"),
         };
         Steps.Steps = steps;
         StepsVertical.Steps = steps;
