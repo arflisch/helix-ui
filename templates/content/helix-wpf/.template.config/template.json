@@ -12,7 +12,7 @@
     "HelixVersion": {
       "type": "parameter",
       "datatype": "text",
-      "defaultValue": "0.3.0",
+      "defaultValue": "0.4.0",
       "replaces": "HELIX_VERSION",
       "description": "Version of the Helix.Wpf package."
     },

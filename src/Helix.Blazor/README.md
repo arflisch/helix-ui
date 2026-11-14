@@ -37,12 +37,30 @@ builder.Services.AddHelix();
 
 ## What's inside
 
-Buttons, menus, text / number / select / date / color fields, switch, checkbox, radio group, slider, rating,
-data grid (client or server), chart, donut, gauge, heatmap, bar list, timeline, kanban, sortable list, dashboard,
-tree view, tabs, accordion, stepper, pagination, carousel, dialog, drawer, toasts, confirmations, and more.
+- **Fields**: text, number (signed, calculations), select and multi-select (searchable, local or server),
+  date, date-time and date range (with presets), calendar, color, switch, checkbox, radio group, slider, rating,
+  auto form built from a model and its DataAnnotations.
+- **Data**: data grid (client or server; groups with subtotals, totals row, row details, column chooser,
+  Excel / Word / CSV export with `ExcelStyle`), filter bar with saved filters, description list.
+- **Charts**: chart, donut, gauge, heatmap, bar list, stat with sparkline, target bar.
+- **Planning and boards**: timeline (lanes, statuses, drag), time bar (live countdown to a deadline),
+  Kanban, editable Kanban board, sortable list, dashboard (tiles, edit mode, saved layout).
+- **Live**: log viewer (levels, search, source and period filters, details with properties, exception and
+  trace id, filter chips, CSV / Excel export), notification center, busy veil, live collections.
+- **Layout and navigation**: tabs, accordion, stepper, pagination, menu, tree view, carousel, splitter.
+- **Overlays**: dialogs (your component in a dialog), drawer, toasts, confirm and prompt.
+
+```razor
+@* A Kanban that adds, edits and deletes its cards itself *@
+<HelixKanbanBoard Columns="columns" @bind-Cards="cards" OnCardChanged="Save" />
+
+@* A log with details, filters and export *@
+<HelixLogViewer Entries="entries" Height="480px" ExportFileName="operations-log" />
+```
 
 - Light, dark or system theme, with your own palettes (`HelixTheme`).
-- App-wide defaults for every component (`AddHelix(o => o.Defaults…)`).
+- App-wide defaults for every component (`AddHelix(o => o.Defaults…)`); preferences remembered per user (`RememberAs`).
 - Built-in texts in English and French, replaceable (`HelixTexts`).
+- Excel, Word and CSV files come from [Helix.Export](https://www.nuget.org/packages/Helix.Export), included.
 
 MIT license.

@@ -156,16 +156,23 @@ Nouveau projet : `dotnet new install Helix.Templates`, puis `dotnet new helix-bl
 | `Helix.Avalonia` | `dotnet add package Helix.Avalonia` |
 | `Helix.Export` | `dotnet add package Helix.Export` (déjà inclus par Helix.Blazor, Helix.Wpf et Helix.Avalonia) |
 
-Créer les packages en local :
+Créer les packages en local (dans `artifacts/`) :
 
 ```bash
-dotnet pack src/Helix.Export -c Release -o artifacts
-dotnet pack src/Helix.Blazor -c Release -o artifacts
-dotnet pack src/Helix.Wpf -c Release -o artifacts
+for p in src/Helix.Export src/Helix.Blazor src/Helix.Wpf src/Helix.Avalonia templates/Helix.Templates.csproj; do
+  dotnet pack "$p" -c Release -o artifacts -p:EnableWindowsTargeting=true
+done
 ```
 
-Publier une version : pousser un tag `vX.Y.Z` (par exemple `git tag v0.1.0 && git push origin v0.1.0`).
-Le workflow `.github/workflows/publish.yml` compile, crée les deux packages avec ce numéro de version et les envoie
-sur nuget.org. Il faut une fois ajouter la clé d'API nuget.org dans le secret `NUGET_API_KEY` du dépôt.
+Publier une version :
+
+1. mettre le numéro dans `Directory.Build.props` (`<Version>`), les `defaultValue` des deux `template.json`
+   et la page « Getting started » du site ;
+2. écrire la section `## X.Y.Z` de [CHANGELOG.md](CHANGELOG.md) ;
+3. pousser un tag `vX.Y.Z` (par exemple `git tag v0.4.0 && git push origin v0.4.0`).
+
+Le workflow `.github/workflows/publish.yml` compile, crée les cinq packages avec ce numéro de version, les envoie
+sur nuget.org et crée la release GitHub avec la section du changelog et les packages. Il faut une fois ajouter la
+clé d'API nuget.org dans le secret `NUGET_API_KEY` du dépôt.
 
 Licence MIT.

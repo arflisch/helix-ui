@@ -64,14 +64,14 @@ public class HelixTabs : TabControl
 /// <summary>A tab with an optional icon.</summary>
 public class HelixTab : TabItem
 {
-    public static readonly StyledProperty<string?> IconProperty = AvaloniaProperty.Register<HelixTab, string?>(nameof(Icon));
+    public static new readonly StyledProperty<string?> IconProperty = AvaloniaProperty.Register<HelixTab, string?>(nameof(Icon));
     public static readonly StyledProperty<HelixTabsVariant> VariantProperty = HelixTabs.VariantProperty.AddOwner<HelixTab>();
 
     protected override Type StyleKeyOverride => typeof(HelixTab);
 
     public HelixTabsVariant Variant { get => GetValue(VariantProperty); set => SetValue(VariantProperty, value); }
 
-    public string? Icon { get => GetValue(IconProperty); set => SetValue(IconProperty, value); }
+    public new string? Icon { get => GetValue(IconProperty); set => SetValue(IconProperty, value); }
 }
 
 /// <summary>Collapsible sections. One open at a time unless <see cref="AllowMultiple"/>.</summary>

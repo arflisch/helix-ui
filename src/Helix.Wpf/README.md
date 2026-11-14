@@ -42,12 +42,31 @@ if (await HelixConfirm.AskAsync("Delete?", "This cannot be undone.", danger: tru
 
 ## What's inside
 
-Buttons, menus, text / number / select / date / color fields, switch, checkbox, radio group, slider, rating,
-data grid (client or server), chart, donut, gauge, heatmap, bar list, timeline, kanban, sortable list, dashboard,
-tree view (list or org chart), tabs, accordion, stepper, pagination, carousel, dialog, drawer, toasts, confirmations.
+- **Fields**: text, number (signed, calculations), select and multi-select (searchable), date, date-time and
+  date range, color, switch, checkbox, radio group, slider, rating, auto form built from a model
+  (two-way bindings, DataAnnotations validation).
+- **Data**: data grid (client or server; groups with subtotals, totals row, row details, column chooser,
+  Excel / Word / CSV export with `ExcelStyle`), filter bar with saved filters, description list.
+- **Charts**: chart, donut, gauge, heatmap, bar list, stat with change, target bar.
+- **Planning and boards**: timeline (lanes, statuses, drag), time bar (live countdown to a deadline),
+  Kanban, editable Kanban board, sortable list, dashboard (tiles, columns layout, edit mode, saved layout).
+- **Live**: log viewer (levels, search, source and period filters, details with properties, exception and
+  trace id, filter chips, CSV / Excel export), notification center, busy veil, live collections, `HelixAsyncCommand`.
+- **Layout and navigation**: tabs, accordion, stepper, pagination, menu button and context menu, tree view (list or org chart), carousel.
+- **Overlays**: dialogs (any view in a dialog), drawer, toasts, confirm and prompt.
 
-- Light, dark or Windows theme, with your own palettes (`HelixResources`).
+```xml
+<!-- A Kanban that adds, edits and deletes its cards itself (ObservableCollection<HelixKanbanCard>) -->
+<helix:HelixKanbanBoard Columns="{Binding Columns}" ItemsSource="{Binding Cards}" CardChanged="OnSaved" />
+
+<!-- A log with details, filters and export (ObservableCollection<HelixLogEntry>, followed live) -->
+<helix:HelixLogViewer ItemsSource="{Binding Log}" Height="480" ExportFileName="operations-log" />
+```
+
+- Light, dark or Windows theme, with your own palettes (`HelixResources`), or the colors of your app theme
+  (`HelixResources.Follow`).
 - Change a default app-wide with a `BasedOn` style: the Helix template stays.
 - Built-in texts in English and French (`HelixTexts`).
+- Excel, Word and CSV files come from [Helix.Export](https://www.nuget.org/packages/Helix.Export), included.
 
-Requires .NET 10 on Windows. MIT license.
+Requires .NET 8 or later on Windows. MIT license.

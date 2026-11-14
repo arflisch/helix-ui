@@ -1,8 +1,8 @@
 <Project>
 
-  <!-- Shared package metadata for Helix.Blazor, Helix.Wpf and Helix.Export. -->
+  <!-- Shared package metadata for Helix.Blazor, Helix.Wpf, Helix.Avalonia, Helix.Export and Helix.Templates. -->
   <PropertyGroup>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Authors>arflisch</Authors>
     <Copyright>Copyright © 2026 arflisch</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -11,12 +11,13 @@
     <PackageProjectUrl>https://helix-ui-docs.pages.dev/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arflisch/helix-ui</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>https://github.com/arflisch/helix-ui/blob/main/CHANGELOG.md</PackageReleaseNotes>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Missing XML comments are not errors. -->
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
-    <!-- Projects opt in with IsPackable=true (the two libraries). -->
+    <!-- Projects opt in with IsPackable=true (the libraries and the templates). -->
     <IsPackable>false</IsPackable>
     <Deterministic>true</Deterministic>
   </PropertyGroup>

@@ -1,5 +1,6 @@
 # Builds the solution on every push and pull request.
-# Publishes Helix.Blazor and Helix.Wpf to nuget.org when a version tag is pushed (e.g. v0.1.0).
+# When a version tag is pushed (e.g. v0.4.0): publishes Helix.Export, Helix.Blazor, Helix.Wpf, Helix.Avalonia and
+# Helix.Templates to nuget.org, then creates the GitHub release with that version's section of CHANGELOG.md.
 # One-time setup: add your nuget.org API key as the repository secret NUGET_API_KEY.
 
 name: Build and publish
@@ -31,12 +32,24 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo "PACKAGE_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
 
+      # A tag must match the version in Directory.Build.props (the templates and the docs use it too).
+      - name: Check the tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          PROPS_VERSION=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props)
+          if [ "$PROPS_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "::error::Tag v$PACKAGE_VERSION does not match <Version>$PROPS_VERSION</Version> in Directory.Build.props"
+            exit 1
+          fi
+          grep -q "^## $PACKAGE_VERSION" CHANGELOG.md || { echo "::error::CHANGELOG.md has no '## $PACKAGE_VERSION' section"; exit 1; }
+
       - name: Pack
         run: |
           VERSION="${PACKAGE_VERSION:-0.0.0-ci.${GITHUB_RUN_NUMBER}}"
           dotnet pack src/Helix.Export -c Release -o artifacts -p:Version="$VERSION"
           dotnet pack src/Helix.Blazor -c Release -o artifacts -p:Version="$VERSION"
           dotnet pack src/Helix.Wpf -c Release -o artifacts -p:Version="$VERSION"
+          dotnet pack src/Helix.Avalonia -c Release -o artifacts -p:Version="$VERSION"
           dotnet pack templates/Helix.Templates.csproj -c Release -o artifacts -p:Version="$VERSION"
 
       - uses: actions/upload-artifact@v4
@@ -51,3 +64,27 @@ jobs:
         run: |
           dotnet nuget push "artifacts/*.nupkg" --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+  # Only this job may write to the repository, and only for a tag.
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: artifacts
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # The section of this version: from its "## X.Y.Z" heading to the next "## " heading.
+          awk -v v="$VERSION" '$0 ~ "^## "v { on=1; next } /^## / && on { exit } on' CHANGELOG.md > release-notes.md
+          gh release create "$GITHUB_REF_NAME" artifacts/*.nupkg --title "Helix UI $VERSION" --notes-file release-notes.md

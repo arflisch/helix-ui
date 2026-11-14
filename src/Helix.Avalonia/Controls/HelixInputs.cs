@@ -86,7 +86,7 @@ public class HelixTextField : TemplatedControl
     }
 
     /// <summary>Moves the keyboard focus into the field.</summary>
-    public new void Focus() => _input?.Focus();
+    public void Focus() => _input?.Focus();
 }
 
 /// <summary>A toggle switch with its label; Tone or Accent colors the track when on.</summary>
