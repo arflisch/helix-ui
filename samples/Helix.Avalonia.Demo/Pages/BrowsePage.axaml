@@ -43,6 +43,6 @@
         </helix:HelixCarousel>
 
         <TextBlock Classes="h2">Log viewer</TextBlock>
-        <helix:HelixLogViewer Name="Log" Height="320" />
+        <helix:HelixLogViewer Name="Log" Height="480" ExportFileName="operations-log" />
     </StackPanel>
 </UserControl>

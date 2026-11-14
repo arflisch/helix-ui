@@ -6,6 +6,10 @@
         <TextBlock Style="{StaticResource PageTitle}" Text="Dashboard &amp; boards" />
         <TextBlock Style="{StaticResource PageLead}" Text="Kanban, reorderable list, customizable dashboard and trees (list or org chart)." />
 
+        <TextBlock Style="{StaticResource SectionTitle}" Text="Editable board" />
+        <TextBlock Style="{StaticResource SectionText}" Text="HelixKanbanBoard edits its cards itself: + adds a card, a click (or Enter) opens the editor (title, description, column, due date, assignee, tags, color), Delete asks first. Overdue dates turn red." />
+        <helix:HelixKanbanBoard x:Name="EditableBoard" Height="380" Margin="0,0,0,32" />
+
         <TextBlock Style="{StaticResource SectionTitle}" Text="Kanban" />
         <TextBlock Style="{StaticResource SectionText}" Text="Drag the cards between columns. The “In review” column is limited to 2 cards (its counter turns red beyond)." />
         <helix:HelixKanban x:Name="Board" ColumnPath="Column" ShowAddButton="True" Height="360" Margin="0,0,0,32">

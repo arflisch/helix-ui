@@ -175,7 +175,26 @@ public sealed record HelixTargetBand(double From, double To, string Color, strin
 
 public enum HelixLogLevel { Debug, Info, Warning, Error }
 
-/// <summary>A line of a <see cref="HelixLogViewer"/>.</summary>
-public sealed record HelixLogEntry(DateTime Time, HelixLogLevel Level, string Message, string? Source = null);
+/// <summary>
+/// A line of a <see cref="HelixLogViewer"/>. Only Time, Level and Message are needed; the rest shows in the line's details
+/// (click a line): structured properties (CourseId = …, click one to filter on it), the exception, the trace id and the user.
+/// </summary>
+public sealed record HelixLogEntry(DateTime Time, HelixLogLevel Level, string Message, string? Source = null)
+{
+    /// <summary>Structured values of the event: { ["CourseId"] = "…", ["EnrollmentId"] = "…" }.</summary>
+    public IReadOnlyDictionary<string, string>? Properties { get; init; }
+
+    /// <summary>The exception, with its stack trace.</summary>
+    public string? Exception { get; init; }
+
+    /// <summary>The distributed trace id (W3C), to find the request in your tracing tool.</summary>
+    public string? TraceId { get; init; }
+
+    /// <summary>Who was doing it (user id or name).</summary>
+    public string? User { get; init; }
+}
+
+/// <summary>A period offered by the log viewer's period filter: the last <see cref="Span"/> (null = everything).</summary>
+public sealed record HelixLogPeriod(string Label, TimeSpan? Span);
 
 internal sealed record HelixPromptOptions(string Title, string? Message, string Value, string? Placeholder, string? ConfirmText, Func<string, string?>? Validate);

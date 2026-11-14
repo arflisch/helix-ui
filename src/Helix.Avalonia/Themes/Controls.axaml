@@ -2882,51 +2882,96 @@
                 <Border Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="1" CornerRadius="14" ClipToBounds="True">
                     <DockPanel>
                         <Border DockPanel.Dock="Top" Padding="12,10" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1">
-                            <DockPanel>
-                                <h:HelixSwitch DockPanel.Dock="Right" Content="{x:Static h:HelixLogViewer.FollowText}" VerticalAlignment="Center" Margin="10,0,0,0"
-                                               IsChecked="{Binding IsFollowing, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="0,0,10,0" VerticalAlignment="Center">
-                                    <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding DebugLabel}"
-                                                  IsChecked="{Binding ShowDebug, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                                    <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding InfoLabel}"
-                                                  IsChecked="{Binding ShowInfo, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                                    <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding WarningLabel}"
-                                                  IsChecked="{Binding ShowWarning, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                                    <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding ErrorLabel}"
-                                                  IsChecked="{Binding ShowError, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                                </StackPanel>
-                                <h:HelixTextField Icon="search" IsClearable="True" Placeholder="{x:Static h:HelixLogViewer.SearchPlaceholderText}" MaxWidth="280" HorizontalAlignment="Left"
-                                                  Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                            </DockPanel>
+                            <StackPanel Spacing="8">
+                                <DockPanel>
+                                    <h:HelixSwitch DockPanel.Dock="Right" Content="{x:Static h:HelixLogViewer.FollowText}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                                   IsChecked="{Binding IsFollowing, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="0,0,10,0" VerticalAlignment="Center">
+                                        <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding DebugLabel}"
+                                                      IsChecked="{Binding ShowDebug, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                        <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding InfoLabel}"
+                                                      IsChecked="{Binding ShowInfo, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                        <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding WarningLabel}"
+                                                      IsChecked="{Binding ShowWarning, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                        <ToggleButton Theme="{StaticResource HelixLogLevelToggle}" Content="{TemplateBinding ErrorLabel}"
+                                                      IsChecked="{Binding ShowError, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <h:HelixTextField Icon="search" IsClearable="True" Placeholder="{x:Static h:HelixLogViewer.SearchPlaceholderText}" MaxWidth="280" HorizontalAlignment="Left"
+                                                      Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4" IsVisible="{TemplateBinding IsExportable}">
+                                        <h:HelixButton Content="CSV" Icon="download" Variant="Ghost" Tone="Neutral" Size="Sm" Command="{Binding ExportCsvCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <h:HelixButton Content="Excel" Icon="download" Variant="Ghost" Tone="Neutral" Size="Sm" Command="{Binding ExportExcelCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <h:HelixSelect Width="190" ItemsSource="{TemplateBinding Sources}" IsVisible="{TemplateBinding HasSources}"
+                                                       SelectedItem="{Binding SourceChoice, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                        <h:HelixSelect Width="190" ItemsSource="{Binding Periods, RelativeSource={RelativeSource TemplatedParent}}"
+                                                       SelectedItem="{Binding Period, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </StackPanel>
                         </Border>
-                        <ListBox Name="PART_Lines" ItemsSource="{TemplateBinding View}" Background="Transparent" BorderThickness="0" ItemContainerTheme="{StaticResource HelixLogLine}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" FontFamily="Cascadia Mono, Menlo, Consolas, monospace" FontSize="12.5">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="h:HelixLogEntry">
-                                    <DockPanel>
-                                        <TextBlock DockPanel.Dock="Left" Width="72" Foreground="{DynamicResource Helix.TextSubtle}">
-                                            <TextBlock.Text>
-                                                <MultiBinding Converter="{x:Static h:HelixLogViewer.TimeConverter}">
-                                                    <Binding Path="Time" />
-                                                    <Binding Path="TimeFormat" RelativeSource="{RelativeSource AncestorType=h:HelixLogViewer}" />
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-                                        <TextBlock DockPanel.Dock="Left" Width="72" Text="{Binding LevelText}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"
-                                                   Classes.info="{Binding IsInfo}" Classes.warning="{Binding IsWarning}" Classes.error="{Binding IsError}">
-                                            <TextBlock.Styles>
-                                                <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Helix.TextSubtle}" /></Style>
-                                                <Style Selector="TextBlock.info"><Setter Property="Foreground" Value="{DynamicResource Helix.Info}" /></Style>
-                                                <Style Selector="TextBlock.warning"><Setter Property="Foreground" Value="{DynamicResource Helix.Warning}" /></Style>
-                                                <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{DynamicResource Helix.Danger}" /></Style>
-                                            </TextBlock.Styles>
-                                        </TextBlock>
-                                        <TextBlock DockPanel.Dock="Left" MaxWidth="150" Margin="0,0,10,0" Text="{Binding Source}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Helix.TextMuted}" />
-                                        <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Message}" Foreground="{DynamicResource Helix.Text}" />
-                                    </DockPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <Border DockPanel.Dock="Top" Padding="12,8" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1" IsVisible="{TemplateBinding HasFilters}">
+                            <WrapPanel ItemSpacing="6" LineSpacing="6">
+                                <ItemsControl ItemsSource="{Binding Filters, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="h:HelixLogFilter">
+                                            <Border CornerRadius="999" Padding="10,2,4,2" Background="{DynamicResource Helix.PrimarySoft}" BorderBrush="{DynamicResource Helix.Primary}" BorderThickness="1">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" FontFamily="Cascadia Mono, Menlo, Consolas, monospace" />
+                                                    <TextBlock Text="=" FontSize="12" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ShortValue}" FontSize="12" VerticalAlignment="Center" FontFamily="Cascadia Mono, Menlo, Consolas, monospace" />
+                                                    <Button Theme="{StaticResource HelixIconButton}" Width="20" Height="20" Command="{Binding RemoveCommand}"><h:HelixIcon Icon="x" Size="11" /></Button>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Theme="{StaticResource HelixTextButton}" Content="{x:Static h:HelixLogViewer.ClearFiltersText}" Command="{Binding ClearFiltersCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                        FontSize="12" Foreground="{DynamicResource Helix.Primary}" VerticalAlignment="Center" />
+                            </WrapPanel>
+                        </Border>
+                        <TextBlock DockPanel.Dock="Bottom" Text="{TemplateBinding StatusText}" FontSize="12" Foreground="{DynamicResource Helix.TextSubtle}" Margin="12,6" />
+                        <ContentControl Name="PART_Details" DockPanel.Dock="Bottom" IsVisible="False" Background="{DynamicResource Helix.Surface2}"
+                                        BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,1,0,1" />
+                        <Panel>
+                            <ListBox Name="PART_Lines" ItemsSource="{TemplateBinding View}" Background="Transparent" BorderThickness="0" ItemContainerTheme="{StaticResource HelixLogLine}"
+                                     SelectedItem="{Binding SelectedEntry, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" FontFamily="Cascadia Mono, Menlo, Consolas, monospace" FontSize="12.5">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="h:HelixLogEntry">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Left" Width="72" Foreground="{DynamicResource Helix.TextSubtle}">
+                                                <TextBlock.Text>
+                                                    <MultiBinding Converter="{x:Static h:HelixLogViewer.TimeConverter}">
+                                                        <Binding Path="Time" />
+                                                        <Binding Path="TimeFormat" RelativeSource="{RelativeSource AncestorType=h:HelixLogViewer}" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock DockPanel.Dock="Left" Width="72" Text="{Binding LevelText}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"
+                                                       Classes.info="{Binding IsInfo}" Classes.warning="{Binding IsWarning}" Classes.error="{Binding IsError}">
+                                                <TextBlock.Styles>
+                                                    <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Helix.TextSubtle}" /></Style>
+                                                    <Style Selector="TextBlock.info"><Setter Property="Foreground" Value="{DynamicResource Helix.Info}" /></Style>
+                                                    <Style Selector="TextBlock.warning"><Setter Property="Foreground" Value="{DynamicResource Helix.Warning}" /></Style>
+                                                    <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{DynamicResource Helix.Danger}" /></Style>
+                                                </TextBlock.Styles>
+                                            </TextBlock>
+                                            <h:HelixIcon DockPanel.Dock="Right" Icon="danger" Size="13" Foreground="{DynamicResource Helix.Danger}" VerticalAlignment="Center"
+                                                         IsVisible="{Binding HasException}" Margin="8,0,0,0" />
+                                            <TextBlock DockPanel.Dock="Left" MaxWidth="150" Margin="0,0,10,0" Text="{Binding Source}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Helix.TextMuted}" />
+                                            <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Message}" Foreground="{DynamicResource Helix.Text}" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <h:HelixButton HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,12" Size="Sm" Icon="arrow-down"
+                                           Content="{TemplateBinding UnseenText}" IsVisible="{TemplateBinding HasUnseen}" Command="{Binding JumpToNewestCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Panel>
                     </DockPanel>
                 </Border>
             </ControlTemplate>

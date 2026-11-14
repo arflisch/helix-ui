@@ -2883,3 +2883,194 @@
 :where(.helix-autoform__actions) { display: flex; justify-content: flex-end; gap: 8px; }
 @media (max-width: 640px) { :where(.helix-autoform__grid) { grid-template-columns: minmax(0, 1fr); } :where(.helix-autoform__field) { grid-column: auto; } }
 
+
+/* ---------- Kanban board (built-in editing) ------------------------------ */
+
+:where(.helix-kanban__quick-add) { margin-bottom: 2px; }
+:where(.helix-kanban__quick-input) {
+    width: 100%;
+    box-sizing: border-box;
+    resize: none;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 13.5px;
+    color: var(--helix-text);
+    background: var(--helix-surface);
+    border: 1px solid var(--helix-primary);
+    border-radius: var(--helix-radius);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--helix-primary) 18%, transparent);
+    outline: none;
+}
+:where(.helix-kanban-card) { --_kc: transparent; position: relative; display: flex; flex-direction: column; gap: 6px; }
+:where(.helix-kanban-card__stripe) { position: absolute; left: -12px; top: -12px; bottom: -12px; width: 4px; border-radius: 4px 0 0 4px; background: var(--_kc); }
+:where(.helix-kanban-card__title) { font-size: 13.5px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+:where(.helix-kanban-card__description) {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--helix-text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+:where(.helix-kanban-card__tags) { display: flex; flex-wrap: wrap; gap: 4px; }
+:where(.helix-kanban-card__tag) {
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--helix-text-muted);
+    background: var(--helix-surface-2);
+}
+:where(.helix-kanban-card__footer) { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+:where(.helix-kanban-card__due) { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--helix-text-muted); }
+:where(.helix-kanban-card__due.is-overdue) { color: var(--helix-danger); font-weight: 600; }
+:where(.helix-kanban-card__assignee) { margin-left: auto; display: inline-flex; }
+
+:where(.helix-kanban-editor) { display: flex; flex-direction: column; gap: 14px; }
+:where(.helix-kanban-editor__row) { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@container (max-width: 480px) { :where(.helix-kanban-editor__row) { grid-template-columns: 1fr; } }
+:where(.helix-kanban-editor__label) { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--helix-text); }
+:where(.helix-kanban-editor__textarea) {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    padding: 9px 12px;
+    font: inherit;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--helix-text);
+    background: var(--helix-surface);
+    border: 1px solid var(--helix-border-strong);
+    border-radius: var(--helix-radius);
+    outline: none;
+}
+:where(.helix-kanban-editor__textarea:focus) { border-color: var(--helix-primary); box-shadow: 0 0 0 3px color-mix(in oklab, var(--helix-primary) 18%, transparent); }
+:where(.helix-kanban-editor__colors) { display: flex; flex-wrap: wrap; gap: 8px; }
+:where(.helix-kanban-editor__swatch) {
+    --_kc: transparent;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid var(--helix-surface);
+    background: var(--_kc);
+    box-shadow: 0 0 0 1px var(--helix-border-strong);
+    cursor: pointer;
+}
+:where(.helix-kanban-editor__swatch.is-none) { background: linear-gradient(135deg, transparent 45%, var(--helix-danger) 45% 55%, transparent 55%), var(--helix-surface); }
+:where(.helix-kanban-editor__swatch.is-selected) { box-shadow: 0 0 0 2px var(--helix-text); }
+:where(.helix-kanban-editor__delete) { margin-right: auto; }
+
+/* ---------- Log viewer: filters, details, export --------------------------- */
+
+:where(.helix-log__filter) { flex: 0 1 180px; min-width: 150px; }
+:where(.helix-log__filter .helix-input), :where(.helix-log__filter .helix-select__trigger) { --helix-input-height: 32px; }
+:where(.helix-log__bar-end) { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+:where(.helix-log__chips) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--helix-border); }
+:where(.helix-log__chip) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--helix-text);
+    background: color-mix(in oklab, var(--helix-primary) 10%, var(--helix-surface));
+    border: 1px solid color-mix(in oklab, var(--helix-primary) 30%, transparent);
+    font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+}
+:where(.helix-log__chip-key) { font-weight: 700; }
+:where(.helix-log__chip-x) {
+    display: inline-flex;
+    padding: 3px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--helix-text-muted);
+    cursor: pointer;
+}
+:where(.helix-log__chip-x:hover) { background: var(--helix-surface-2); color: var(--helix-text); }
+:where(.helix-log__chips-clear) { border: 0; background: none; padding: 2px 6px; font: inherit; font-size: 12px; color: var(--helix-primary); cursor: pointer; }
+:where(.helix-log__body) { position: relative; }
+:where(.helix-log__line) { cursor: pointer; }
+:where(.helix-log__line.is-selected) { background: color-mix(in oklab, var(--helix-primary) 12%, transparent); box-shadow: inset 3px 0 0 var(--helix-primary); }
+:where(.helix-log__flag) { flex: none; color: var(--helix-danger); }
+:where(.helix-log__new) {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--helix-on-primary);
+    background: var(--helix-primary);
+    box-shadow: var(--helix-shadow-md);
+    cursor: pointer;
+}
+:where(.helix-log__details) {
+    --_l: var(--helix-text-subtle);
+    max-height: 300px;
+    overflow: auto;
+    padding: 12px 14px 14px;
+    border-top: 1px solid var(--helix-border);
+    background: color-mix(in oklab, var(--helix-surface-2) 55%, var(--helix-surface));
+}
+:where(.helix-log__details.is-info) { --_l: var(--helix-info); }
+:where(.helix-log__details.is-warning) { --_l: var(--helix-warning); }
+:where(.helix-log__details.is-error) { --_l: var(--helix-danger); }
+:where(.helix-log__details .helix-log__badge) { width: auto; color: var(--_l); }
+:where(.helix-log__details-head) { display: flex; align-items: center; gap: 10px; }
+:where(.helix-log__details-time) { font-size: 12.5px; color: var(--helix-text-muted); }
+:where(.helix-log__details-actions) { display: flex; gap: 2px; margin-left: auto; }
+:where(.helix-log__icon-button) {
+    display: inline-flex;
+    padding: 5px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--helix-text-muted);
+    cursor: pointer;
+}
+:where(.helix-log__icon-button:hover) { background: var(--helix-surface-3, var(--helix-surface-2)); color: var(--helix-text); }
+:where(.helix-log__details-message) { margin: 8px 0 10px; font-size: 13.5px; line-height: 1.45; color: var(--helix-text); overflow-wrap: anywhere; }
+:where(.helix-log__facts) { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0; font-size: 12.5px; }
+:where(.helix-log__facts dt) { color: var(--helix-text-muted); font-weight: 600; }
+:where(.helix-log__facts dd) { margin: 0; min-width: 0; }
+:where(.helix-log__value) {
+    max-width: 100%;
+    padding: 0 4px;
+    margin-left: -4px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font: inherit;
+    font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+    color: var(--helix-text);
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+:where(.helix-log__value:hover) { background: color-mix(in oklab, var(--helix-primary) 12%, transparent); color: var(--helix-primary); }
+:where(.helix-log__exception-title) { margin: 12px 0 6px; font-size: 12.5px; font-weight: 600; color: var(--helix-danger); }
+:where(.helix-log__exception) {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--helix-radius);
+    background: var(--helix-surface);
+    border: 1px solid color-mix(in oklab, var(--helix-danger) 25%, var(--helix-border));
+    font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--helix-text);
+}
+:where(.helix-log__status) { padding: 6px 12px; border-top: 1px solid var(--helix-border); font-size: 12px; color: var(--helix-text-subtle); }

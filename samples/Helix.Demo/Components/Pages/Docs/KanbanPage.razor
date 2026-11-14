@@ -1,9 +1,23 @@
 @page "/components/kanban"
 @inject HelixToastService Toasts
 
-<DemoPage Title="Kanban" Description="Card board: drag and drop between and within columns, work-in-progress limits, move rules, adding cards. From the keyboard: Enter to pick up a card, arrows to move it, Enter to drop it, Escape to cancel.">
+<DemoPage Title="Kanban" Description="Card board: drag and drop between and within columns, work-in-progress limits, move rules, adding and editing cards. From the keyboard: Enter to pick up a card, arrows to move it, Enter to drop it, Escape to cancel; E or F2 to edit it.">
     <section class="demo-section">
-        <h2 class="demo-section__title">Example</h2>
+        <h2 class="demo-section__title">Editable board</h2>
+        <p class="demo-section__text">
+            <code>HelixKanbanBoard</code> is ready to use: <strong>+</strong> adds a card inline (Enter to add the next one, Escape to stop),
+            a click opens the editor (title, description, column, due date, assignee, tags, color), the editor deletes with a confirmation.
+            Bind the cards two-way and save them in the events; <code>Data</code> keeps your own object behind each card.
+        </p>
+        <HelixKanbanBoard Columns="DemoData.KanbanColumns" @bind-Cards="_board" DoneColumn="@DoneColumn"
+                          OnCardAdded="@(c => Toasts.Success($"“{c.Title}” added"))"
+                          OnCardChanged="@(c => Toasts.Info($"“{c.Title}” saved"))"
+                          OnCardDeleted="@(c => Toasts.Show($"“{c.Title}” deleted"))" />
+        <CodeBlock Code="@BoardCode" WpfCode="@WpfBoardCode" AvaloniaCode="@AvaloniaBoardCode" />
+    </section>
+
+    <section class="demo-section">
+        <h2 class="demo-section__title">Your own cards</h2>
         <p class="demo-section__text">
             The example's rule (<code>CanMove</code>): a card can only enter <strong>Done</strong> from <strong>In review</strong>.
             The refused column is highlighted during the drag. “In progress” is limited to 3 cards, “In review” to 2.
@@ -28,10 +42,77 @@
         <CodeBlock Code="@Code" WpfCode="@WpfExample" />
     </section>
 
+    <ApiTable Title="HelixKanbanBoard" Rows="BoardApi" />
     <ApiTable Title="HelixKanban" Rows="Api" />
 </DemoPage>
 
 @code {
+    private IReadOnlyList<HelixKanbanCard> _board = DemoBoard();
+
+    private static List<HelixKanbanCard> DemoBoard()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        return
+        [
+            new("Connect the billing API", "todo") { Description = "Webhook for paid invoices, retries on 5xx.", Assignee = "Camille Martin", Tags = ["Backend"], Color = "info", DueDate = today.AddDays(5) },
+            new("Sign-in screen", "doing") { Assignee = "Léo Bernard", Tags = ["Front", "Auth"], Color = "primary", DueDate = today.AddDays(2) },
+            new("Excel export of reports", "doing") { Description = "Totals row and frozen header.", Assignee = "Inès Petit", Tags = ["Data"], Color = "success" },
+            new("Fix the time zone", "review") { Description = "Dates shift by one hour on DST days.", Assignee = "Hugo Robert", Tags = ["Bug"], Color = "danger", DueDate = today.AddDays(-1) },
+            new("Dark mode", "done") { Assignee = "Chloé Richard", Tags = ["Front"], Color = "primary" },
+        ];
+    }
+
+    private const string BoardCode = """
+        <HelixKanbanBoard Columns="columns" @bind-Cards="cards"
+                          OnCardAdded="Save" OnCardChanged="Save" OnCardMoved="Moved" OnCardDeleted="Remove" />
+
+        @code {
+            private IReadOnlyList<HelixKanbanCard> cards =
+            [
+                new("Sign-in screen", "doing") { Assignee = "Léo Bernard", Tags = ["Front"], Color = "primary",
+                                                 DueDate = new DateOnly(2026, 12, 4), Data = ticket },
+            ];
+
+            // Each event gives the card as it is now (same Id); Data is your own object.
+            private Task Save(HelixKanbanCard card) => api.SaveAsync(card);
+        }
+        """;
+
+    private const string WpfBoardCode = """
+        <helix:HelixKanbanBoard Columns="{Binding Columns}" ItemsSource="{Binding Cards}" Height="420"
+                                CardAdded="OnSaved" CardChanged="OnSaved" CardDeleted="OnDeleted" />
+
+        // ViewModel: an ObservableCollection<HelixKanbanCard>, updated in place by the board.
+        Cards = [ new HelixKanbanCard("Sign-in screen", "doing") { Assignee = "Léo Bernard", Tags = ["Front"], Color = "primary" } ];
+
+        // Code-behind: the card as it is now (same Id).
+        private void OnSaved(object sender, RoutedEventArgs e) => api.Save(((HelixEventArgs<HelixKanbanCard>)e).Value);
+        """;
+
+    private const string AvaloniaBoardCode = """
+        <h:HelixKanbanBoard Columns="{Binding Columns}" ItemsSource="{Binding Cards}" Height="420"
+                            CardAdded="OnSaved" CardChanged="OnSaved" CardDeleted="OnDeleted" />
+
+        // ViewModel: an ObservableCollection<HelixKanbanCard>, updated in place by the board.
+        Cards = [ new HelixKanbanCard("Sign-in screen", "doing") { Assignee = "Léo Bernard", Tags = ["Front"], Color = "primary" } ];
+
+        // Code-behind: the card as it is now (same Id).
+        private void OnSaved(object? sender, HelixEventArgs<HelixKanbanCard> e) => api.Save(e.Item);
+        """;
+
+    private static readonly ApiRow[] BoardApi =
+    [
+        new("Columns / Cards", "IReadOnlyList<HelixKanbanColumn> / IReadOnlyList<HelixKanbanCard>", null, "The columns and the cards, two-way (@bind-Cards)."),
+        new("HelixKanbanCard", "(Title, Column) { Description, Assignee, DueDate, Color, Tags, Data }", null, "Immutable; an edit keeps the Id. Data = your own object."),
+        new("OnCardAdded / OnCardChanged / OnCardDeleted", "EventCallback<HelixKanbanCard>", null, "After an add (quick add or editor), an edit, a delete."),
+        new("OnCardMoved", "EventCallback<HelixKanbanMove<HelixKanbanCard>>", null, "After a drag or keyboard move (the cards are already updated)."),
+        new("ReadOnly", "bool", "false", "No add, edit or delete; cards still move (use CanMove to stop that)."),
+        new("DoneColumn", "string?", "last column", "Cards there are never shown overdue."),
+        new("Colors", "IReadOnlyList<string?>", "none, primary, info, success, warning, danger", "The colors offered in the editor."),
+        new("CardTemplate / CanMove / ColumnWidth", "", null, "As on HelixKanban."),
+        new("OpenNew(column)", "method", null, "Opens the editor on a new card (your own “New card” button)."),
+    ];
+
     private const string WpfExample = """
         <helix:HelixKanban Columns="{Binding Columns}" ItemsSource="{Binding Tasks}" ColumnPath="Status"
                          ShowAddButton="True" CardMoved="OnCardMoved" AddRequested="OnAdd">

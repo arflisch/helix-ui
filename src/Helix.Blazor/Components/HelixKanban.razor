@@ -20,17 +20,18 @@
             <header class="helix-kanban__header">
                 <span class="helix-kanban__dot"></span>
                 <h4 class="helix-kanban__title">@column.Title</h4>
-                <span class="helix-kanban__count" title="@(column.Limit is null ? null : $"Limite : {column.Limit}")">
+                <span class="helix-kanban__count" title="@(column.Limit is null ? null : HelixTexts.Format(Texts.KanbanLimit, column.Limit))">
                     @count@(column.Limit is null ? "" : $" / {column.Limit}")
                 </span>
                 @if (OnAdd.HasDelegate)
                 {
-                    <button type="button" class="helix-close helix-kanban__add" aria-label="Ajouter dans @column.Title" @onclick="() => OnAdd.InvokeAsync(column.Key)">
+                    <button type="button" class="helix-close helix-kanban__add" aria-label="@HelixTexts.Format(Texts.KanbanAddTo, column.Title)" title="@HelixTexts.Format(Texts.KanbanAddTo, column.Title)" @onclick="() => OnAdd.InvokeAsync(column.Key)">
                         <HelixIcon Name="plus" Size="15" />
                     </button>
                 }
             </header>
             <div class="helix-kanban__cards">
+                @ColumnTop?.Invoke(column)
                 @for (var j = 0; j < cards.Count; j++)
                 {
                     var index = j;
@@ -90,7 +91,11 @@
     /// <summary>Apply it with move.ApplyTo(list, …) or your own logic (API call…).</summary>
     [Parameter] public EventCallback<HelixKanbanMove<TItem>> OnCardMoved { get; set; }
 
+    /// <summary>A click on a card, or E / F2 on the focused card (keyboard users).</summary>
     [Parameter] public EventCallback<TItem> OnCardClick { get; set; }
+
+    /// <summary>Content shown at the top of a column, above its cards (the board's quick-add field uses it).</summary>
+    [Parameter] public RenderFragment<HelixKanbanColumn>? ColumnTop { get; set; }
 
     /// <summary>Shows a + button in each column header.</summary>
     [Parameter] public EventCallback<string> OnAdd { get; set; }
@@ -212,6 +217,9 @@
     {
         switch (e.Key)
         {
+            case "e" or "E" or "F2" when _grabbed is null && OnCardClick.HasDelegate:
+                await OnCardClick.InvokeAsync(card);
+                break;
             case "Enter" when _grabbed is null:
                 _grabbed = card;
                 _grabOrigin = (column, index);

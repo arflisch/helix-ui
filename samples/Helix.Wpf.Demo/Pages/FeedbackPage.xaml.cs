@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -6,13 +7,15 @@ namespace Helix.Wpf.Demo.Pages;
 
 public partial class FeedbackPage : UserControl
 {
-    private static readonly (HelixLogLevel Level, string Source, string Message)[] Samples =
+    private static readonly (HelixLogLevel Level, string Source, string Message, string Properties, string? User)[] Samples =
     [
-        (HelixLogLevel.Info, "dispatch", "Request DR-0042 sent to the grid operator"),
-        (HelixLogLevel.Debug, "forecast", "Forecast recomputed in 412 ms"),
-        (HelixLogLevel.Warning, "telemetry", "Unit B: no measurement for 45 s"),
-        (HelixLogLevel.Error, "telemetry", "Unit C: connection lost, retrying in 5 s"),
-        (HelixLogLevel.Info, "telemetry", "Unit C: connection restored"),
+        (HelixLogLevel.Info, "dispatch", "Request DR-0042 sent to the grid operator", "RequestId=DR-0042;Unit=A", "ada.l"),
+        (HelixLogLevel.Debug, "forecast", "Forecast recomputed in 412 ms", "DurationMs=412", null),
+        (HelixLogLevel.Warning, "telemetry", "Unit B: no measurement for 45 s", "Unit=B;SilenceSeconds=45", null),
+        (HelixLogLevel.Error, "telemetry", "Unit C: connection lost, retrying in 5 s", "Unit=C;RetryInSeconds=5", null),
+        (HelixLogLevel.Info, "telemetry", "Unit C: connection restored", "Unit=C", null),
+        (HelixLogLevel.Info, "auth", "User signed in", "Method=OIDC", "grace.h"),
+        (HelixLogLevel.Warning, "api", "Slow request: GET /sites took 1.8 s", "Path=/sites;DurationMs=1800", "grace.h"),
     ];
 
     private readonly System.Collections.ObjectModel.ObservableCollection<HelixLogEntry> _log = [];
@@ -34,7 +37,15 @@ public partial class FeedbackPage : UserControl
     private void AddLine(DateTime time)
     {
         var s = Samples[_next++ % Samples.Length];
-        _log.Add(new HelixLogEntry(time, s.Level, s.Message, s.Source));
+        _log.Add(new HelixLogEntry(time, s.Level, s.Message, s.Source)
+        {
+            Properties = s.Properties.Split(';').Select(p => p.Split('=', 2)).ToDictionary(p => p[0], p => p[1]),
+            User = s.User,
+            TraceId = $"4bf92f3577b34da6a3ce929d0e0e{_next:x4}",
+            Exception = s.Level == HelixLogLevel.Error
+                ? "System.IO.IOException: Unable to read data from the transport connection.\n   at Telemetry.Client.ReadAsync() in Client.cs:line 88"
+                : null,
+        });
     }
 
     private async void OnPrompt(object sender, RoutedEventArgs e)

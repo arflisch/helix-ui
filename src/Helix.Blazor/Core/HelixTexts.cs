@@ -25,6 +25,30 @@ public sealed record HelixTexts
     public string LogWarning { get; init; } = "Warning";
     public string LogError { get; init; } = "Error";
     public string FollowLog { get; init; } = "Follow";
+    public string LogDetails { get; init; } = "Details";
+    public string LogProperties { get; init; } = "Properties";
+    public string LogException { get; init; } = "Exception";
+    public string LogTraceId { get; init; } = "Trace id";
+    public string LogUser { get; init; } = "User";
+    public string LogSource { get; init; } = "Source";
+    public string LogAllSources { get; init; } = "All sources";
+    public string LogTime { get; init; } = "Time";
+    public string LogLevel { get; init; } = "Level";
+    public string LogMessage { get; init; } = "Message";
+    public string LogAllTime { get; init; } = "All time";
+    public string LogLast15Minutes { get; init; } = "Last 15 minutes";
+    public string LogLastHour { get; init; } = "Last hour";
+    public string LogLast24Hours { get; init; } = "Last 24 hours";
+    public string LogLast7Days { get; init; } = "Last 7 days";
+    /// <summary>{0} = property name, {1} = value.</summary>
+    public string LogFilterOn { get; init; } = "Show only {0} = {1}";
+    /// <summary>{0} = number of lines.</summary>
+    public string LogNewLines { get; init; } = "{0} new lines";
+    public string LogCopy { get; init; } = "Copy";
+    public string LogCopied { get; init; } = "Copied";
+    public string LogExport { get; init; } = "Export";
+    /// <summary>{0} = shown lines, {1} = all lines.</summary>
+    public string LogShown { get; init; } = "{0} of {1} lines";
     public string Notifications { get; init; } = "Notifications";
     public string MarkAllRead { get; init; } = "Mark all as read";
     public string NoNotifications { get; init; } = "You're all caught up";
@@ -200,6 +224,31 @@ public sealed record HelixTexts
     public string Done { get; init; } = "Done";
     public string DashboardEditHint { get; init; } = "Drag the tiles to rearrange them, change their width or hide them.";
 
+    // ----- Kanban editing -----------------------------------------------------------------
+    /// <summary>{0} = work-in-progress limit.</summary>
+    public string KanbanLimit { get; init; } = "Limit: {0}";
+    /// <summary>{0} = column title.</summary>
+    public string KanbanAddTo { get; init; } = "Add a card to {0}";
+    public string KanbanNewCardPlaceholder { get; init; } = "What needs to be done? Enter to add";
+    public string KanbanEditCard { get; init; } = "Edit the card";
+    public string KanbanNewCard { get; init; } = "New card";
+    public string KanbanTitle { get; init; } = "Title";
+    public string KanbanTitleRequired { get; init; } = "A card needs a title.";
+    public string KanbanDescription { get; init; } = "Description";
+    public string KanbanAssignee { get; init; } = "Assignee";
+    public string KanbanDueDate { get; init; } = "Due date";
+    public string KanbanColumn { get; init; } = "Column";
+    public string KanbanColor { get; init; } = "Color";
+    public string KanbanNoColor { get; init; } = "No color";
+    public string KanbanTags { get; init; } = "Tags";
+    public string KanbanTagsHint { get; init; } = "Separated by commas";
+    public string KanbanDeleteCard { get; init; } = "Delete";
+    /// <summary>{0} = card title.</summary>
+    public string KanbanDeleteQuestion { get; init; } = "Delete “{0}”?";
+    public string KanbanDeleteMessage { get; init; } = "The card is removed from the board.";
+    public string KanbanOverdue { get; init; } = "Overdue";
+    public string KanbanEditHint { get; init; } = "E or F2 to edit";
+
     /// <summary>Formats a text that has {0}, {1}… placeholders.</summary>
     public static string Format(string text, params object?[] args) => string.Format(CultureInfo.CurrentCulture, text, args);
 
@@ -208,8 +257,18 @@ public sealed record HelixTexts
     public static HelixTexts French { get; } = new()
     {
         Close = "Fermer", Clear = "Effacer", Loading = "Chargement", NoData = "Aucune donnée",
-        Confirm = "Confirmer", Cancel = "Annuler", LogLevels = "Niveaux", LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", Notifications = "Notifications", MarkAllRead = "Tout marquer comme lu", NoNotifications = "Vous êtes à jour", UnreadCount = "{0} non lues", Earlier = "Plus ancien", JustNow = "À l'instant", MinutesAgo = "il y a {0} min", HoursAgo = "il y a {0} h", ClearAll = "Tout effacer", Dismiss = "Retirer", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
+        Confirm = "Confirmer", Cancel = "Annuler", LogLevels = "Niveaux", LogDebug = "Debug", LogInfo = "Info", LogWarning = "Alerte", LogError = "Erreur", FollowLog = "Suivre", LogDetails = "Détails", LogProperties = "Propriétés", LogException = "Exception", LogTraceId = "Trace",
+        LogUser = "Utilisateur", LogSource = "Source", LogAllSources = "Toutes les sources", LogTime = "Heure", LogLevel = "Niveau", LogMessage = "Message",
+        LogAllTime = "Tout", LogLast15Minutes = "15 dernières minutes", LogLastHour = "Dernière heure", LogLast24Hours = "Dernières 24 h", LogLast7Days = "7 derniers jours",
+        LogFilterOn = "Afficher seulement {0} = {1}", LogNewLines = "{0} nouvelles lignes", LogCopy = "Copier", LogCopied = "Copié", LogExport = "Exporter",
+        LogShown = "{0} sur {1} lignes", Notifications = "Notifications", MarkAllRead = "Tout marquer comme lu", NoNotifications = "Vous êtes à jour", UnreadCount = "{0} non lues", Earlier = "Plus ancien", JustNow = "À l'instant", MinutesAgo = "il y a {0} min", HoursAgo = "il y a {0} h", ClearAll = "Tout effacer", Dismiss = "Retirer", TimeBarUntil = "jusqu'à {0}", TimeBarCurrent = "En cours", TimeBarPassed = "Échéance dépassée", ExpressionHint = "Vous pouvez taper un calcul, par ex. 120*0,8", Save = "Enregistrer", Name = "Nom", ClearFilters = "Effacer les filtres", SavedFilters = "Filtres enregistrés",
         SaveFilters = "Enregistrer ces filtres…", NoSavedFilters = "Aucun filtre enregistré", DeleteSavedFilter = "Supprimer « {0} »", Delete = "Supprimer ?", Previous = "Précédent", Next = "Suivant",
+        KanbanLimit = "Limite : {0}", KanbanAddTo = "Ajouter une carte dans {0}", KanbanNewCardPlaceholder = "Que faut-il faire ? Entrée pour ajouter",
+        KanbanEditCard = "Modifier la carte", KanbanNewCard = "Nouvelle carte", KanbanTitle = "Titre", KanbanTitleRequired = "Une carte a besoin d'un titre.",
+        KanbanDescription = "Description", KanbanAssignee = "Responsable", KanbanDueDate = "Échéance", KanbanColumn = "Colonne", KanbanColor = "Couleur",
+        KanbanNoColor = "Sans couleur", KanbanTags = "Étiquettes", KanbanTagsHint = "Séparées par des virgules", KanbanDeleteCard = "Supprimer",
+        KanbanDeleteQuestion = "Supprimer « {0} » ?", KanbanDeleteMessage = "La carte est retirée du tableau.", KanbanOverdue = "En retard",
+        KanbanEditHint = "E ou F2 pour modifier",
         Expand = "Déplier", Collapse = "Replier", Retry = "Réessayer", Reset = "Réinitialiser",
         PositionOf = "{0} sur {1}", Required = "obligatoire",
 

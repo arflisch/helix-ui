@@ -1,26 +1,45 @@
 @page "/components/logviewer"
 @implements IDisposable
 
-<DemoPage Title="LogViewer" Description="A log that keeps up: filter by level (with counts), search, and follow mode that stays on the newest line. Virtualized: thousands of lines scroll smoothly. Here, a line arrives every 800 ms.">
-    <Example WpfCode="@Wpf1" Title="Live log" Code="@Code">
-        <HelixLogViewer Entries="_entries" HiddenLevels="@([HelixLogLevel.Debug])" Height="320px" />
+<DemoPage Title="LogViewer" Description="A log that keeps up: filter by level (with counts), source, period and property values, search, line details (properties, exception, trace id, user), export to CSV or Excel, and follow mode that stays on the newest line. Virtualized: thousands of lines scroll smoothly. Here, a line arrives every 800 ms.">
+    <Example WpfCode="@Wpf1" Title="Live log" Code="@Code"
+             Description="Click a line to see its details; click a property value (a unit, a request) to show only its lines. Scroll up: new lines are counted on a button that takes you back to them.">
+        <HelixLogViewer Entries="_entries" HiddenLevels="@([HelixLogLevel.Debug])" Height="320px" ExportFileName="operations-log" />
     </Example>
 
     <ApiTable Title="HelixLogViewer" Rows="Api" />
 </DemoPage>
 
 @code {
-    private static readonly (HelixLogLevel Level, string Source, string Message)[] Samples =
+    private static readonly (HelixLogLevel Level, string Source, string Message, string[] Properties, string? User)[] Samples =
     [
-        (HelixLogLevel.Info, "dispatch", "Request DR-0042 sent to the grid operator"),
-        (HelixLogLevel.Debug, "forecast", "Forecast refreshed in 412 ms"),
-        (HelixLogLevel.Info, "dispatch", "Request DR-0042 confirmed (120 MW)"),
-        (HelixLogLevel.Warning, "telemetry", "Unit B: no measurement for 45 s"),
-        (HelixLogLevel.Info, "scheduler", "Schedule for 18:00–19:00 published"),
-        (HelixLogLevel.Error, "telemetry", "Unit C: connection lost, retrying in 5 s"),
-        (HelixLogLevel.Debug, "cache", "Prices cache hit (96 %)"),
-        (HelixLogLevel.Info, "telemetry", "Unit C: connection restored"),
+        (HelixLogLevel.Info, "dispatch", "Request DR-0042 sent to the grid operator", ["RequestId=DR-0042", "Volume=120 MW"], "ada.l"),
+        (HelixLogLevel.Debug, "forecast", "Forecast refreshed in 412 ms", ["DurationMs=412"], null),
+        (HelixLogLevel.Info, "dispatch", "Request DR-0042 confirmed (120 MW)", ["RequestId=DR-0042", "Volume=120 MW"], "ada.l"),
+        (HelixLogLevel.Warning, "telemetry", "Unit B: no measurement for 45 s", ["Unit=B", "SilenceSeconds=45"], null),
+        (HelixLogLevel.Info, "scheduler", "Schedule for 18:00–19:00 published", ["Slot=18:00–19:00"], "grace.h"),
+        (HelixLogLevel.Error, "telemetry", "Unit C: connection lost, retrying in 5 s", ["Unit=C", "Attempt=1"], null),
+        (HelixLogLevel.Debug, "cache", "Prices cache hit (96 %)", ["HitRate=0.96"], null),
+        (HelixLogLevel.Info, "telemetry", "Unit C: connection restored", ["Unit=C"], null),
     ];
+
+    private const string SampleException = """
+        System.TimeoutException: The operation has timed out after 5000 ms.
+           at Telemetry.UnitClient.ReadAsync(String unit, CancellationToken cancellationToken) in UnitClient.cs:line 88
+           at Telemetry.Collector.PollAsync(CancellationToken cancellationToken) in Collector.cs:line 41
+        """;
+
+    private static HelixLogEntry Make(DateTime time, int i)
+    {
+        var s = Samples[i % Samples.Length];
+        return new HelixLogEntry(time, s.Level, s.Message, s.Source)
+        {
+            Properties = s.Properties.Select(p => p.Split('=', 2)).ToDictionary(p => p[0], p => p[1]),
+            User = s.User,
+            TraceId = $"{(uint)(i * 2654435761):x8}{i:x8}5f3c9a1b2d7e4f60",
+            Exception = s.Level == HelixLogLevel.Error ? SampleException : null,
+        };
+    }
 
     private List<HelixLogEntry> _entries = [];
     private Timer? _timer;
@@ -29,15 +48,11 @@
     protected override void OnInitialized()
     {
         var start = DateTime.Now.AddMinutes(-40);
-        _entries = Enumerable.Range(0, 400).Select(i =>
-        {
-            var s = Samples[i % Samples.Length];
-            return new HelixLogEntry(start.AddSeconds(i * 6), s.Level, s.Message, s.Source);
-        }).ToList();
+        _entries = Enumerable.Range(0, 400).Select(i => Make(start.AddSeconds(i * 6), i)).ToList();
+        _next = 400;
         _timer = new Timer(_ => InvokeAsync(() =>
         {
-            var s = Samples[_next++ % Samples.Length];
-            _entries = [.. _entries, new HelixLogEntry(DateTime.Now, s.Level, s.Message, s.Source)];
+            _entries = [.. _entries, Make(DateTime.Now, _next++)];
             StateHasChanged();
         }), null, 800, 800);
     }
@@ -47,7 +62,12 @@
     private const string Code = """
         <HelixLogViewer Entries="entries" HiddenLevels="@([HelixLogLevel.Debug])" Height="320px" />
 
-        // new HelixLogEntry(DateTime.Now, HelixLogLevel.Warning, "Unit B: no measurement", Source: "telemetry")
+        // Only Time, Level and Message are needed; the rest shows in the line's details.
+        var entry = new HelixLogEntry(DateTime.Now, HelixLogLevel.Error, "Unit C: connection lost", Source: "telemetry")
+        {
+            Properties = new Dictionary<string, string> { ["Unit"] = "C", ["Attempt"] = "1" },
+            Exception = ex.ToString(), TraceId = Activity.Current?.TraceId.ToString(), User = user.Id,
+        };
         // Add a line: entries = [.. entries, entry];  (or add to the same list and call viewer.Refresh())
         """;
 
@@ -55,7 +75,10 @@
         <helix:HelixLogViewer ItemsSource="{Binding Log}" Height="320" IsFollowing="True" />
 
         // ViewModel: an ObservableCollection<HelixLogEntry>; the viewer follows new lines by itself.
-        Log.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Error, "Unit C: connection lost", "telemetry"));
+        Log.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Error, "Unit C: connection lost", "telemetry")
+        {
+            Properties = new Dictionary<string, string> { ["Unit"] = "C" }, Exception = ex.ToString(), TraceId = traceId,
+        });
         """;
 
     private static readonly ApiRow[] Api =
@@ -65,5 +88,10 @@
         new("Follow", "bool", null, "Starts in follow mode: stays on the newest line (true)."),
         new("Height / TimeFormat", "string", "--helix-log-height", "List height (360px); time format (HH:mm:ss)."),
         new("Refresh()", "method", null, "After adding lines to the same list."),
+        new("HelixLogEntry { Properties, Exception, TraceId, User }", "init", null, "Shown in the line's details; a click on a value filters on it."),
+        new("ShowDetails / ShowPeriod / Exportable", "bool", "true", "Line details, the period filter, the CSV and Excel buttons."),
+        new("ExportFileName", "string", "log", "File name of the export (the lines shown, with one column per property)."),
+        new("AddFilter(key, value) / ClearFilters()", "method", null, "Filter on a property value from code; remove every filter."),
+        new("OnEntryClick", "EventCallback<HelixLogEntry>", null, "A line was clicked."),
     ];
 }

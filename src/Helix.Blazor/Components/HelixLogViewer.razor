@@ -5,7 +5,11 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
-@* A live log: level filters with counts, search, follow mode (stays at the newest line), virtualized for long logs. *@
+@*
+    A live log: level filters with counts, search, source and period filters, filters on property values, details of a line
+    (properties, exception, trace id, user), export of the shown lines, follow mode (stays at the newest line) with a
+    "new lines" button when you scroll away; virtualized for long logs.
+*@
 <div @attributes="Attributes" class="@(new CssBuilder("helix-log").Add(Class).Build())" style="@StyleValue">
     <div class="helix-log__bar">
         <div class="helix-log__levels" role="group" aria-label="@Texts.LogLevels">
@@ -21,28 +25,115 @@
         </div>
         <HelixTextField Class="helix-log__search" Icon="search" Clearable="true" Placeholder="@Texts.Search" aria-label="@Texts.Search"
                         Value="@_search" ValueChanged="v => { _search = v; Refilter(); }" />
-        <HelixSwitch Size="HelixSize.Sm" Label="@Texts.FollowLog" Checked="_follow" CheckedChanged="SetFollow" />
-    </div>
-    <div class="helix-log__lines" @ref="_scroller" role="log" aria-live="off" tabindex="0">
-        @if (_visible.Count == 0)
+        @if (_sources.Count > 1)
         {
-            <p class="helix-log__empty">@(EmptyText ?? Texts.NoData)</p>
+            <HelixSelect TValue="string" Class="helix-log__filter" Items="SourceChoices" Value="@(_source ?? Texts.LogAllSources)" aria-label="@Texts.LogSource"
+                         ValueChanged="v => { _source = v == Texts.LogAllSources ? null : v; Refilter(); }" />
         }
-        else
+        @if (ShowPeriod)
         {
-            <Virtualize Items="_visible" ItemSize="LineHeight" OverscanCount="20" Context="entry">
-                <div class="@(new CssBuilder("helix-log__line").Add($"is-{entry.Level.ToString().ToLowerInvariant()}").Build())" style="height:@(LineHeight)px">
-                    <time class="helix-log__time">@entry.Time.ToString(TimeFormat, EffectiveCulture)</time>
-                    <span class="helix-log__badge">@LevelText(entry.Level)</span>
-                    @if (!string.IsNullOrEmpty(entry.Source))
-                    {
-                        <span class="helix-log__source">@entry.Source</span>
-                    }
-                    <span class="helix-log__message" title="@entry.Message">@entry.Message</span>
-                </div>
-            </Virtualize>
+            <HelixSelect TValue="HelixLogPeriod" Class="helix-log__filter" Items="PeriodChoices" ItemText="p => p.Label" Value="_period" aria-label="@Texts.LogTime"
+                         ValueChanged="v => { _period = v; Refilter(); }" />
+        }
+        <div class="helix-log__bar-end">
+            @if (Exportable)
+            {
+                <HelixButton Size="HelixSize.Sm" Variant="HelixVariant.Ghost" Color="neutral" Icon="download" OnClick="() => ExportAsync(Helix.Export.HelixExportFormat.Csv)" title="CSV">CSV</HelixButton>
+                <HelixButton Size="HelixSize.Sm" Variant="HelixVariant.Ghost" Color="neutral" Icon="download" OnClick="() => ExportAsync(Helix.Export.HelixExportFormat.Excel)" title="Excel">Excel</HelixButton>
+            }
+            <HelixSwitch Size="HelixSize.Sm" Label="@Texts.FollowLog" Checked="_follow" CheckedChanged="SetFollow" />
+        </div>
+    </div>
+    @if (_propertyFilters.Count > 0)
+    {
+        <div class="helix-log__chips">
+            @foreach (var (key, value) in _propertyFilters)
+            {
+                <span class="helix-log__chip">
+                    <span class="helix-log__chip-key">@key</span> = @Short(value)
+                    <button type="button" class="helix-log__chip-x" aria-label="@Texts.Clear @key" @onclick="() => RemoveFilter(key)"><HelixIcon Name="x" Size="12" /></button>
+                </span>
+            }
+            <button type="button" class="helix-log__chips-clear" @onclick="ClearFilters">@Texts.ClearFilters</button>
+        </div>
+    }
+    <div class="helix-log__body">
+        <div class="helix-log__lines" @ref="_scroller" role="log" aria-live="off" tabindex="0" @onscroll="OnScroll">
+            @if (_visible.Count == 0)
+            {
+                <p class="helix-log__empty">@(EmptyText ?? Texts.NoData)</p>
+            }
+            else
+            {
+                <Virtualize Items="_visible" ItemSize="LineHeight" OverscanCount="20" Context="entry">
+                    <div class="@(new CssBuilder("helix-log__line").Add($"is-{entry.Level.ToString().ToLowerInvariant()}").Add("is-selected", ReferenceEquals(entry, _selected)).Add("has-details", HasDetails(entry)).Build())"
+                         style="height:@(LineHeight)px" @onclick="() => Select(entry)">
+                        <time class="helix-log__time">@entry.Time.ToString(TimeFormat, EffectiveCulture)</time>
+                        <span class="helix-log__badge">@LevelText(entry.Level)</span>
+                        @if (!string.IsNullOrEmpty(entry.Source))
+                        {
+                            <span class="helix-log__source">@entry.Source</span>
+                        }
+                        <span class="helix-log__message" title="@entry.Message">@entry.Message</span>
+                        @if (entry.Exception is not null)
+                        {
+                            <HelixIcon Name="danger" Size="13" Class="helix-log__flag" />
+                        }
+                    </div>
+                </Virtualize>
+            }
+        </div>
+        @if (_unseen > 0)
+        {
+            <button type="button" class="helix-log__new" @onclick="JumpToNewest">
+                <HelixIcon Name="arrow-down" Size="13" /> @HelixTexts.Format(Texts.LogNewLines, _unseen)
+            </button>
         }
     </div>
+    @if (_selected is { } selected && ShowDetails)
+    {
+        <section class="@(new CssBuilder("helix-log__details").Add($"is-{selected.Level.ToString().ToLowerInvariant()}").Build())" aria-label="@Texts.LogDetails">
+            <header class="helix-log__details-head">
+                <span class="helix-log__badge">@LevelText(selected.Level)</span>
+                <time class="helix-log__details-time">@selected.Time.ToString("F", EffectiveCulture)</time>
+                <span class="helix-log__details-actions">
+                    <button type="button" class="helix-log__icon-button" title="@(_copied ? Texts.LogCopied : Texts.LogCopy)" @onclick="() => CopyAsync(selected)">
+                        <HelixIcon Name="@(_copied ? "check" : "copy")" Size="14" />
+                    </button>
+                    <button type="button" class="helix-log__icon-button" title="@Texts.Close" @onclick="() => _selected = null"><HelixIcon Name="x" Size="14" /></button>
+                </span>
+            </header>
+            <p class="helix-log__details-message">@selected.Message</p>
+            <dl class="helix-log__facts">
+                @if (!string.IsNullOrEmpty(selected.Source))
+                {
+                    <dt>@Texts.LogSource</dt>
+                    <dd><button type="button" class="helix-log__value" title="@HelixTexts.Format(Texts.LogFilterOn, Texts.LogSource, selected.Source)" @onclick="() => { _source = selected.Source; Refilter(); }">@selected.Source</button></dd>
+                }
+                @if (!string.IsNullOrEmpty(selected.User))
+                {
+                    <dt>@Texts.LogUser</dt>
+                    <dd><button type="button" class="helix-log__value" title="@HelixTexts.Format(Texts.LogFilterOn, Texts.LogUser, selected.User)" @onclick="() => AddFilter(UserKey, selected.User!)">@selected.User</button></dd>
+                }
+                @if (!string.IsNullOrEmpty(selected.TraceId))
+                {
+                    <dt>@Texts.LogTraceId</dt>
+                    <dd><button type="button" class="helix-log__value is-mono" title="@HelixTexts.Format(Texts.LogFilterOn, Texts.LogTraceId, selected.TraceId)" @onclick="() => AddFilter(TraceKey, selected.TraceId!)">@selected.TraceId</button></dd>
+                }
+                @foreach (var (key, value) in selected.Properties ?? EmptyProperties)
+                {
+                    <dt>@key</dt>
+                    <dd><button type="button" class="helix-log__value" title="@HelixTexts.Format(Texts.LogFilterOn, key, value)" @onclick="() => AddFilter(key, value)">@value</button></dd>
+                }
+            </dl>
+            @if (selected.Exception is not null)
+            {
+                <div class="helix-log__exception-title">@Texts.LogException</div>
+                <pre class="helix-log__exception">@selected.Exception</pre>
+            }
+        </section>
+    }
+    <div class="helix-log__status">@HelixTexts.Format(Texts.LogShown, _visible.Count, Entries.Count)</div>
 </div>
 
 @code {
@@ -61,17 +152,45 @@
     /// <summary>Levels hidden at first, e.g. [HelixLogLevel.Debug].</summary>
     [Parameter] public IReadOnlyCollection<HelixLogLevel>? HiddenLevels { get; set; }
 
+    /// <summary>A click on a line shows its details: properties (click one to filter on it), exception, trace id, user (true).</summary>
+    [Parameter] public bool ShowDetails { get; set; } = true;
+
+    /// <summary>The period filter (last 15 minutes, hour, 24 hours, 7 days) (true).</summary>
+    [Parameter] public bool ShowPeriod { get; set; } = true;
+
+    /// <summary>The CSV and Excel buttons, which export the lines shown (true).</summary>
+    [Parameter] public bool Exportable { get; set; } = true;
+
+    /// <summary>File name of the export, without extension ("log").</summary>
+    [Parameter] public string ExportFileName { get; set; } = "log";
+
+    /// <summary>A line was clicked (also when ShowDetails is off).</summary>
+    [Parameter] public EventCallback<HelixLogEntry> OnEntryClick { get; set; }
+
     [Parameter] public string? EmptyText { get; set; }
     [Parameter] public CultureInfo? Culture { get; set; }
 
+    /// <summary>The clock of the period filter (system clock by default).</summary>
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
     private const float LineHeight = 30;
+    private const string UserKey = "\u0001user";
+    private const string TraceKey = "\u0001trace";
+    private static readonly IReadOnlyDictionary<string, string> EmptyProperties = new Dictionary<string, string>();
     private readonly HashSet<HelixLogLevel> _hidden = [];
     private readonly int[] _counts = new int[Enum.GetValues<HelixLogLevel>().Length];
+    private readonly List<(string Key, string Value)> _propertyFilters = [];
     private List<HelixLogEntry> _visible = [];
+    private List<string> _sources = [];
     private string? _search;
+    private string? _source;
+    private HelixLogPeriod? _period;
+    private HelixLogEntry? _selected;
     private bool _follow;
     private bool _initialized;
     private bool _scroll;
+    private bool _copied;
+    private int _unseen;
     private int _lastCount = -1;
     private IReadOnlyList<HelixLogEntry>? _lastEntries;
     private ElementReference _scroller;
@@ -81,6 +200,14 @@
 
     private string? StyleValue => new StyleBuilder().Var("--helix-log-height", Height).Raw(Style).Build();
 
+    private IReadOnlyList<string> SourceChoices => [Texts.LogAllSources, .. _sources];
+
+    private HelixLogPeriod[] PeriodChoices =>
+    [
+        new(Texts.LogAllTime, null), new(Texts.LogLast15Minutes, TimeSpan.FromMinutes(15)), new(Texts.LogLastHour, TimeSpan.FromHours(1)),
+        new(Texts.LogLast24Hours, TimeSpan.FromDays(1)), new(Texts.LogLast7Days, TimeSpan.FromDays(7)),
+    ];
+
     private string LevelText(HelixLogLevel level) => level switch
     {
         HelixLogLevel.Debug => Texts.LogDebug,
@@ -89,17 +216,24 @@
         _ => Texts.LogError,
     };
 
+    private static bool HasDetails(HelixLogEntry e) => e.Properties is { Count: > 0 } || e.Exception is not null || e.TraceId is not null || e.User is not null;
+
+    private static string Short(string value) => value.Length <= 24 ? value : value[..10] + "…" + value[^8..];
+
     protected override void OnParametersSet()
     {
         if (!_initialized)
         {
             _initialized = true;
             _follow = Follow;
+            _period = PeriodChoices[0];
             if (HiddenLevels is not null) _hidden.UnionWith(HiddenLevels);
         }
 
         if (!ReferenceEquals(Entries, _lastEntries) || Entries.Count != _lastCount)
         {
+            // Lines added while the reader looks at older ones: count them for the "new lines" button.
+            if (!_follow && _lastCount >= 0 && Entries.Count > _lastCount) _unseen += Entries.Count - _lastCount;
             _lastEntries = Entries;
             _lastCount = Entries.Count;
             Refilter();
@@ -114,14 +248,77 @@
         StateHasChanged();
     }
 
+    /// <summary>The lines shown now, after every filter (what the export writes).</summary>
+    public IReadOnlyList<HelixLogEntry> VisibleEntries => _visible;
+
+    /// <summary>Shows only the lines whose property <paramref name="key"/> equals <paramref name="value"/> (adds to the other filters).</summary>
+    public void AddFilter(string key, string value)
+    {
+        _propertyFilters.RemoveAll(f => f.Key == key);
+        _propertyFilters.Add((key, value));
+        Refilter();
+    }
+
+    private void RemoveFilter(string key)
+    {
+        _propertyFilters.RemoveAll(f => f.Key == key);
+        Refilter();
+    }
+
+    /// <summary>Removes the property, source and period filters and the search (levels stay as they are).</summary>
+    public void ClearFilters()
+    {
+        _propertyFilters.Clear();
+        _source = null;
+        _search = null;
+        _period = PeriodChoices[0];
+        Refilter();
+    }
+
+    private bool Matches(HelixLogEntry e, string? term, DateTime? from)
+    {
+        if (_hidden.Contains(e.Level)) return false;
+        if (_source is not null && e.Source != _source) return false;
+        if (from is { } f && e.Time < f) return false;
+        foreach (var (key, value) in _propertyFilters)
+        {
+            var actual = key switch
+            {
+                UserKey => e.User,
+                TraceKey => e.TraceId,
+                _ => e.Properties?.GetValueOrDefault(key),
+            };
+            if (actual != value) return false;
+        }
+
+        if (string.IsNullOrEmpty(term)) return true;
+        return e.Message.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+               || e.Source?.Contains(term, StringComparison.CurrentCultureIgnoreCase) == true
+               || e.User?.Contains(term, StringComparison.CurrentCultureIgnoreCase) == true
+               || e.TraceId?.Contains(term, StringComparison.OrdinalIgnoreCase) == true
+               || e.Properties?.Values.Any(v => v.Contains(term, StringComparison.CurrentCultureIgnoreCase)) == true;
+    }
+
     private void Refilter()
     {
         Array.Clear(_counts);
         foreach (var entry in Entries) _counts[(int)entry.Level]++;
+        _sources = Entries.Select(e => e.Source).OfType<string>().Where(s => s.Length > 0).Distinct().Order(StringComparer.CurrentCulture).ToList();
         var term = _search?.Trim();
-        _visible = Entries.Where(e => !_hidden.Contains(e.Level)
-            && (string.IsNullOrEmpty(term) || e.Message.Contains(term, StringComparison.CurrentCultureIgnoreCase) || e.Source?.Contains(term, StringComparison.CurrentCultureIgnoreCase) == true)).ToList();
+        // The period counts back from now (local time, like the entries).
+        DateTime? from = _period?.Span is { } span ? (TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime - span : null;
+        _visible = Entries.Where(e => Matches(e, term, from)).ToList();
+        if (_selected is not null && !_visible.Contains(_selected)) _selected = null;
         _scroll = _follow;
+    }
+
+    private async Task Select(HelixLogEntry entry)
+    {
+        _selected = ShowDetails && !ReferenceEquals(_selected, entry) ? entry : null;
+        _copied = false;
+        // Reading a line: stop following, so new lines don't scroll it away.
+        if (_selected is not null) _follow = false;
+        await OnEntryClick.InvokeAsync(entry);
     }
 
     private void ToggleLevel(HelixLogLevel level)
@@ -134,6 +331,67 @@
     {
         _follow = on;
         _scroll = on;
+        if (on) _unseen = 0;
+    }
+
+    private void JumpToNewest() => SetFollow(true);
+
+    private void OnScroll()
+    {
+        // Back at the bottom by hand: the new lines are seen.
+        if (_unseen > 0 && _follow) _unseen = 0;
+    }
+
+    private async Task CopyAsync(HelixLogEntry e)
+    {
+        var lines = new List<string> { $"{e.Time.ToString("O", CultureInfo.InvariantCulture)} [{e.Level}] {e.Source} {e.Message}".Replace("  ", " ", StringComparison.Ordinal) };
+        if (e.User is not null) lines.Add($"User: {e.User}");
+        if (e.TraceId is not null) lines.Add($"TraceId: {e.TraceId}");
+        foreach (var (key, value) in e.Properties ?? EmptyProperties) lines.Add($"{key}: {value}");
+        if (e.Exception is not null) lines.Add(e.Exception);
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", string.Join(Environment.NewLine, lines));
+            _copied = true;
+        }
+        catch (JSException)
+        {
+            // Clipboard refused (insecure context): nothing to do.
+        }
+    }
+
+    /// <summary>The lines shown, ready for Helix.Export: time, level, source, message, user, trace id, then one column per property.</summary>
+    public Helix.Export.HelixExportTable ToExportTable()
+    {
+        var keys = _visible.SelectMany(e => e.Properties?.Keys ?? []).Distinct().ToList();
+        var columns = new List<Helix.Export.HelixExportColumn>
+        {
+            new() { Header = Texts.LogTime, Value = r => ((HelixLogEntry)r).Time, Format = "yyyy-MM-dd HH:mm:ss" },
+            new() { Header = Texts.LogLevel, Value = r => LevelText(((HelixLogEntry)r).Level) },
+            new() { Header = Texts.LogSource, Value = r => ((HelixLogEntry)r).Source },
+            new() { Header = Texts.LogMessage, Value = r => ((HelixLogEntry)r).Message },
+            new() { Header = Texts.LogUser, Value = r => ((HelixLogEntry)r).User },
+            new() { Header = Texts.LogTraceId, Value = r => ((HelixLogEntry)r).TraceId },
+        };
+        columns.AddRange(keys.Select(k => new Helix.Export.HelixExportColumn { Header = k, Value = r => ((HelixLogEntry)r).Properties?.GetValueOrDefault(k) }));
+        columns.Add(new() { Header = Texts.LogException, Value = r => ((HelixLogEntry)r).Exception });
+        return new Helix.Export.HelixExportTable(columns, _visible.Cast<object>());
+    }
+
+    /// <summary>Downloads the lines shown as CSV or Excel.</summary>
+    public async Task ExportAsync(Helix.Export.HelixExportFormat format)
+    {
+        var bytes = format == Helix.Export.HelixExportFormat.Csv
+            ? [.. System.Text.Encoding.UTF8.GetPreamble(), .. System.Text.Encoding.UTF8.GetBytes(Helix.Export.HelixCsv.Write(ToExportTable()))]
+            : Helix.Export.HelixExport.Write(ToExportTable(), format);
+        try
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", HelixJs.Path);
+            await _module.InvokeVoidAsync("downloadBytes", ExportFileName + Helix.Export.HelixExport.Extension(format), bytes, Helix.Export.HelixExport.ContentType(format));
+        }
+        catch (JSDisconnectedException)
+        {
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

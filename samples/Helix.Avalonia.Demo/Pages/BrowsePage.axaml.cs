@@ -35,21 +35,33 @@ public partial class BrowsePage : UserControl
         if (Lines.Count == 0)
         {
             var start = DateTime.Today.AddHours(9);
-            (HelixLogLevel Level, string Source, string Message)[] sample =
+            (HelixLogLevel Level, string Source, string Message, string Properties, string? User)[] sample =
             [
-                (HelixLogLevel.Info, "api", "Service started on port 5080"),
-                (HelixLogLevel.Debug, "db", "Connection pool warmed up (8 connections)"),
-                (HelixLogLevel.Info, "scheduler", "Next submission at 09:10"),
-                (HelixLogLevel.Warning, "forecast", "Forecast for North plant is 12 minutes old"),
-                (HelixLogLevel.Info, "export", "employees.xlsx written (37 rows)"),
-                (HelixLogLevel.Error, "gateway", "Submission rejected: slot 09:15–09:30 above the limit"),
-                (HelixLogLevel.Info, "scheduler", "Retrying with the corrected value"),
-                (HelixLogLevel.Info, "gateway", "Submission accepted"),
-                (HelixLogLevel.Debug, "cache", "Evicted 120 entries"),
-                (HelixLogLevel.Warning, "api", "Slow request: GET /sites took 1.8 s"),
-                (HelixLogLevel.Info, "auth", "User signed in"),
+                (HelixLogLevel.Info, "api", "Service started on port 5080", "Port=5080", null),
+                (HelixLogLevel.Debug, "db", "Connection pool warmed up (8 connections)", "Connections=8", null),
+                (HelixLogLevel.Info, "scheduler", "Next submission at 09:10", "Slot=09:10", null),
+                (HelixLogLevel.Warning, "forecast", "Forecast for North plant is 12 minutes old", "Site=North plant;AgeMinutes=12", null),
+                (HelixLogLevel.Info, "export", "employees.xlsx written (37 rows)", "File=employees.xlsx;Rows=37", "ada.l"),
+                (HelixLogLevel.Error, "gateway", "Submission rejected: slot 09:15–09:30 above the limit", "Slot=09:15–09:30;RequestId=DR-0042", "ada.l"),
+                (HelixLogLevel.Info, "scheduler", "Retrying with the corrected value", "RequestId=DR-0042", null),
+                (HelixLogLevel.Info, "gateway", "Submission accepted", "RequestId=DR-0042", "ada.l"),
+                (HelixLogLevel.Debug, "cache", "Evicted 120 entries", "Evicted=120", null),
+                (HelixLogLevel.Warning, "api", "Slow request: GET /sites took 1.8 s", "Path=/sites;DurationMs=1800", "grace.h"),
+                (HelixLogLevel.Info, "auth", "User signed in", "Method=OIDC", "grace.h"),
             ];
-            for (var i = 0; i < sample.Length; i++) Lines.Add(new HelixLogEntry(start.AddSeconds(i * 37), sample[i].Level, sample[i].Message, sample[i].Source));
+            for (var i = 0; i < sample.Length; i++)
+            {
+                var s = sample[i];
+                Lines.Add(new HelixLogEntry(start.AddSeconds(i * 37), s.Level, s.Message, s.Source)
+                {
+                    Properties = s.Properties.Split(';').Select(p => p.Split('=', 2)).ToDictionary(p => p[0], p => p[1]),
+                    User = s.User,
+                    TraceId = $"4bf92f3577b34da6a3ce929d0e0e47{i:x2}",
+                    Exception = s.Level == HelixLogLevel.Error
+                        ? "System.InvalidOperationException: Value 412 MW is above the limit of 400 MW.\n   at Gateway.Submit(Request request) in Gateway.cs:line 57"
+                        : null,
+                });
+            }
         }
 
         this.FindControl<HelixLogViewer>("Log")!.ItemsSource = Lines;

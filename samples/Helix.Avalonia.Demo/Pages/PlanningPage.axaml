@@ -27,6 +27,9 @@
                 </DataTemplate>
             </helix:HelixKanban.CardTemplate>
         </helix:HelixKanban>
+        <TextBlock Classes="h2">Editable board</TextBlock>
+        <TextBlock Classes="lead">HelixKanbanBoard edits its cards itself: + opens a new card, a click opens the editor (title, description, column, due date, assignee, tags, color), Delete asks first.</TextBlock>
+        <helix:HelixKanbanBoard Name="EditableBoard" ColumnWidth="250" Height="330" />
         <TextBlock Classes="h2">Sortable list</TextBlock>
         <helix:HelixSortableList Name="Priorities" Width="420" HorizontalAlignment="Left" />
     </StackPanel>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -48,6 +49,24 @@ public partial class BoardPage : UserControl
             new() { Title = "Dark mode", Owner = "Chloé Richard", Tag = "Front", Tone = HelixTone.Primary, Column = "review" },
             new() { Title = "Load tests", Owner = "Nathan Durand", Tag = "Ops", Tone = HelixTone.Warning, Column = "done" },
         };
+        var today = DateTime.Today;
+        EditableBoard.Columns =
+        [
+            new HelixKanbanColumn("todo", "To do", "series-1"),
+            new HelixKanbanColumn("doing", "In progress", "warning", limit: 3),
+            new HelixKanbanColumn("done", "Done", "success"),
+        ];
+        EditableBoard.ItemsSource = new ObservableCollection<HelixKanbanCard>
+        {
+            new("Connect the billing API", "todo") { Description = "Webhook for paid invoices, retries on 5xx.", Assignee = "Camille Martin", Tags = ["Backend"], Color = "info", DueDate = today.AddDays(5) },
+            new("Fix the time zone", "todo") { Description = "Dates shift by one hour on DST days.", Assignee = "Hugo Robert", Tags = ["Bug"], Color = "danger", DueDate = today.AddDays(-1) },
+            new("Sign-in screen", "doing") { Assignee = "Léo Bernard", Tags = ["Front", "Auth"], Color = "primary", DueDate = today.AddDays(2) },
+            new("Dark mode", "done") { Assignee = "Chloé Richard", Tags = ["Front"], Color = "success" },
+        };
+        EditableBoard.CardAdded += (_, e) => HelixToasts.Success($"“{((HelixEventArgs<HelixKanbanCard>)e).Value.Title}” added");
+        EditableBoard.CardChanged += (_, e) => HelixToasts.Info($"“{((HelixEventArgs<HelixKanbanCard>)e).Value.Title}” saved");
+        EditableBoard.CardDeleted += (_, e) => HelixToasts.Info($"“{((HelixEventArgs<HelixKanbanCard>)e).Value.Title}” deleted");
+
         Board.AddRequested += (_, e) => HelixToasts.Info($"New card in “{((HelixEventArgs<string>)e).Value}”");
 
         Priorities.ItemsSource = new ObservableCollection<string> { "Access security", "Report performance", "Offline mode", "Notifications", "Export PDF" };

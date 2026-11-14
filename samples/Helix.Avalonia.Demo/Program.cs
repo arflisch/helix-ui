@@ -410,6 +410,70 @@ internal static class Program
         log.Flush();
         Check($"a new line updates the counts and the view ({log.ErrorLabel}, {log.VisibleCount})", log.Counts[3] == 2 && log.VisibleCount == 10);
 
+        // Log viewer: details, property filter, export, new-lines counter
+        var errorLine = Pages.BrowsePage.Lines.First(e => e.Level == HelixLogLevel.Error && e.Exception is not null);
+        log.SelectedEntry = errorLine;
+        Pump(50);
+        var details = log.GetVisualDescendants().OfType<ContentControl>().First(c => c.Name == "PART_Details");
+        Check($"a selected line shows its details with the exception ({details.IsVisible})", details.IsVisible
+            && details.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text == HelixTexts.Current.LogException)
+            && details.GetVisualDescendants().OfType<Button>().Any(b => (b.Content as TextBlock)?.Text == "DR-0042"));
+        log.SelectedEntry = null;
+        log.AddFilter("RequestId", "DR-0042");
+        Pump(20);
+        Check($"a property filter keeps the lines with that value ({log.VisibleCount}, {log.Filters.Count} chip)", log.VisibleCount == 3 && log.HasFilters);
+        var logFile = log.ToFile(Helix.Export.HelixExportFormat.Excel);
+        Check($"the shown lines export to Excel ({logFile.Length} bytes)", logFile.Length > 1000 && logFile[0] == (byte)'P' && logFile[1] == (byte)'K');
+        log.ClearFilters();
+        Pump(20);
+        log.IsFollowing = false;
+        Pages.BrowsePage.Lines.Add(new HelixLogEntry(DateTime.Now, HelixLogLevel.Info, "Another line"));
+        log.Flush();
+        Check($"lines that arrive while reading are counted ({log.UnseenText})", log.HasUnseen && log.UnseenText?.StartsWith('1') == true);
+        log.JumpToNewestCommand.Execute(null);
+        Check("the new-lines button goes back to following", log.IsFollowing && !log.HasUnseen);
+
+        // Editable Kanban board
+        window.ShowPage(MainWindow.IndexOf("Planning"));
+        Pump(150);
+        var editable = Named<HelixKanbanBoard>("EditableBoard");
+        var boardCards = (System.Collections.ObjectModel.ObservableCollection<HelixKanbanCard>)editable.ItemsSource!;
+        var host2 = HelixHost.Active!;
+        HelixTextField Field(string label) => host2.GetVisualDescendants().OfType<HelixTextField>().First(f => f.Label == label);
+        HelixButton DialogButton(string content) => host2.GetVisualDescendants().OfType<HelixButton>().First(b => (b.Content as string) == content);
+        var adding = editable.AddAsync("doing");
+        Pump(80);
+        Field(HelixTexts.Current.KanbanTitle).Text = "Write release notes";
+        Field(HelixTexts.Current.KanbanTags).Text = "Docs, Release, docs";
+        Click(DialogButton(HelixTexts.Current.Save));
+        Pump(40);
+        Check($"board: + and Save add the card to its column ({boardCards[^1].Title} in {boardCards[^1].Column}, tags {string.Join("/", boardCards[^1].Tags)})",
+            adding.IsCompleted && adding.Result is not null && boardCards[^1].Title == "Write release notes" && boardCards[^1].Column == "doing"
+            && boardCards[^1].Tags.SequenceEqual(["Docs", "Release"]));
+        var first = boardCards[0];
+        var editing = editable.EditAsync(first);
+        Pump(80);
+        Field(HelixTexts.Current.KanbanTitle).Text = "";
+        Click(DialogButton(HelixTexts.Current.Save));
+        Pump(30);
+        Check($"board: an empty title is refused ({Field(HelixTexts.Current.KanbanTitle).Error})", !editing.IsCompleted && Field(HelixTexts.Current.KanbanTitle).Error == HelixTexts.Current.KanbanTitleRequired);
+        Field(HelixTexts.Current.KanbanTitle).Text = "Connect the billing API v2";
+        Field(HelixTexts.Current.KanbanDescription).Text = "Now with retries.";
+        host2.GetVisualDescendants().OfType<HelixSelect>().First(sel => sel.Label == HelixTexts.Current.KanbanColumn).SelectedIndex = 2;
+        Click(DialogButton(HelixTexts.Current.Save));
+        Pump(40);
+        Check($"board: the editor saves the card and moves it to the end of its new column ({first.Title}, {first.Column}, last={boardCards[^1] == first})",
+            editing.IsCompleted && editing.Result && first.Title == "Connect the billing API v2" && first.Description == "Now with retries." && first.Column == "done" && boardCards[^1] == first);
+        var deleting = editable.EditAsync(first);
+        Pump(80);
+        Click(DialogButton(HelixTexts.Current.KanbanDeleteCard));
+        Pump(60);
+        var confirmDelete = host2.Overlays.OfType<HelixConfirmRequest>().First();
+        confirmDelete.ConfirmCommand.Execute(null);
+        Pump(60);
+        Check($"board: Delete asks, then removes the card ({boardCards.Count} cards, open overlays {host2.Overlays.Count})",
+            deleting.IsCompleted && !boardCards.Contains(first) && host2.Overlays.Count == 0);
+
         // Auto form, description list, target bar, busy
         window.ShowPage(MainWindow.IndexOf("Auto form"));
         Pump(150);
@@ -565,6 +629,29 @@ internal static class Program
             window.CaptureRenderedFrame()?.Save(livePath);
             Console.WriteLine(livePath);
             ((HelixNotificationCenter)Find("Bell")).IsOpen = false;
+            void Shot(string name)
+            {
+                Settle();
+                var shotPath = Path.Combine(folder, $"{name}-{variant.Key.ToString()!.ToLowerInvariant()}.png");
+                window.CaptureRenderedFrame()?.Save(shotPath);
+                Console.WriteLine(shotPath);
+            }
+
+            window.ShowPage(MainWindow.IndexOf("Planning"));
+            Settle();
+            var editableBoard = window.GetVisualDescendants().OfType<HelixKanbanBoard>().First();
+            var cardsOfBoard = (System.Collections.ObjectModel.ObservableCollection<HelixKanbanCard>)editableBoard.ItemsSource!;
+            _ = editableBoard.EditAsync(cardsOfBoard[0]);
+            Shot("07-planning-board-editor");
+            HelixHost.Active?.CloseTop();
+            window.ShowPage(MainWindow.IndexOf("Trees & logs"));
+            Settle();
+            var viewer = window.GetVisualDescendants().OfType<HelixLogViewer>().First();
+            viewer.SelectedEntry = Pages.BrowsePage.Lines.First(e => e.Exception is not null);
+            viewer.AddFilter("RequestId", "DR-0042");
+            Shot("13-trees-log-details");
+            viewer.ClearFilters();
+            viewer.SelectedEntry = null;
             var tools = MainWindow.IndexOf("Filters & files");
             window.ShowPage(tools);
             Settle();

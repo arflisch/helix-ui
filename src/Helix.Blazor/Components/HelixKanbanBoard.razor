@@ -1,0 +1,313 @@
+@namespace Helix.Blazor
+@inherits HelixComponentBase
+@using System.Globalization
+@inject IServiceProvider Services
+
+@*
+    A Kanban that edits its cards itself: "+" adds a card inline, a click (or E / F2) opens the editor, the editor
+    deletes with a confirmation. Bind the cards two-way and save them where you like:
+    <HelixKanbanBoard Columns="_columns" @bind-Cards="_cards" OnCardChanged="Save" />
+*@
+<HelixKanban TItem="HelixKanbanCard" Items="Cards" Columns="Columns" ColumnOf="c => c.Column" ItemKey="c => c.Id"
+             ColumnWidth="@ColumnWidth" CanMove="CanMove" EmptyText="@EmptyText" Class="@Class" Style="@Style"
+             OnCardMoved="MoveAsync" OnCardClick="Edit" OnAdd="ReadOnly ? default(EventCallback<string>) : EventCallback.Factory.Create<string>(this, StartAdd)">
+    <ColumnTop>
+        @if (_addingTo == context.Key)
+        {
+            <div class="helix-kanban__quick-add">
+                <textarea @ref="_quickAdd" class="helix-kanban__quick-input" rows="2" aria-label="@HelixTexts.Format(Texts.KanbanAddTo, context.Title)"
+                          placeholder="@Texts.KanbanNewCardPlaceholder" @bind="_newTitle" @bind:event="oninput"
+                          @onkeydown="e => QuickKeyAsync(e, context.Key)" @onkeydown:preventDefault="_preventQuickKey"
+                          @onblur="() => QuickBlurAsync(context.Key)"></textarea>
+            </div>
+        }
+    </ColumnTop>
+    <CardTemplate>
+        @if (CardTemplate is not null)
+        {
+            @CardTemplate(context)
+        }
+        else
+        {
+            <div class="helix-kanban-card" style="@(context.Color is { } color ? $"--_kc:{HelixColor.Resolve(color).Value}" : null)" title="@(ReadOnly ? null : Texts.KanbanEditHint)">
+                @if (context.Color is not null)
+                {
+                    <span class="helix-kanban-card__stripe" aria-hidden="true"></span>
+                }
+                <div class="helix-kanban-card__title">@context.Title</div>
+                @if (!string.IsNullOrWhiteSpace(context.Description))
+                {
+                    <div class="helix-kanban-card__description">@context.Description</div>
+                }
+                @if (context.Tags.Count > 0)
+                {
+                    <div class="helix-kanban-card__tags">
+                        @foreach (var tag in context.Tags)
+                        {
+                            <span class="helix-kanban-card__tag">@tag</span>
+                        }
+                    </div>
+                }
+                @if (context.DueDate is not null || !string.IsNullOrWhiteSpace(context.Assignee))
+                {
+                    <div class="helix-kanban-card__footer">
+                        @if (context.DueDate is { } due)
+                        {
+                            var overdue = due < Today && !IsDone(context);
+                            <span class="@(new CssBuilder("helix-kanban-card__due").Add("is-overdue", overdue).Build())" title="@(overdue ? Texts.KanbanOverdue : Texts.KanbanDueDate)">
+                                <HelixIcon Name="calendar" Size="13" /> @due.ToString("d MMM", Culture)
+                            </span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(context.Assignee))
+                        {
+                            <span class="helix-kanban-card__assignee" title="@context.Assignee"><HelixAvatar Name="@context.Assignee" Size="HelixSize.Sm" /></span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </CardTemplate>
+</HelixKanban>
+
+<HelixDialog Open="_editing is not null" OpenChanged="open => { if (!open) Close(); }" Title="@(_isNew ? Texts.KanbanNewCard : Texts.KanbanEditCard)" Width="520px">
+    <ChildContent>
+        @if (_editing is not null)
+        {
+            <div class="helix-kanban-editor">
+                <HelixTextField Label="@Texts.KanbanTitle" @bind-Value="_title" Required="true" Error="@_titleError" />
+                <label class="helix-kanban-editor__label">
+                    <span>@Texts.KanbanDescription</span>
+                    <textarea class="helix-kanban-editor__textarea" rows="4" @bind="_description" @bind:event="oninput"></textarea>
+                </label>
+                <div class="helix-kanban-editor__row">
+                    <HelixSelect TValue="HelixKanbanColumn" Items="Columns" ItemText="c => c.Title" @bind-Value="_column" Label="@Texts.KanbanColumn" />
+                    <HelixDatePicker @bind-Value="_due" Label="@Texts.KanbanDueDate" Clearable="true" />
+                </div>
+                <div class="helix-kanban-editor__row">
+                    <HelixTextField Label="@Texts.KanbanAssignee" @bind-Value="_assignee" Icon="user" Clearable="true" />
+                    <HelixTextField Label="@Texts.KanbanTags" @bind-Value="_tags" Hint="@Texts.KanbanTagsHint" />
+                </div>
+                <div class="helix-kanban-editor__label">
+                    <span>@Texts.KanbanColor</span>
+                    <div class="helix-kanban-editor__colors" role="radiogroup" aria-label="@Texts.KanbanColor">
+                        @foreach (var color in Colors)
+                        {
+                            var selected = _color == color;
+                            <button type="button" role="radio" aria-checked="@(selected ? "true" : "false")" title="@(color ?? Texts.KanbanNoColor)"
+                                    class="@(new CssBuilder("helix-kanban-editor__swatch").Add("is-selected", selected).Add("is-none", color is null).Build())"
+                                    style="@(color is null ? null : $"--_kc:{HelixColor.Resolve(color).Value}")" @onclick="() => _color = color"></button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </ChildContent>
+    <Footer>
+        @if (!_isNew)
+        {
+            <HelixButton Variant="HelixVariant.Ghost" Color="danger" Icon="trash" OnClick="DeleteAsync" Class="helix-kanban-editor__delete">@Texts.KanbanDeleteCard</HelixButton>
+        }
+        <HelixButton Variant="HelixVariant.Outline" Color="neutral" OnClick="Close">@Texts.Cancel</HelixButton>
+        <HelixButton Icon="check" OnClick="SaveAsync">@Texts.Save</HelixButton>
+    </Footer>
+</HelixDialog>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<HelixKanbanColumn> Columns { get; set; } = [];
+
+    /// <summary>The cards, in display order; bind it two-way (@bind-Cards).</summary>
+    [Parameter] public IReadOnlyList<HelixKanbanCard> Cards { get; set; } = [];
+    [Parameter] public EventCallback<IReadOnlyList<HelixKanbanCard>> CardsChanged { get; set; }
+
+    /// <summary>A card was added (quick add or editor). Save it here.</summary>
+    [Parameter] public EventCallback<HelixKanbanCard> OnCardAdded { get; set; }
+
+    /// <summary>A card was edited in the editor (the new version, same Id).</summary>
+    [Parameter] public EventCallback<HelixKanbanCard> OnCardChanged { get; set; }
+
+    /// <summary>A card was moved by drag and drop or the keyboard (Item is the card before the move).</summary>
+    [Parameter] public EventCallback<HelixKanbanMove<HelixKanbanCard>> OnCardMoved { get; set; }
+    [Parameter] public EventCallback<HelixKanbanCard> OnCardDeleted { get; set; }
+
+    /// <summary>No add, edit or delete: cards still move unless CanMove says otherwise.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>The last column counts as done: its cards are never shown overdue. Set it when "done" is elsewhere.</summary>
+    [Parameter] public string? DoneColumn { get; set; }
+
+    /// <summary>The colors offered in the editor (null = no color).</summary>
+    [Parameter] public IReadOnlyList<string?> Colors { get; set; } = [null, "primary", "info", "success", "warning", "danger"];
+
+    /// <summary>Replaces the default card look (title, description, tags, due date, assignee).</summary>
+    [Parameter] public RenderFragment<HelixKanbanCard>? CardTemplate { get; set; }
+    [Parameter] public Func<HelixKanbanCard, string, bool>? CanMove { get; set; }
+    [Parameter] public string? ColumnWidth { get; set; }
+    [Parameter] public string? EmptyText { get; set; }
+    [Parameter] public CultureInfo? Culture { get; set; }
+    [Parameter] public TimeProvider? TimeProvider { get; set; }
+
+    private string? _addingTo;
+    private string? _newTitle;
+    private bool _preventQuickKey;
+    private ElementReference _quickAdd;
+    private bool _focusQuickAdd;
+    private int _quickAdded;
+
+    private HelixKanbanCard? _editing;
+    private bool _isNew;
+    private string? _title, _description, _assignee, _tags, _color, _titleError;
+    private HelixKanbanColumn? _column;
+    private DateOnly? _due;
+
+    private DateOnly Today => DateOnly.FromDateTime((TimeProvider ?? TimeProvider.System).GetLocalNow().DateTime);
+
+    private bool IsDone(HelixKanbanCard card) => card.Column == (DoneColumn ?? Columns.LastOrDefault()?.Key);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusQuickAdd)
+        {
+            _focusQuickAdd = false;
+            await _quickAdd.FocusAsync();
+        }
+    }
+
+    private void StartAdd(string column)
+    {
+        _addingTo = column;
+        _newTitle = null;
+        _quickAdded = 0;
+        _focusQuickAdd = true;
+    }
+
+    private async Task QuickKeyAsync(KeyboardEventArgs e, string column)
+    {
+        // Enter adds (Shift+Enter is a new line); Escape cancels.
+        _preventQuickKey = e.Key == "Enter" && !e.ShiftKey;
+        if (_preventQuickKey)
+        {
+            await AddQuickAsync(column, keepOpen: true);
+        }
+        else if (e.Key == "Escape")
+        {
+            // Cancel: forget the text first, so the blur that follows adds nothing.
+            _newTitle = null;
+            _addingTo = null;
+        }
+    }
+
+    private Task QuickBlurAsync(string column) => AddQuickAsync(column, keepOpen: false);
+
+    private async Task AddQuickAsync(string column, bool keepOpen)
+    {
+        var title = _newTitle?.Trim();
+        _newTitle = null;
+        if (!keepOpen) _addingTo = null;
+        if (string.IsNullOrEmpty(title)) return;
+
+        var card = new HelixKanbanCard(title, column);
+        // New cards go to the top of their column, where the field is, in the order they were typed.
+        var list = Cards.ToList();
+        var inColumn = list.Select((c, i) => (c, i)).Where(x => x.c.Column == column).ToList();
+        var position = Math.Min(_quickAdded, inColumn.Count);
+        list.Insert(position < inColumn.Count ? inColumn[position].i : inColumn.Count > 0 ? inColumn[^1].i + 1 : list.Count, card);
+        _quickAdded++;
+        await PublishAsync(list);
+        await OnCardAdded.InvokeAsync(card);
+        _focusQuickAdd = keepOpen;
+    }
+
+    private void Edit(HelixKanbanCard card)
+    {
+        if (ReadOnly) return;
+        _editing = card;
+        _isNew = false;
+        _title = card.Title;
+        _description = card.Description;
+        _assignee = card.Assignee;
+        _tags = string.Join(", ", card.Tags);
+        _color = card.Color;
+        _due = card.DueDate;
+        _column = Columns.FirstOrDefault(c => c.Key == card.Column);
+        _titleError = null;
+    }
+
+    /// <summary>Opens the editor on a new card (e.g. from your own "New card" button).</summary>
+    public void OpenNew(string? column = null)
+    {
+        Edit(new HelixKanbanCard("", column ?? Columns.FirstOrDefault()?.Key ?? ""));
+        _isNew = true;
+        StateHasChanged();
+    }
+
+    private void Close() => _editing = null;
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null) return;
+        if (string.IsNullOrWhiteSpace(_title))
+        {
+            _titleError = Texts.KanbanTitleRequired;
+            return;
+        }
+
+        var card = _editing with
+        {
+            Title = _title.Trim(),
+            Description = string.IsNullOrWhiteSpace(_description) ? null : _description.Trim(),
+            Assignee = string.IsNullOrWhiteSpace(_assignee) ? null : _assignee.Trim(),
+            Tags = (_tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct(StringComparer.CurrentCultureIgnoreCase).ToList(),
+            Color = _color,
+            DueDate = _due,
+            Column = _column?.Key ?? _editing.Column,
+        };
+
+        var list = Cards.ToList();
+        var index = list.FindIndex(c => c.Id == card.Id);
+        if (index < 0)
+        {
+            list.Add(card);
+        }
+        else if (list[index].Column != card.Column)
+        {
+            // Moved to another column in the editor: it goes to the end of that column.
+            list.RemoveAt(index);
+            list.Add(card);
+        }
+        else
+        {
+            list[index] = card;
+        }
+
+        var isNew = _isNew;
+        _editing = null;
+        await PublishAsync(list);
+        await (isNew ? OnCardAdded : OnCardChanged).InvokeAsync(card);
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_editing is not { } card) return;
+        if (Services.GetService(typeof(HelixConfirmService)) is HelixConfirmService confirm
+            && !await confirm.AskAsync(HelixTexts.Format(Texts.KanbanDeleteQuestion, card.Title), Texts.KanbanDeleteMessage, danger: true, confirmText: Texts.KanbanDeleteCard))
+        {
+            return;
+        }
+
+        _editing = null;
+        await PublishAsync(Cards.Where(c => c.Id != card.Id).ToList());
+        await OnCardDeleted.InvokeAsync(card);
+    }
+
+    private async Task MoveAsync(HelixKanbanMove<HelixKanbanCard> move)
+    {
+        await PublishAsync(move.ApplyTo(Cards, c => c.Column, (c, column) => c with { Column = column }));
+        await OnCardMoved.InvokeAsync(move);
+    }
+
+    private async Task PublishAsync(List<HelixKanbanCard> cards)
+    {
+        Cards = cards;
+        await CardsChanged.InvokeAsync(cards);
+    }
+}

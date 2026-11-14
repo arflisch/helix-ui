@@ -42,6 +42,25 @@ public partial class PlanningPage : UserControl
             schedule.Items = schedule.Items!.Select(i => i.Id == change.Item.Id ? change.Applied : i).ToList();
         };
 
+        var editable = this.FindControl<HelixKanbanBoard>("EditableBoard")!;
+        editable.Columns =
+        [
+            new HelixKanbanColumn("todo", "To do", "series-1"),
+            new HelixKanbanColumn("doing", "In progress", "warning", limit: 3),
+            new HelixKanbanColumn("done", "Done", "success"),
+        ];
+        var today = DateTime.Today;
+        editable.ItemsSource = new ObservableCollection<HelixKanbanCard>
+        {
+            new("Connect the billing API", "todo") { Description = "Webhook for paid invoices, retries on 5xx.", Assignee = "Camille Martin", Tags = ["Backend"], Color = "info", DueDate = today.AddDays(5) },
+            new("Fix the time zone", "todo") { Description = "Dates shift by one hour on DST days.", Assignee = "Hugo Robert", Tags = ["Bug"], Color = "danger", DueDate = today.AddDays(-1) },
+            new("Sign-in screen", "doing") { Assignee = "Léo Bernard", Tags = ["Front", "Auth"], Color = "primary", DueDate = today.AddDays(2) },
+            new("Dark mode", "done") { Assignee = "Chloé Richard", Tags = ["Front"], Color = "success" },
+        };
+        editable.CardAdded += (_, e) => HelixToasts.Success($"“{e.Item.Title}” added");
+        editable.CardChanged += (_, e) => HelixToasts.Info($"“{e.Item.Title}” saved");
+        editable.CardDeleted += (_, e) => HelixToasts.Info($"“{e.Item.Title}” deleted");
+
         var board = this.FindControl<HelixKanban>("Board")!;
         board.Columns =
         [

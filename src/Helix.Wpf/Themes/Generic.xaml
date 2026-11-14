@@ -1695,7 +1695,7 @@
     </Style>
 
     <Style TargetType="{x:Type local:HelixLogViewer}">
-        <Setter Property="Height" Value="360" />
+        <Setter Property="Height" Value="420" />
         <Setter Property="FontFamily" Value="{DynamicResource Helix.FontFamily}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -1703,83 +1703,143 @@
                     <Border Background="{DynamicResource Helix.Surface}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="1" CornerRadius="14">
                         <DockPanel>
                             <Border DockPanel.Dock="Top" Padding="12,10" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1">
-                                <DockPanel>
-                                    <local:HelixSwitch DockPanel.Dock="Right" Content="{x:Static local:HelixLogViewer.FollowText}" Size="Sm" VerticalAlignment="Center" Margin="10,0,0,0"
-                                                      IsChecked="{Binding IsFollowing, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-                                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="0,0,10,0">
-                                        <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowDebug, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-                                            <TextBlock><Run Text="{x:Static local:HelixLogViewer.DebugText}" /> <Run Text="{Binding Counts[0], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
-                                        </ToggleButton>
-                                        <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowInfo, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-                                            <TextBlock><Run Text="{x:Static local:HelixLogViewer.InfoText}" /> <Run Text="{Binding Counts[1], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
-                                        </ToggleButton>
-                                        <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowWarning, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-                                            <TextBlock><Run Text="{x:Static local:HelixLogViewer.WarningText}" /> <Run Text="{Binding Counts[2], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
-                                        </ToggleButton>
-                                        <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowError, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-                                            <TextBlock><Run Text="{x:Static local:HelixLogViewer.ErrorText}" /> <Run Text="{Binding Counts[3], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
-                                        </ToggleButton>
-                                    </StackPanel>
-                                    <local:HelixTextField Icon="search" IsClearable="True" Placeholder="{x:Static local:HelixLogViewer.SearchPlaceholderText}" MaxWidth="280" HorizontalAlignment="Left"
-                                                         Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DockPanel>
+                                <StackPanel>
+                                    <DockPanel>
+                                        <local:HelixSwitch DockPanel.Dock="Right" Content="{x:Static local:HelixLogViewer.FollowText}" Size="Sm" VerticalAlignment="Center" Margin="10,0,0,0"
+                                                          IsChecked="{Binding IsFollowing, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="0,0,10,0">
+                                            <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowDebug, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                                <TextBlock><Run Text="{x:Static local:HelixLogViewer.DebugText}" /> <Run Text="{Binding Counts[0], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
+                                            </ToggleButton>
+                                            <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowInfo, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                                <TextBlock><Run Text="{x:Static local:HelixLogViewer.InfoText}" /> <Run Text="{Binding Counts[1], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
+                                            </ToggleButton>
+                                            <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowWarning, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                                <TextBlock><Run Text="{x:Static local:HelixLogViewer.WarningText}" /> <Run Text="{Binding Counts[2], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
+                                            </ToggleButton>
+                                            <ToggleButton Style="{StaticResource Helix.LogLevelToggle}" IsChecked="{Binding ShowError, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                                <TextBlock><Run Text="{x:Static local:HelixLogViewer.ErrorText}" /> <Run Text="{Binding Counts[3], RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}" Foreground="{DynamicResource Helix.TextMuted}" /></TextBlock>
+                                            </ToggleButton>
+                                        </StackPanel>
+                                        <local:HelixTextField Icon="search" IsClearable="True" Placeholder="{x:Static local:HelixLogViewer.SearchPlaceholderText}" MaxWidth="280" HorizontalAlignment="Left"
+                                                             Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DockPanel>
+                                    <DockPanel Margin="0,8,0,0">
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"
+                                                    Visibility="{Binding IsExportable, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Helix.BoolToVisibility}}">
+                                            <local:HelixButton Content="CSV" Icon="download" Variant="Ghost" Tone="Neutral" Size="Sm" Margin="0,0,4,0" Command="{Binding ExportCsvCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                                            <local:HelixButton Content="Excel" Icon="download" Variant="Ghost" Tone="Neutral" Size="Sm" Command="{Binding ExportExcelCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <local:HelixSelect Width="190" Margin="0,0,8,0" ItemsSource="{Binding Sources, RelativeSource={RelativeSource TemplatedParent}}"
+                                                               Visibility="{Binding HasSources, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Helix.BoolToVisibility}}"
+                                                               SelectedItem="{Binding SourceChoice, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                            <local:HelixSelect Width="190" ItemsSource="{Binding Periods, RelativeSource={RelativeSource TemplatedParent}}" DisplayMemberPath="Label"
+                                                               SelectedItem="{Binding Period, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </StackPanel>
                             </Border>
-                            <ListBox x:Name="PART_Lines" ItemsSource="{TemplateBinding View}" BorderThickness="0" Background="Transparent"
-                                     VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" FontFamily="Cascadia Mono, Consolas" FontSize="12.5">
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="{x:Type ListBoxItem}">
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                                    <Border x:Name="Bg" Height="30" Padding="12,0" Background="Transparent" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1">
-                                                        <ContentPresenter VerticalAlignment="Center" />
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
-                                                        </Trigger>
-                                                        <Trigger Property="IsSelected" Value="True">
-                                                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.PrimarySoft}" />
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Left" Width="72" Foreground="{DynamicResource Helix.TextSubtle}">
-                                                <TextBlock.Text>
-                                                    <MultiBinding Converter="{x:Static local:HelixLogTimeConverter.Instance}">
-                                                        <Binding Path="Time" />
-                                                        <Binding Path="TimeFormat" RelativeSource="{RelativeSource AncestorType={x:Type local:HelixLogViewer}}" />
-                                                    </MultiBinding>
-                                                </TextBlock.Text>
-                                            </TextBlock>
-                                            <TextBlock x:Name="Level" DockPanel.Dock="Left" Width="64" Text="{Binding Level}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"
-                                                       Foreground="{DynamicResource Helix.TextSubtle}" />
-                                            <TextBlock DockPanel.Dock="Left" MaxWidth="150" Margin="0,0,10,0" Text="{Binding Source}" TextTrimming="CharacterEllipsis"
-                                                       Foreground="{DynamicResource Helix.TextMuted}" />
-                                            <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Message}" Foreground="{DynamicResource Helix.Text}" />
-                                        </DockPanel>
-                                        <DataTemplate.Triggers>
-                                            <DataTrigger Binding="{Binding Level}" Value="Info">
-                                                <Setter TargetName="Level" Property="Foreground" Value="{DynamicResource Helix.Info}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Level}" Value="Warning">
-                                                <Setter TargetName="Level" Property="Foreground" Value="{DynamicResource Helix.Warning}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Level}" Value="Error">
-                                                <Setter TargetName="Level" Property="Foreground" Value="{DynamicResource Helix.Danger}" />
-                                            </DataTrigger>
-                                        </DataTemplate.Triggers>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <Border DockPanel.Dock="Top" Padding="12,8,12,2" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1"
+                                    Visibility="{Binding HasFilters, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Helix.BoolToVisibility}}">
+                                <WrapPanel>
+                                    <ItemsControl ItemsSource="{Binding Filters, RelativeSource={RelativeSource TemplatedParent}}" Focusable="False">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type local:HelixLogFilter}">
+                                                <Border CornerRadius="999" Padding="10,2,4,2" Margin="0,0,6,6" Background="{DynamicResource Helix.PrimarySoft}" BorderBrush="{DynamicResource Helix.Primary}" BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal" TextElement.Foreground="{DynamicResource Helix.Text}">
+                                                        <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" FontFamily="Cascadia Mono, Consolas" />
+                                                        <TextBlock Text=" = " FontSize="12" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding ShortValue}" ToolTip="{Binding Value}" FontSize="12" VerticalAlignment="Center" FontFamily="Cascadia Mono, Consolas" />
+                                                        <Button Style="{StaticResource Helix.IconButton}" Width="20" Height="20" Margin="4,0,0,0" Command="{Binding RemoveCommand}"><local:HelixIcon Icon="x" Size="11" /></Button>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <local:HelixButton Content="{x:Static local:HelixLogViewer.ClearFiltersText}" Variant="Ghost" Size="Sm" Margin="0,0,0,6" VerticalAlignment="Center"
+                                                       Command="{Binding ClearFiltersCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                                </WrapPanel>
+                            </Border>
+                            <TextBlock DockPanel.Dock="Bottom" Text="{TemplateBinding StatusText}" FontSize="12" Foreground="{DynamicResource Helix.TextSubtle}" Margin="12,6" />
+                            <ContentControl x:Name="PART_Details" DockPanel.Dock="Bottom" Visibility="Collapsed" Focusable="False">
+                                <ContentControl.Template>
+                                    <ControlTemplate TargetType="{x:Type ContentControl}">
+                                        <Border Background="{DynamicResource Helix.Surface2}" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,1,0,1">
+                                            <ContentPresenter />
+                                        </Border>
+                                    </ControlTemplate>
+                                </ContentControl.Template>
+                            </ContentControl>
+                            <Grid>
+                                <ListBox x:Name="PART_Lines" ItemsSource="{TemplateBinding View}" BorderThickness="0" Background="Transparent"
+                                         SelectedItem="{Binding SelectedEntry, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" FontFamily="Cascadia Mono, Consolas" FontSize="12.5">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}">
+                                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                            <Setter Property="Cursor" Value="Hand" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                        <Border x:Name="Bg" Height="30" Padding="12,0" Background="Transparent" BorderBrush="{DynamicResource Helix.Border}" BorderThickness="0,0,0,1">
+                                                            <ContentPresenter VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.Surface2}" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Helix.PrimarySoft}" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel>
+                                                <TextBlock DockPanel.Dock="Left" Width="72" Foreground="{DynamicResource Helix.TextSubtle}">
+                                                    <TextBlock.Text>
+                                                        <MultiBinding Converter="{x:Static local:HelixLogTimeConverter.Instance}">
+                                                            <Binding Path="Time" />
+                                                            <Binding Path="TimeFormat" RelativeSource="{RelativeSource AncestorType={x:Type local:HelixLogViewer}}" />
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                                <TextBlock x:Name="Level" DockPanel.Dock="Left" Width="72" Text="{Binding LevelText}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource Helix.TextSubtle}" />
+                                                <local:HelixIcon x:Name="Failure" DockPanel.Dock="Right" Icon="danger" Size="13" Foreground="{DynamicResource Helix.Danger}" VerticalAlignment="Center"
+                                                                 Margin="8,0,0,0" Visibility="Collapsed" />
+                                                <TextBlock DockPanel.Dock="Left" MaxWidth="150" Margin="0,0,10,0" Text="{Binding Source}" TextTrimming="CharacterEllipsis"
+                                                           Foreground="{DynamicResource Helix.TextMuted}" />
+                                                <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Message}" Foreground="{DynamicResource Helix.Text}" />
+                                            </DockPanel>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding Level}" Value="Info">
+                                                    <Setter TargetName="Level" Property="Foreground" Value="{DynamicResource Helix.Info}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Level}" Value="Warning">
+                                                    <Setter TargetName="Level" Property="Foreground" Value="{DynamicResource Helix.Warning}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                    <Setter TargetName="Level" Property="Foreground" Value="{DynamicResource Helix.Danger}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding HasException}" Value="True">
+                                                    <Setter TargetName="Failure" Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <local:HelixButton HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,12" Size="Sm" Icon="arrow-down"
+                                                   Content="{TemplateBinding UnseenText}" Command="{Binding JumpToNewestCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                   Visibility="{Binding HasUnseen, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource Helix.BoolToVisibility}}" />
+                            </Grid>
                         </DockPanel>
                     </Border>
                 </ControlTemplate>

@@ -74,7 +74,8 @@
         </Border>
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Log" />
-        <helix:HelixLogViewer x:Name="Log" Height="300" Margin="0,0,0,32" />
+        <TextBlock Style="{StaticResource SectionText}" Text="Click a line for its details (properties, exception, trace id, user); click a value to filter on it. Filter by source and period, export the lines shown to CSV or Excel." />
+        <helix:HelixLogViewer x:Name="Log" Height="480" ExportFileName="operations-log" Margin="0,0,0,32" />
 
         <TextBlock Style="{StaticResource SectionTitle}" Text="Progress and Spinner" />
         <Border Style="{StaticResource Stage}">
